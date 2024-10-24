@@ -15,8 +15,10 @@ public class BotService extends TelegramLongPollingBot {
 
     @Value("${bot.name}")
     private String botName;
-    @Value("${bot.token}")
-    private String botToken;
+
+    public BotService(@Value("${bot.token}") String botToken) {
+        super(botToken);
+    }
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -36,10 +38,5 @@ public class BotService extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
         return botName;
-    }
-
-    @Override
-    public String getBotToken() {
-        return botToken;
     }
 }
