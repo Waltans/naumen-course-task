@@ -1,5 +1,0 @@
-server:
-  port: 8082
-bot:
-  name: CHANGEME
-  token: CHANGEME
