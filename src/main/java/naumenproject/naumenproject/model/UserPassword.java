@@ -11,18 +11,30 @@ import java.util.Objects;
 @Table(name = "tbl_passwords")
 public class UserPassword {
 
+    /**
+     * Уникальный идентификатор пароля, UUID.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "uuid", unique = true, nullable = false)
     private String uuid;
 
+    /**
+     * Описание пароля
+     */
     @Column(name = "description", nullable = true, unique = false)
     private String description;
 
+    /**
+     * Пароль в зашифрованном виде
+     */
     @Column(name = "password", nullable = false, unique = false)
     private String password;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    /**
+     * Пользователь, которому принадлежит пароль
+     */
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private User user;
 
     public UserPassword(String uuid, String description, String password, User user) {
@@ -67,5 +79,39 @@ public class UserPassword {
     @Override
     public int hashCode() {
         return Objects.hash(uuid, description, password);
+    }
+
+    /**
+     * Билдер для UserPassword
+     */
+    public static class Builder {
+        private String uuid;
+        private String description;
+        private String password;
+        private User user;
+
+        public Builder uuid(String uuid) {
+            this.uuid = uuid;
+            return this;
+        }
+
+        public Builder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder password(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public Builder user(User user) {
+            this.user = user;
+            return this;
+        }
+
+        public UserPassword build() {
+            return new UserPassword(uuid, description, password, user);
+        }
     }
 }

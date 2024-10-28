@@ -1,0 +1,131 @@
+package naumenproject.naumenproject.service;
+
+import jakarta.transaction.Transactional;
+import naumenproject.naumenproject.model.UserPassword;
+import naumenproject.naumenproject.repository.UserPasswordRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.security.SecureRandom;
+import java.util.List;
+
+/**
+ * Класс для работы с паролями
+ */
+@Service
+public class PasswordService {
+
+    private final SecureRandom RANDOM = new SecureRandom();
+    private final EncodeService encodeService;
+    private final UserService userService;
+    private final UserPasswordRepository userPasswordRepository;
+    private final Logger log = LoggerFactory.getLogger(PasswordService.class);
+
+
+    public PasswordService(EncodeService encodeService, UserService userService, UserPasswordRepository userPasswordRepository) {
+        this.encodeService = encodeService;
+        this.userService = userService;
+        this.userPasswordRepository = userPasswordRepository;
+    }
+
+    /**
+     * Создаёт пароль и сохраняет в БД
+     *
+     * @param password пароль
+     * @param description описание пароля
+     * @param userTelegramId ID пользователя в telegram
+     */
+    public void createUserPassword(String password, String description, long userTelegramId) {
+        String encodedPassword = encodeService.encryptData(password);
+        UserPassword userPassword = new UserPassword.Builder()
+                .description(description)
+                .user(userService.getUserByTelegramId(userTelegramId))
+                .password(encodedPassword)
+                .build();
+
+        userPasswordRepository.save(userPassword);
+        log.info("Создан новый пароль {}", userPassword.getUuid());
+    }
+
+    /**
+     * Возвращает список паролей конкретного пользователя
+     *
+     * @param userTelegramId ID пользователя в telegram
+     */
+    public List<UserPassword> getUserPasswords(long userTelegramId) {
+        return userPasswordRepository.findByUserTelegramId(userTelegramId);
+    }
+
+    /**
+     * Удаляет пароль
+     *
+     * @param uuid uuid
+     */
+    @Transactional
+    public void deletePassword(String uuid) {
+        if (userPasswordRepository.existsByUuid(uuid)) {
+            userPasswordRepository.deleteByUuid(uuid);
+            log.info("Удалён пароль {}", uuid);
+        }
+    }
+
+    /**
+     * Обновляет данные для пароля
+     * @param uuid uuid
+     * @param description описание
+     * @param password пароль
+     */
+    public void updatePassword(String uuid, String description, String password) {
+        if (userPasswordRepository.existsByUuid(uuid)) {
+            UserPassword userPassword = userPasswordRepository.findByUuid(uuid);
+
+            String encodedPassword = encodeService.encryptData(password);
+            userPassword.setPassword(encodedPassword);
+            userPassword.setDescription(description);
+
+            userPasswordRepository.save(userPassword);
+            log.info("Обновлён пароль {}", uuid);
+        }
+    }
+
+    /**
+     * Генерирует пароль заданной длины и сложности.
+     *
+     * @param length     длина пароля
+     * @param complexity сложность пароля
+     * @return сгенерированный пароль
+     */
+    public String generatePassword(int length, int complexity) {
+        String chars = getCharsForPassword(complexity);
+        StringBuilder password = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++) {
+            int index = RANDOM.nextInt(chars.length());
+            password.append(chars.charAt(index));
+        }
+
+        log.info("Сгенерирован пароль");
+        return password.toString();
+    }
+
+    /**
+     * Определяет набор символов в зависимости от сложности.
+     *
+     * @param complexity сложность пароля
+     * @return строка символов для использования в пароле
+     */
+    private String getCharsForPassword(int complexity) {
+        String lowercase = "abcdefghijklmnopqrstuvwxyz";
+        String digits = "0123456789";
+        String uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String specialChars = "!@#$%^&*()-_=+<>?";
+
+        return switch (complexity) {
+            case 1 -> lowercase;
+            case 2 -> lowercase + uppercase + digits;
+            case 3 -> lowercase + uppercase + digits + specialChars;
+            default -> throw new IllegalStateException("Unexpected value: " + complexity);
+        };
+    }
+}

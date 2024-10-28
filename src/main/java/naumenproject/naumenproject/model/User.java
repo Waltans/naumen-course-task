@@ -12,20 +12,36 @@ import java.util.Objects;
 @Table(name = "tbl_users")
 public class User {
 
+    /**
+     * Уникальный идентификатор пользователя, UUID.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "uuid", unique = true, nullable = false)
     private String uuid;
 
+    /**
+     * Имя пользователя
+     */
     @Column(name = "username", nullable = false)
     private String username;
 
+    /**
+     * Идентификатор пользователя в Telegram
+     */
+    @Column(name = "telegram_id", nullable = false)
+    private long telegramId;
+
+    /**
+     * Список паролей пользователя
+     */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserPassword> userPasswords;
 
-    public User(String uuid, String username, List<UserPassword> userPasswords) {
+    public User(String uuid, String username, long telegramId, List<UserPassword> userPasswords) {
         this.uuid = uuid;
         this.username = username;
+        this.telegramId = telegramId;
         this.userPasswords = userPasswords;
     }
 
@@ -53,6 +69,14 @@ public class User {
         this.username = username;
     }
 
+    public long getTelegramId() {
+        return telegramId;
+    }
+
+    public void setTelegramId(long telegramId) {
+        this.telegramId = telegramId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -64,5 +88,39 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(uuid, username, userPasswords);
+    }
+
+    /**
+     * Билдер для User
+     */
+    public static class Builder {
+        private String uuid;
+        private String username;
+        private long telegramId;
+        private List<UserPassword> userPasswords;
+
+        public Builder uuid(String uuid) {
+            this.uuid = uuid;
+            return this;
+        }
+
+        public Builder username(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public Builder telegramId(long telegramId) {
+            this.telegramId = telegramId;
+            return this;
+        }
+
+        public Builder userPasswords(List<UserPassword> userPasswords) {
+            this.userPasswords = userPasswords;
+            return this;
+        }
+
+        public User build() {
+            return new User(uuid, username, telegramId, userPasswords);
+        }
     }
 }
