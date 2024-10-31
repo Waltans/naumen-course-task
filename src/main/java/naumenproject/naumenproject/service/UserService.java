@@ -1,10 +1,12 @@
 package naumenproject.naumenproject.service;
 
 import naumenproject.naumenproject.model.User;
+import naumenproject.naumenproject.model.UserPassword;
 import naumenproject.naumenproject.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 
@@ -27,12 +29,11 @@ public class UserService {
      * @param telegramId ID пользователя в telegram
      * @param name       имя пользоваетля
      */
+    @Transactional
     public void createUser(long telegramId, String name) {
-        User user = new User.Builder()
-                .username(name)
-                .telegramId(telegramId)
-                .userPasswords(new ArrayList<>())
-                .build();
+        User user = new User();
+        user.setUsername(name);
+        user.setTelegramId(telegramId);
 
         userRepository.save(user);
         log.info("Создан пользователь с telegram id {}", telegramId);
@@ -43,11 +44,12 @@ public class UserService {
      *
      * @param telegramId telegram ID пользователя
      */
+    @Transactional(readOnly = true)
     public User getUserByTelegramId(long telegramId) {
         User user = userRepository.findByTelegramId(telegramId);
 
         if (user == null) {
-            throw new IllegalArgumentException("Пользователь с id " + telegramId + " не найден");
+            throw new IllegalArgumentException(String.format("Пользователь с id %s не найден", telegramId));
         }
         else {
             log.debug("Найден пользователь с id {}", telegramId);
@@ -61,6 +63,7 @@ public class UserService {
      * @param telegramId ID пользователя в telegram
      * @return true, если пользователь существует, иначе - false
      */
+    @Transactional(readOnly = true)
     public boolean checkUserExistsByTelegramId(long telegramId) {
         return userRepository.existsByTelegramId(telegramId);
     }

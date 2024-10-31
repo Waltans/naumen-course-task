@@ -82,45 +82,11 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(uuid, user.uuid) && Objects.equals(username, user.username) && Objects.equals(userPasswords, user.userPasswords);
+        return telegramId == user.telegramId && Objects.equals(uuid, user.uuid) && Objects.equals(username, user.username) && Objects.equals(userPasswords, user.userPasswords);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uuid, username, userPasswords);
-    }
-
-    /**
-     * Билдер для User
-     */
-    public static class Builder {
-        private String uuid;
-        private String username;
-        private long telegramId;
-        private List<UserPassword> userPasswords;
-
-        public Builder uuid(String uuid) {
-            this.uuid = uuid;
-            return this;
-        }
-
-        public Builder username(String username) {
-            this.username = username;
-            return this;
-        }
-
-        public Builder telegramId(long telegramId) {
-            this.telegramId = telegramId;
-            return this;
-        }
-
-        public Builder userPasswords(List<UserPassword> userPasswords) {
-            this.userPasswords = userPasswords;
-            return this;
-        }
-
-        public User build() {
-            return new User(uuid, username, telegramId, userPasswords);
-        }
+        return Objects.hash(uuid, username, telegramId, userPasswords);
     }
 }

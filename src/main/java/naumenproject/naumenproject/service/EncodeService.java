@@ -15,7 +15,7 @@ public class EncodeService {
 
     private final String ALGORITHM = "AES";
 
-    @Value("${auth.password-encrypt-key}")
+    @Value("${password.encrypt-key}")
     private String secretKey;
 
     /**

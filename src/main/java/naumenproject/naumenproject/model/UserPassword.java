@@ -68,50 +68,20 @@ public class UserPassword {
         this.password = password;
     }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UserPassword userPassword1 = (UserPassword) o;
-        return Objects.equals(uuid, userPassword1.uuid) && Objects.equals(description, userPassword1.description) && Objects.equals(password, userPassword1.password);
+        UserPassword that = (UserPassword) o;
+        return Objects.equals(uuid, that.uuid) && Objects.equals(description, that.description) && Objects.equals(password, that.password) && Objects.equals(user, that.user);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uuid, description, password);
-    }
-
-    /**
-     * Билдер для UserPassword
-     */
-    public static class Builder {
-        private String uuid;
-        private String description;
-        private String password;
-        private User user;
-
-        public Builder uuid(String uuid) {
-            this.uuid = uuid;
-            return this;
-        }
-
-        public Builder description(String description) {
-            this.description = description;
-            return this;
-        }
-
-        public Builder password(String password) {
-            this.password = password;
-            return this;
-        }
-
-        public Builder user(User user) {
-            this.user = user;
-            return this;
-        }
-
-        public UserPassword build() {
-            return new UserPassword(uuid, description, password, user);
-        }
+        return Objects.hash(uuid, description, password, user);
     }
 }

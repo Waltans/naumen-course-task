@@ -1,6 +1,6 @@
 package naumenproject.naumenproject.service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import naumenproject.naumenproject.model.UserPassword;
 import naumenproject.naumenproject.repository.UserPasswordRepository;
 import org.slf4j.Logger;
@@ -36,13 +36,13 @@ public class PasswordService {
      * @param description описание пароля
      * @param userTelegramId ID пользователя в telegram
      */
+    @Transactional
     public void createUserPassword(String password, String description, long userTelegramId) {
         String encodedPassword = encodeService.encryptData(password);
-        UserPassword userPassword = new UserPassword.Builder()
-                .description(description)
-                .user(userService.getUserByTelegramId(userTelegramId))
-                .password(encodedPassword)
-                .build();
+        UserPassword userPassword = new UserPassword();
+        userPassword.setDescription(description);
+        userPassword.setPassword(encodedPassword);
+        userPassword.setUser(userService.getUserByTelegramId(userTelegramId));
 
         userPasswordRepository.save(userPassword);
         log.info("Создан новый пароль {}", userPassword.getUuid());
@@ -53,6 +53,7 @@ public class PasswordService {
      *
      * @param userTelegramId ID пользователя в telegram
      */
+    @Transactional(readOnly = true)
     public List<UserPassword> getUserPasswords(long userTelegramId) {
         return userPasswordRepository.findByUserTelegramId(userTelegramId);
     }

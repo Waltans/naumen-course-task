@@ -14,6 +14,7 @@ public class CommandService {
 
     private final MessageService messageService;
     private final PasswordService passwordService;
+    private static final String VALIDATION_OK = "ok";
 
     /**
      * Карта, в которой ключи - команды, значения - список допустимых
@@ -50,25 +51,12 @@ public class CommandService {
 
         String command = splitCommand[0];
         switch (command) {
-            case "/generate":
-                response = generatePassword(splitCommand);
-                break;
-            case "/save":
-                response = savePassword(splitCommand, userId);
-                break;
-            case "/list":
-                response = getUserPasswords(userId);
-                break;
-            case "/del":
-                response = deletePassword(splitCommand, userId);
-                break;
-            case "/edit":
-                response = updatePassword(splitCommand, userId);
-                break;
-            case "/help":
-            case "/start":
-                response = messageService.createWelcomeMessage();
-                break;
+            case "/generate" -> response = generatePassword(splitCommand);
+            case "/save" -> response = savePassword(splitCommand, userId);
+            case "/list" -> response = getUserPasswords(userId);
+            case "/del" -> response = deletePassword(splitCommand, userId);
+            case "/edit" -> response = updatePassword(splitCommand, userId);
+            case "/help", "/start" -> response = messageService.createWelcomeMessage();
         }
 
         return response;
@@ -84,16 +72,12 @@ public class CommandService {
         if (commandsAndNumberOfParams.containsKey(command) &&
                 commandsAndNumberOfParams.get(command).contains(splitCommand.length - 1)) {
 
-            switch (command) {
-                case "/generate":
-                    return isNumber(splitCommand[1]) && isNumber(splitCommand[2]);
-                case "/del":
-                    return isNumber(splitCommand[1]);
-                case "/edit":
-                    return isNumber(splitCommand[1]) && isNumber(splitCommand[2]) && isNumber(splitCommand[3]);
-                default:
-                    return true;
-            }
+            return switch (command) {
+                case "/generate" -> isNumber(splitCommand[1]) && isNumber(splitCommand[2]);
+                case "/del" -> isNumber(splitCommand[1]);
+                case "/edit" -> isNumber(splitCommand[1]) && isNumber(splitCommand[2]) && isNumber(splitCommand[3]);
+                default -> true;
+            };
         }
         return false;
     }
@@ -102,7 +86,7 @@ public class CommandService {
      * Проверяет параметры генерации пароля
      * @param length длина
      * @param complexity сложность
-     * @return "ok", если параметры валидны, иначе - сообщение с ошибкой
+     * @return ok, если параметры валидны, иначе - сообщение с ошибкой
      */
     private String validateGenerationParameters(int length, int complexity) {
         if (length < 8 || length > 128) {
@@ -111,7 +95,7 @@ public class CommandService {
         if (!(complexity == 1 || complexity == 2 || complexity == 3)) {
             return messageService.createMessageComplexityError();
         }
-        return "ok";
+        return VALIDATION_OK;
     }
 
     /**
@@ -139,7 +123,7 @@ public class CommandService {
         int complexity = Integer.parseInt(splitCommand[2]);
 
         String paramsValidationResult = validateGenerationParameters(length, complexity);
-        if (!paramsValidationResult.equals("ok")) {
+        if (!paramsValidationResult.equals(VALIDATION_OK)) {
             return paramsValidationResult;
         }
 
@@ -183,7 +167,7 @@ public class CommandService {
     private String deletePassword(String[] splitCommand, long userId) {
         int passwordId = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
-        if (passwordId > userPasswords.size()) {
+        if (passwordId > userPasswords.size() || passwordId <= 0) {
             return messageService.createMessageNotFoundError(passwordId);
         }
 
@@ -203,7 +187,7 @@ public class CommandService {
     private String updatePassword(String[] splitCommand, long userId) {
         int passwordId = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
-        if (passwordId > userPasswords.size()) {
+        if (passwordId > userPasswords.size() || passwordId <= 0) {
             return messageService.createMessageNotFoundError(passwordId);
         }
 
@@ -212,7 +196,7 @@ public class CommandService {
         int complexity = Integer.parseInt(splitCommand[3]);
 
         String paramsValidationResult = validateGenerationParameters(length, complexity);
-        if (!paramsValidationResult.equals("ok")) {
+        if (!paramsValidationResult.equals(VALIDATION_OK)) {
             return paramsValidationResult;
         }
 

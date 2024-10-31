@@ -3,5 +3,5 @@ server:
 bot:
   name: CHANGEME
   token: CHANGEME
-auth:
-  password-encrypt-key: CHANGEME
+password:
+  encrypt-key: CHANGEME

@@ -64,7 +64,7 @@ public class MessageService {
     }
 
     /**
-     * Создаёт сообщение об ошибке не найденного пароля
+     * Создаёт сообщение об успешном сохранении пароля
      */
     public String createMessagePasswordSaved() {
         return "Пароль успешно сохранён";
@@ -97,7 +97,7 @@ public class MessageService {
     }
 
     /**
-     * Создаёт сообщение об удалении пароля
+     * Создаёт сообщение об обновлении пароля
      * @param description описание
      * @param password пароль
      */
