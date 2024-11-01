@@ -179,7 +179,7 @@ public class CommandService {
 
     /**
      * Обновляет пароль, генерирует новый по заданным параметрам.
-     * Если описание не передано, туда подставляется "Неизвестно"
+     * Если описание не передано, туда подставляется null (т.е. не обновляется)
      * @param splitCommand разделённая по пробелам команда
      * @param userId ID пользователя
      * @return сообщение с паролем или с ошибкой
@@ -191,7 +191,6 @@ public class CommandService {
             return messageService.createMessageNotFoundError(passwordId);
         }
 
-        String uuid = userPasswords.get(passwordId - 1).getUuid();
         int length = Integer.parseInt(splitCommand[2]);
         int complexity = Integer.parseInt(splitCommand[3]);
 
@@ -200,8 +199,10 @@ public class CommandService {
             return paramsValidationResult;
         }
 
+        String uuid = userPasswords.get(passwordId - 1).getUuid();
+        String description = passwordService.findPasswordByUuid(uuid).getDescription();
+
         String newPassword = passwordService.generatePassword(length, complexity);
-        String description = "Неизвестно";
         if (splitCommand.length == 5) {
             description = splitCommand[4];
         }

@@ -242,16 +242,47 @@ class CommandServiceTest {
 
         when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         when(passwordService.generatePassword(12, 2)).thenReturn("newPass");
+        when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
         when(messageService.createMessagePasswordUpdated("updDesc", "newPass"))
                 .thenReturn("Обновлён пароль для updDesc: newPass");
 
         String response = commandService.performCommand(command, 12345L);
+
         assertEquals("Обновлён пароль для updDesc: newPass", response);
 
         verify(passwordService).getUserPasswords(12345L);
         verify(passwordService).generatePassword(12, 2);
         verify(passwordService).updatePassword(passUuid, "updDesc", "newPass");
         verify(messageService).createMessagePasswordUpdated("updDesc", "newPass");
+    }
+
+    /**
+     * Тест комады /edit, если не задано описание
+     */
+    @Test
+    void testPerformCommandEditValidWithoutDescription() {
+        String command = "/edit 1 12 2";
+        String userUuid = UUID.randomUUID().toString();
+        String passUuid = UUID.randomUUID().toString();
+
+        User user = new User(userUuid, "name", 12345L, new ArrayList<>());
+        UserPassword pass = new UserPassword(passUuid, "site", "pass", user);
+        List<UserPassword> userPasswords = List.of(pass);
+
+        when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
+        when(passwordService.generatePassword(12, 2)).thenReturn("newPass");
+        when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
+        when(messageService.createMessagePasswordUpdated("site", "newPass"))
+                .thenReturn("Обновлён пароль для site: newPass");
+
+        String response = commandService.performCommand(command, 12345L);
+
+        assertEquals("Обновлён пароль для site: newPass", response);
+
+        verify(passwordService).getUserPasswords(12345L);
+        verify(passwordService).generatePassword(12, 2);
+        verify(passwordService).updatePassword(passUuid, "site", "newPass");
+        verify(messageService).createMessagePasswordUpdated("site", "newPass");
     }
 
     /**
@@ -268,6 +299,7 @@ class CommandServiceTest {
         List<UserPassword> userPasswords = List.of(pass);
 
         when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
+        when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
         when(messageService.createMessageLengthError()).thenReturn("Длина пароля должна быть от 8 до 128 символов!");
 
         String response = commandService.performCommand(command, 12345L);
@@ -290,6 +322,7 @@ class CommandServiceTest {
         List<UserPassword> userPasswords = List.of(pass);
 
         when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
+        when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
         when(messageService.createMessageComplexityError()).thenReturn("Сложность должна быть от 1 до 3...");
 
         String response = commandService.performCommand(command, 12345L);

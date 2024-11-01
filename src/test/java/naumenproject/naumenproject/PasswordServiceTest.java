@@ -82,6 +82,24 @@ class PasswordServiceTest {
     }
 
     /**
+     * Тест поиска пароля по UUID
+     */
+    @Test
+    void testFindPasswordByUuid() {
+        String passUuid = UUID.randomUUID().toString();
+        String userUuid = UUID.randomUUID().toString();
+        User user = new User(userUuid, "name", 12345L, new ArrayList<>());
+        UserPassword password = new UserPassword(passUuid, "desc", "pass", user);
+
+        when(userPasswordRepository.findByUuid(passUuid)).thenReturn(password);
+
+        UserPassword expectedPass = passwordService.findPasswordByUuid(passUuid);
+
+        verify(userPasswordRepository, times(1)).findByUuid(passUuid);
+        assertEquals(expectedPass, password);
+    }
+
+    /**
      * Тест удаления пароля
      */
     @Test

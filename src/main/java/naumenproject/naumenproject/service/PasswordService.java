@@ -74,7 +74,7 @@ public class PasswordService {
     /**
      * Обновляет данные для пароля
      * @param uuid uuid
-     * @param description описание
+     * @param description описание (если передаётся null, то не обновляется)
      * @param password пароль
      */
     public void updatePassword(String uuid, String description, String password) {
@@ -83,11 +83,26 @@ public class PasswordService {
 
             String encodedPassword = encodeService.encryptData(password);
             userPassword.setPassword(encodedPassword);
-            userPassword.setDescription(description);
+            if (description != null) {
+                userPassword.setDescription(description);
+            }
 
             userPasswordRepository.save(userPassword);
             log.info("Обновлён пароль {}", uuid);
         }
+    }
+
+    /**
+     * Ищет пароль по UUID
+     * @param uuid uuid
+     * @return найденный пароль
+     */
+    public UserPassword findPasswordByUuid(String uuid) {
+        UserPassword password = userPasswordRepository.findByUuid(uuid);
+        if (password == null) {
+            throw new IllegalArgumentException("Пароль не найден!");
+        }
+        return password;
     }
 
     /**
