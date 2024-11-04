@@ -1,14 +1,11 @@
 package naumenproject.naumenproject.service;
 
 import naumenproject.naumenproject.model.User;
-import naumenproject.naumenproject.model.UserPassword;
 import naumenproject.naumenproject.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
 
 /**
  * Класс для работы с пользователями
@@ -50,8 +47,7 @@ public class UserService {
 
         if (user == null) {
             throw new IllegalArgumentException(String.format("Пользователь с id %s не найден", telegramId));
-        }
-        else {
+        } else {
             log.debug("Найден пользователь с id {}", telegramId);
             return user;
         }

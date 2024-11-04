@@ -5,10 +5,12 @@ import naumenproject.naumenproject.model.UserPassword;
 import naumenproject.naumenproject.service.CommandService;
 import naumenproject.naumenproject.service.MessageService;
 import naumenproject.naumenproject.service.PasswordService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
@@ -41,7 +43,7 @@ class CommandServiceTest {
     }
 
     /**
-     * Тест комады /generate
+     * Тест комады /generate, при валидных значениях
      */
     @Test
     void testPerformCommandGenerate() {

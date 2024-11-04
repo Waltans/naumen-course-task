@@ -81,7 +81,7 @@ class UserServiceTest {
     }
 
     /**
-     * Тест проверки существования пользователя по Telegram ID
+     * Тест проверки существования пользователя по Telegram ID, если пользователь есть
      */
     @Test
     void testCheckUserExistsByTelegramId_UserExists() {

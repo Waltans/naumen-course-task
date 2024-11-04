@@ -1,10 +1,5 @@
-package naumenproject.naumenproject.configuration;
+package naumenproject.naumenproject.service;
 
-import naumenproject.naumenproject.service.CommandService;
-import naumenproject.naumenproject.service.MessageService;
-import naumenproject.naumenproject.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -12,10 +7,12 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+/**
+ * Сервис по принятию и отправки сообщений в бота
+ */
 @Service
 public class BotService extends TelegramLongPollingBot {
 
-    private final Logger log = LoggerFactory.getLogger(BotService.class);
     private final UserService userService;
     private final CommandService commandService;
 
@@ -31,6 +28,7 @@ public class BotService extends TelegramLongPollingBot {
     /**
      * Обрабатывает полученное сообщение, создаёт нового пользователя,
      * если он впервые взаимодействует с ботом
+     *
      * @param update обновление
      */
     @Override
@@ -50,6 +48,12 @@ public class BotService extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     * Отправляет сообщение в чат
+     *
+     * @param message - сообщение
+     * @param id - id чата, куда отправляем сообщение
+     */
     private void sendMessageToChat(String message, String id) {
         SendMessage tgMessage = new SendMessage();
         tgMessage.setText(message);

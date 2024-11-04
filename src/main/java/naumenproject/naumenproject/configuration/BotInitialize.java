@@ -1,5 +1,6 @@
 package naumenproject.naumenproject.configuration;
 
+import naumenproject.naumenproject.service.BotService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +11,13 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+/**
+ * Компонент по инициализации бота
+ */
 @Component
 public class BotInitialize {
 
-    private static final Logger log = LoggerFactory.getLogger(BotInitialize.class);
+    private final Logger log = LoggerFactory.getLogger(BotInitialize.class);
     private final BotService botService;
 
     @Autowired
@@ -21,6 +25,9 @@ public class BotInitialize {
         this.botService = botService;
     }
 
+    /**
+     * Метод инициализации бота, выполняется после поднятия контекста
+     */
     @EventListener({ContextRefreshedEvent.class})
     public void initialize() {
         try{

@@ -114,15 +114,34 @@ public class PasswordService {
      */
     public String generatePassword(int length, int complexity) {
         String chars = getCharsForPassword(complexity);
+        boolean passwordMatch = false;
+        String password = "";
+        while (!passwordMatch) {
+            password = generatePassword(length, chars).toString();
+            passwordMatch = matchPassword(complexity, password);
+        }
+
+        log.info("Сгенерирован пароль");
+        return password;
+    }
+
+    private boolean matchPassword(int complexity, String password){
+        return switch (complexity) {
+            case 1 -> password.matches("^[a-z]+$");
+            case 2 -> password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]+$");
+            case 3 -> password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()\\-_=+<>?])[a-zA-Z\\d!@#$%^&*()\\-_=+<>?]+$");
+            default -> throw new IllegalStateException("Unexpected value: " + complexity);
+        };
+    }
+
+    private StringBuilder generatePassword(int length, String chars) {
         StringBuilder password = new StringBuilder(length);
 
         for (int i = 0; i < length; i++) {
             int index = RANDOM.nextInt(chars.length());
             password.append(chars.charAt(index));
         }
-
-        log.info("Сгенерирован пароль");
-        return password.toString();
+        return password;
     }
 
     /**

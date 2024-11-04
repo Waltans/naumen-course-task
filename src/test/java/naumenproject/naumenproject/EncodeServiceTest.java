@@ -3,11 +3,10 @@ package naumenproject.naumenproject;
 import naumenproject.naumenproject.service.EncodeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Класс модульных тестов для CommandService
