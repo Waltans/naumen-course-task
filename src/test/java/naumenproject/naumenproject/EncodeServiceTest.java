@@ -9,14 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
- * Класс модульных тестов для CommandService
+ * РљР»Р°СЃСЃ РјРѕРґСѓР»СЊРЅС‹С… С‚РµСЃС‚РѕРІ РґР»СЏ CommandService
  */
 public class EncodeServiceTest {
 
     private EncodeService encodeService;
 
     /**
-     * Задаёт поле с ключом шифрования
+     * Р—Р°РґР°С‘С‚ РїРѕР»Рµ СЃ РєР»СЋС‡РѕРј С€РёС„СЂРѕРІР°РЅРёСЏ
      */
     @BeforeEach
     void setUp() {
@@ -26,7 +26,7 @@ public class EncodeServiceTest {
     }
 
     /**
-     * Тест шифрования
+     * РўРµСЃС‚ С€РёС„СЂРѕРІР°РЅРёСЏ
      */
     @Test
     public void encryptDataTest() {
@@ -39,7 +39,7 @@ public class EncodeServiceTest {
     }
 
     /**
-     * Тест дешифрования
+     * РўРµСЃС‚ РґРµС€РёС„СЂРѕРІР°РЅРёСЏ
      */
     @Test
     public void decryptDataTest() {

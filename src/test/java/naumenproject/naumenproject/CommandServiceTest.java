@@ -157,7 +157,7 @@ class CommandServiceTest {
     }
 
     /**
-     * Тест комады /del
+     * Тест команды /del, при валидных значениях
      */
     @Test
     void testPerformCommandDelete() {
