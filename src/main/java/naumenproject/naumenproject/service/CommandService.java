@@ -127,7 +127,7 @@ public class CommandService {
             return paramsValidationResult;
         }
 
-        String password = passwordService.generatePassword(length, complexity);
+        String password = passwordService.generatePasswordWithComplexity(length, complexity);
         return messageService.createMessageWithPassword(password);
     }
 
@@ -202,7 +202,7 @@ public class CommandService {
         String uuid = userPasswords.get(passwordId - 1).getUuid();
         String description = passwordService.findPasswordByUuid(uuid).getDescription();
 
-        String newPassword = passwordService.generatePassword(length, complexity);
+        String newPassword = passwordService.generatePasswordWithComplexity(length, complexity);
         if (splitCommand.length == 5) {
             description = splitCommand[4];
         }

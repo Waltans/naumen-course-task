@@ -5,12 +5,10 @@ import naumenproject.naumenproject.model.UserPassword;
 import naumenproject.naumenproject.service.CommandService;
 import naumenproject.naumenproject.service.MessageService;
 import naumenproject.naumenproject.service.PasswordService;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
@@ -49,13 +47,13 @@ class CommandServiceTest {
     void testPerformCommandGenerate() {
         String command = "/generate 12 3";
 
-        when(passwordService.generatePassword(12, 3)).thenReturn("generatedPassword");
+        when(passwordService.generatePasswordWithComplexity(12, 3)).thenReturn("generatedPassword");
         when(messageService.createMessageWithPassword("generatedPassword")).thenReturn("Сгенерирован пароль: generatedPassword");
 
         String response = commandService.performCommand(command, 12345L);
         assertEquals("Сгенерирован пароль: generatedPassword", response);
 
-        verify(passwordService).generatePassword(12, 3);
+        verify(passwordService).generatePasswordWithComplexity(12, 3);
         verify(messageService).createMessageWithPassword("generatedPassword");
     }
 
@@ -243,7 +241,7 @@ class CommandServiceTest {
         List<UserPassword> userPasswords = List.of(pass);
 
         when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
-        when(passwordService.generatePassword(12, 2)).thenReturn("newPass");
+        when(passwordService.generatePasswordWithComplexity(12, 2)).thenReturn("newPass");
         when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
         when(messageService.createMessagePasswordUpdated("updDesc", "newPass"))
                 .thenReturn("Обновлён пароль для updDesc: newPass");
@@ -253,7 +251,7 @@ class CommandServiceTest {
         assertEquals("Обновлён пароль для updDesc: newPass", response);
 
         verify(passwordService).getUserPasswords(12345L);
-        verify(passwordService).generatePassword(12, 2);
+        verify(passwordService).generatePasswordWithComplexity(12, 2);
         verify(passwordService).updatePassword(passUuid, "updDesc", "newPass");
         verify(messageService).createMessagePasswordUpdated("updDesc", "newPass");
     }
@@ -272,7 +270,7 @@ class CommandServiceTest {
         List<UserPassword> userPasswords = List.of(pass);
 
         when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
-        when(passwordService.generatePassword(12, 2)).thenReturn("newPass");
+        when(passwordService.generatePasswordWithComplexity(12, 2)).thenReturn("newPass");
         when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
         when(messageService.createMessagePasswordUpdated("site", "newPass"))
                 .thenReturn("Обновлён пароль для site: newPass");
@@ -282,7 +280,7 @@ class CommandServiceTest {
         assertEquals("Обновлён пароль для site: newPass", response);
 
         verify(passwordService).getUserPasswords(12345L);
-        verify(passwordService).generatePassword(12, 2);
+        verify(passwordService).generatePasswordWithComplexity(12, 2);
         verify(passwordService).updatePassword(passUuid, "site", "newPass");
         verify(messageService).createMessagePasswordUpdated("site", "newPass");
     }

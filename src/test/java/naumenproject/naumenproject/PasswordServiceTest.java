@@ -143,11 +143,11 @@ class PasswordServiceTest {
      * Тест генерации пароля для сложности 1
      */
     @Test
-    void testGeneratePassword_Level1() {
+    void testGeneratePassword_WithComplexity_Level1() {
         int length = 10;
         int complexity = 1;
 
-        String password = passwordService.generatePassword(length, complexity);
+        String password = passwordService.generatePasswordWithComplexity(length, complexity);
 
         assertEquals(length, password.length());
         assertTrue(password.matches("^[a-z]+$"));
@@ -157,11 +157,11 @@ class PasswordServiceTest {
      * Тест генерации пароля для сложности 2
      */
     @Test
-    void testGeneratePassword_Level2() {
+    void testGeneratePassword_WithComplexity_Level2() {
         int length = 12;
         int complexity = 2;
 
-        String password = passwordService.generatePassword(length, complexity);
+        String password = passwordService.generatePasswordWithComplexity(length, complexity);
 
         assertEquals(length, password.length());
         assertTrue(password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]+$"));
@@ -171,11 +171,11 @@ class PasswordServiceTest {
      * Тест генерации пароля для сложности 3
      */
     @Test
-    void testGeneratePassword_Level3() {
+    void testGeneratePassword_WithComplexity_Level3() {
         int length = 15;
         int complexity = 3;
 
-        String password = passwordService.generatePassword(length, complexity);
+        String password = passwordService.generatePasswordWithComplexity(length, complexity);
 
         assertEquals(length, password.length());
         assertTrue(password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()\\-_=+<>?])[a-zA-Z\\d!@#$%^&*()\\-_=+<>?]+$"));
@@ -189,8 +189,8 @@ class PasswordServiceTest {
         int length = 10;
         int complexity = 2;
 
-        String password1 = passwordService.generatePassword(length, complexity);
-        String password2 = passwordService.generatePassword(length, complexity);
+        String password1 = passwordService.generatePasswordWithComplexity(length, complexity);
+        String password2 = passwordService.generatePasswordWithComplexity(length, complexity);
 
         assertNotEquals(password1, password2);
     }

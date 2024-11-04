@@ -106,18 +106,18 @@ public class PasswordService {
     }
 
     /**
-     * Генерирует пароль заданной длины и сложности.
+     * Генерирует пароль заданной длины и сложности и проверяет его соответствие.
      *
      * @param length     длина пароля
      * @param complexity сложность пароля
      * @return сгенерированный пароль
      */
-    public String generatePassword(int length, int complexity) {
+    public String generatePasswordWithComplexity(int length, int complexity) {
         String chars = getCharsForPassword(complexity);
         boolean passwordMatch = false;
         String password = "";
         while (!passwordMatch) {
-            password = generatePassword(length, chars).toString();
+            password = generatePasswordWithComplexity(length, chars);
             passwordMatch = matchPassword(complexity, password);
         }
 
@@ -125,6 +125,12 @@ public class PasswordService {
         return password;
     }
 
+    /**
+     * Проверяет на соответствия пароля заданной сложности
+     * @param complexity - сложность пароля (от 1 до 3)
+     * @param password - пароль
+     * @return true - в случае соответствия, false - в случае не соответствия, ошибку - при неверном значении сложности
+     */
     private boolean matchPassword(int complexity, String password){
         return switch (complexity) {
             case 1 -> password.matches("^[a-z]+$");
@@ -134,14 +140,21 @@ public class PasswordService {
         };
     }
 
-    private StringBuilder generatePassword(int length, String chars) {
+    /**
+     * Метод генерации пароля
+     *
+     * @param length - длина пароля
+     * @param chars - допустимые символы для пароля
+     * @return сгенерированный пароль
+     */
+    private String generatePasswordWithComplexity(int length, String chars) {
         StringBuilder password = new StringBuilder(length);
 
         for (int i = 0; i < length; i++) {
             int index = RANDOM.nextInt(chars.length());
             password.append(chars.charAt(index));
         }
-        return password;
+        return password.toString();
     }
 
     /**
