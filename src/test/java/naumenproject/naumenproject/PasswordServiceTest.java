@@ -6,20 +6,15 @@ import naumenproject.naumenproject.repository.UserPasswordRepository;
 import naumenproject.naumenproject.service.EncodeService;
 import naumenproject.naumenproject.service.PasswordService;
 import naumenproject.naumenproject.service.UserService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 /**
  * Класс модульных тестов для PasswordService
@@ -56,13 +51,13 @@ class PasswordServiceTest {
         String description = "desc";
         long userTelegramId = 12345L;
 
-        when(encodeService.encryptData(password)).thenReturn(encodedPassword);
-        when(userService.getUserByTelegramId(userTelegramId)).thenReturn(new User());
+        Mockito.when(encodeService.encryptData(password)).thenReturn(encodedPassword);
+        Mockito.when(userService.getUserByTelegramId(userTelegramId)).thenReturn(new User());
 
         passwordService.createUserPassword(password, description, userTelegramId);
 
-        verify(userPasswordRepository, times(1)).save(any(UserPassword.class));
-        verify(encodeService, times(1)).encryptData(password);
+        Mockito.verify(userPasswordRepository, Mockito.times(1)).save(ArgumentMatchers.any(UserPassword.class));
+        Mockito.verify(encodeService, Mockito.times(1)).encryptData(password);
     }
 
     /**
@@ -73,12 +68,12 @@ class PasswordServiceTest {
         long userTelegramId = 12345L;
         List<UserPassword> passwords = List.of(new UserPassword(), new UserPassword());
 
-        when(userPasswordRepository.findByUserTelegramId(userTelegramId)).thenReturn(passwords);
+        Mockito.when(userPasswordRepository.findByUserTelegramId(userTelegramId)).thenReturn(passwords);
 
         List<UserPassword> result = passwordService.getUserPasswords(userTelegramId);
 
-        assertEquals(passwords, result);
-        verify(userPasswordRepository, times(1)).findByUserTelegramId(userTelegramId);
+        Assertions.assertEquals(passwords, result);
+        Mockito.verify(userPasswordRepository, Mockito.times(1)).findByUserTelegramId(userTelegramId);
     }
 
     /**
@@ -91,12 +86,12 @@ class PasswordServiceTest {
         User user = new User(userUuid, "name", 12345L, new ArrayList<>());
         UserPassword password = new UserPassword(passUuid, "desc", "pass", user);
 
-        when(userPasswordRepository.findByUuid(passUuid)).thenReturn(password);
+        Mockito.when(userPasswordRepository.findByUuid(passUuid)).thenReturn(password);
 
         UserPassword expectedPass = passwordService.findPasswordByUuid(passUuid);
 
-        verify(userPasswordRepository, times(1)).findByUuid(passUuid);
-        assertEquals(expectedPass, password);
+        Mockito.verify(userPasswordRepository, Mockito.times(1)).findByUuid(passUuid);
+        Assertions.assertEquals(expectedPass, password);
     }
 
     /**
@@ -106,11 +101,11 @@ class PasswordServiceTest {
     void testDeletePassword() {
         String uuid = UUID.randomUUID().toString();
 
-        when(userPasswordRepository.existsByUuid(uuid)).thenReturn(true);
+        Mockito.when(userPasswordRepository.existsByUuid(uuid)).thenReturn(true);
 
         passwordService.deletePassword(uuid);
 
-        verify(userPasswordRepository, times(1)).deleteByUuid(uuid);
+        Mockito.verify(userPasswordRepository, Mockito.times(1)).deleteByUuid(uuid);
     }
 
     /**
@@ -127,16 +122,16 @@ class PasswordServiceTest {
         String newDesc = "newDesc";
         String encodedPass = "encPass";
 
-        when(userPasswordRepository.existsByUuid(passUuid)).thenReturn(true);
-        when(userPasswordRepository.findByUuid(passUuid)).thenReturn(pass);
-        when(encodeService.encryptData(newPass)).thenReturn(encodedPass);
+        Mockito.when(userPasswordRepository.existsByUuid(passUuid)).thenReturn(true);
+        Mockito.when(userPasswordRepository.findByUuid(passUuid)).thenReturn(pass);
+        Mockito.when(encodeService.encryptData(newPass)).thenReturn(encodedPass);
 
         passwordService.updatePassword(passUuid, newDesc, newPass);
 
-        verify(userPasswordRepository, times(1)).save(pass);
-        verify(encodeService, times(1)).encryptData(newPass);
-        assertEquals(newDesc, pass.getDescription());
-        assertEquals(encodedPass, pass.getPassword());
+        Mockito.verify(userPasswordRepository, Mockito.times(1)).save(pass);
+        Mockito.verify(encodeService, Mockito.times(1)).encryptData(newPass);
+        Assertions.assertEquals(newDesc, pass.getDescription());
+        Assertions.assertEquals(encodedPass, pass.getPassword());
     }
 
     /**
@@ -149,8 +144,8 @@ class PasswordServiceTest {
 
         String password = passwordService.generatePasswordWithComplexity(length, complexity);
 
-        assertEquals(length, password.length());
-        assertTrue(password.matches("^[a-z]+$"));
+        Assertions.assertEquals(length, password.length());
+        Assertions.assertTrue(password.matches("^[a-z]+$"));
     }
 
     /**
@@ -163,8 +158,8 @@ class PasswordServiceTest {
 
         String password = passwordService.generatePasswordWithComplexity(length, complexity);
 
-        assertEquals(length, password.length());
-        assertTrue(password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]+$"));
+        Assertions.assertEquals(length, password.length());
+        Assertions.assertTrue(password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]+$"));
     }
 
     /**
@@ -177,8 +172,8 @@ class PasswordServiceTest {
 
         String password = passwordService.generatePasswordWithComplexity(length, complexity);
 
-        assertEquals(length, password.length());
-        assertTrue(password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()\\-_=+<>?])[a-zA-Z\\d!@#$%^&*()\\-_=+<>?]+$"));
+        Assertions.assertEquals(length, password.length());
+        Assertions.assertTrue(password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()\\-_=+<>?])[a-zA-Z\\d!@#$%^&*()\\-_=+<>?]+$"));
     }
 
     /**
@@ -192,6 +187,6 @@ class PasswordServiceTest {
         String password1 = passwordService.generatePasswordWithComplexity(length, complexity);
         String password2 = passwordService.generatePasswordWithComplexity(length, complexity);
 
-        assertNotEquals(password1, password2);
+        Assertions.assertNotEquals(password1, password2);
     }
 }

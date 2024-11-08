@@ -3,15 +3,10 @@ package naumenproject.naumenproject;
 import naumenproject.naumenproject.model.User;
 import naumenproject.naumenproject.repository.UserRepository;
 import naumenproject.naumenproject.service.UserService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.mockito.*;
 
 /**
  * Класс модульных тестов для UserService
@@ -42,7 +37,7 @@ class UserServiceTest {
 
         userService.createUser(telegramId, name);
 
-        verify(userRepository, times(1)).save(any(User.class));
+        Mockito.verify(userRepository, Mockito.times(1)).save(ArgumentMatchers.any(User.class));
     }
 
     /**
@@ -55,12 +50,12 @@ class UserServiceTest {
         user.setTelegramId(telegramId);
         user.setUsername("TestUser");
 
-        when(userRepository.findByTelegramId(telegramId)).thenReturn(user);
+        Mockito.when(userRepository.findByTelegramId(telegramId)).thenReturn(user);
 
         User result = userService.getUserByTelegramId(telegramId);
 
-        assertEquals(user, result);
-        verify(userRepository, times(1)).findByTelegramId(telegramId);
+        Assertions.assertEquals(user, result);
+        Mockito.verify(userRepository, Mockito.times(1)).findByTelegramId(telegramId);
     }
 
     /**
@@ -70,14 +65,14 @@ class UserServiceTest {
     void testGetUserByTelegramId_UserNotFound() {
         long telegramId = 12345L;
 
-        when(userRepository.findByTelegramId(telegramId)).thenReturn(null);
+        Mockito.when(userRepository.findByTelegramId(telegramId)).thenReturn(null);
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
             userService.getUserByTelegramId(telegramId);
         });
 
-        assertEquals(String.format("Пользователь с id %s не найден", telegramId), exception.getMessage());
-        verify(userRepository, times(1)).findByTelegramId(telegramId);
+        Assertions.assertEquals(String.format("Пользователь с id %s не найден", telegramId), exception.getMessage());
+        Mockito.verify(userRepository, Mockito.times(1)).findByTelegramId(telegramId);
     }
 
     /**
@@ -87,12 +82,12 @@ class UserServiceTest {
     void testCheckUserExistsByTelegramId_UserExists() {
         long telegramId = 12345L;
 
-        when(userRepository.existsByTelegramId(telegramId)).thenReturn(true);
+        Mockito.when(userRepository.existsByTelegramId(telegramId)).thenReturn(true);
 
         boolean exists = userService.checkUserExistsByTelegramId(telegramId);
 
-        assertTrue(exists);
-        verify(userRepository, times(1)).existsByTelegramId(telegramId);
+        Assertions.assertTrue(exists);
+        Mockito.verify(userRepository, Mockito.times(1)).existsByTelegramId(telegramId);
     }
 
     /**
@@ -102,11 +97,11 @@ class UserServiceTest {
     void testCheckUserExistsByTelegramId_UserNotExists() {
         long telegramId = 12345L;
 
-        when(userRepository.existsByTelegramId(telegramId)).thenReturn(false);
+        Mockito.when(userRepository.existsByTelegramId(telegramId)).thenReturn(false);
 
         boolean exists = userService.checkUserExistsByTelegramId(telegramId);
 
-        assertFalse(exists);
-        verify(userRepository, times(1)).existsByTelegramId(telegramId);
+        Assertions.assertFalse(exists);
+        Mockito.verify(userRepository, Mockito.times(1)).existsByTelegramId(telegramId);
     }
 }

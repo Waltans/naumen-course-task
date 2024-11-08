@@ -1,5 +1,7 @@
 package naumenproject.naumenproject.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -13,6 +15,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Service
 public class BotService extends TelegramLongPollingBot {
 
+    private static final Logger log = LoggerFactory.getLogger(BotService.class);
     private final UserService userService;
     private final CommandService commandService;
 
@@ -61,7 +64,7 @@ public class BotService extends TelegramLongPollingBot {
         try {
             execute(tgMessage);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.error("Message could not be sent", e);
         }
     }
 

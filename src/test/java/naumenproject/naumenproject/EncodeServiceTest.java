@@ -1,12 +1,10 @@
 package naumenproject.naumenproject;
 
 import naumenproject.naumenproject.service.EncodeService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Класс модульных тестов для CommandService
@@ -34,8 +32,8 @@ public class EncodeServiceTest {
         String expectedText = "bQd+8RRXsEd8DaOsQFkGmw==";
         String encryptedText = encodeService.encryptData(plainText);
 
-        assertNotNull(encryptedText);
-        assertEquals(expectedText, encryptedText);
+        Assertions.assertNotNull(encryptedText);
+        Assertions.assertEquals(expectedText, encryptedText);
     }
 
     /**
@@ -47,7 +45,7 @@ public class EncodeServiceTest {
         String encryptedText = "bQd+8RRXsEd8DaOsQFkGmw==";
         String decryptedText = encodeService.decryptData(encryptedText);
 
-        assertNotNull(decryptedText);
-        assertEquals(expectedText, decryptedText);
+        Assertions.assertNotNull(decryptedText);
+        Assertions.assertEquals(expectedText, decryptedText);
     }
 }

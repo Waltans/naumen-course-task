@@ -3,17 +3,15 @@ package naumenproject.naumenproject;
 import naumenproject.naumenproject.model.UserPassword;
 import naumenproject.naumenproject.service.EncodeService;
 import naumenproject.naumenproject.service.MessageService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 
 /**
  * Класс модульных тестов для MessageService
@@ -49,7 +47,7 @@ class MessageServiceTest {
                 "- /help - Справка.";
 
         String result = messageService.createWelcomeMessage();
-        assertEquals(expectedMessage, result);
+        Assertions.assertEquals(expectedMessage, result);
     }
 
     /**
@@ -61,7 +59,7 @@ class MessageServiceTest {
         String expectedMessage = "Сгенерирован пароль: testPassword";
 
         String result = messageService.createMessageWithPassword(password);
-        assertEquals(expectedMessage, result);
+        Assertions.assertEquals(expectedMessage, result);
     }
 
     /**
@@ -72,7 +70,7 @@ class MessageServiceTest {
         String expectedMessage = "Длина пароля должна быть от 8 до 128 символов!";
 
         String result = messageService.createMessageLengthError();
-        assertEquals(expectedMessage, result);
+        Assertions.assertEquals(expectedMessage, result);
     }
 
     /**
@@ -86,7 +84,7 @@ class MessageServiceTest {
                 "3 - сложный пароль.";
 
         String result = messageService.createMessageComplexityError();
-        assertEquals(expectedMessage, result);
+        Assertions.assertEquals(expectedMessage, result);
     }
 
     /**
@@ -98,7 +96,7 @@ class MessageServiceTest {
         String expectedMessage = "Не найден пароль с id 12345";
 
         String result = messageService.createMessageNotFoundError(id);
-        assertEquals(expectedMessage, result);
+        Assertions.assertEquals(expectedMessage, result);
     }
 
     /**
@@ -109,7 +107,7 @@ class MessageServiceTest {
         String expectedMessage = "Пароль успешно сохранён";
 
         String result = messageService.createMessagePasswordSaved();
-        assertEquals(expectedMessage, result);
+        Assertions.assertEquals(expectedMessage, result);
     }
 
     /**
@@ -127,13 +125,13 @@ class MessageServiceTest {
 
         List<UserPassword> passwords = List.of(password1, password2);
 
-        when(encodeService.decryptData("encPass1")).thenReturn("pass1");
-        when(encodeService.decryptData("encPass2")).thenReturn("pass2");
+        Mockito.when(encodeService.decryptData("encPass1")).thenReturn("pass1");
+        Mockito.when(encodeService.decryptData("encPass2")).thenReturn("pass2");
 
         String result = messageService.createMessagePasswordList(passwords);
 
-        assertTrue(result.contains("1) Сайт: site1, Пароль: pass1"));
-        assertTrue(result.contains("2) Сайт: site2, Пароль: pass2"));
+        Assertions.assertTrue(result.contains("1) Сайт: site1, Пароль: pass1"));
+        Assertions.assertTrue(result.contains("2) Сайт: site2, Пароль: pass2"));
     }
 
     /**
@@ -145,7 +143,7 @@ class MessageServiceTest {
         String expectedMessage = "Удалён пароль для сайта site";
 
         String result = messageService.createMessagePasswordDeleted(description);
-        assertEquals(expectedMessage, result);
+        Assertions.assertEquals(expectedMessage, result);
     }
 
     /**
@@ -158,6 +156,6 @@ class MessageServiceTest {
         String expectedMessage = "Обновлён пароль для site: newPass";
 
         String result = messageService.createMessagePasswordUpdated(description, password);
-        assertEquals(expectedMessage, result);
+        Assertions.assertEquals(expectedMessage, result);
     }
 }
