@@ -1,5 +1,7 @@
-package naumenproject.naumenproject.service;
+package ru.naumen.bot;
 
+import ru.naumen.service.CommandService;
+import ru.naumen.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,19 +15,18 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
  * Сервис по принятию и отправки сообщений в бота
  */
 @Service
-public class BotService extends TelegramLongPollingBot {
+public class TelegramBot extends TelegramLongPollingBot {
 
-    private static final Logger log = LoggerFactory.getLogger(BotService.class);
+    private final Logger log = LoggerFactory.getLogger(TelegramBot.class);
     private final UserService userService;
     private final CommandService commandService;
+    private final String botName;
 
-    @Value("${bot.name}")
-    private String botName;
-
-    public BotService(@Value("${bot.token}") String botToken, UserService userService, CommandService commandService) {
+    public TelegramBot(@Value("${bot.token}") String botToken, UserService userService, CommandService commandService, @Value("${bot.name}") String botName) {
         super(botToken);
         this.userService = userService;
         this.commandService = commandService;
+        this.botName = botName;
     }
 
     /**
@@ -42,7 +43,7 @@ public class BotService extends TelegramLongPollingBot {
             long userId = update.getMessage().getFrom().getId();
             String username = update.getMessage().getFrom().getUserName();
 
-            if (!userService.checkUserExistsByTelegramId(userId)) {
+            if (!userService.isUserExists(userId)) {
                 userService.createUser(userId, username);
             }
 

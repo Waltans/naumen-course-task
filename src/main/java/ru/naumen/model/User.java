@@ -1,4 +1,4 @@
-package naumenproject.naumenproject.model;
+package ru.naumen.model;
 
 import jakarta.persistence.*;
 
@@ -49,6 +49,11 @@ public class User {
 
     }
 
+    public User(String username, long telegramId) {
+        this.username = username;
+        this.telegramId = telegramId;
+    }
+
     public String getUuid() {
         return uuid;
     }
@@ -82,11 +87,11 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return telegramId == user.telegramId && Objects.equals(uuid, user.uuid) && Objects.equals(username, user.username) && Objects.equals(userPasswords, user.userPasswords);
+        return telegramId == user.telegramId && Objects.equals(uuid, user.uuid);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uuid, username, telegramId, userPasswords);
+        return Objects.hash(uuid, telegramId);
     }
 }

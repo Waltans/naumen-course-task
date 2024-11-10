@@ -1,10 +1,12 @@
-package naumenproject.naumenproject.service;
+package ru.naumen.service;
 
-import naumenproject.naumenproject.model.UserPassword;
+import ru.naumen.model.UserPassword;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+
+import static ru.naumen.bot.Constants.*;
 
 /**
  * Класс для работы с командами бота
@@ -12,9 +14,11 @@ import java.util.Map;
 @Service
 public class CommandService {
 
-    private final MessageService messageService;
+    private final EncodeService encodeService;
     private final PasswordService passwordService;
     private static final String VALIDATION_OK = "ok";
+    private static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
+    private static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
 
     /**
      * Карта, в которой ключи - команды, значения - список допустимых
@@ -30,8 +34,8 @@ public class CommandService {
                 "/help", List.of(0)
             );
 
-    public CommandService(MessageService messageService, PasswordService passwordService) {
-        this.messageService = messageService;
+    public CommandService(EncodeService encodeService, PasswordService passwordService) {
+        this.encodeService = encodeService;
         this.passwordService = passwordService;
     }
 
@@ -43,10 +47,10 @@ public class CommandService {
      */
     public String performCommand(String message, long userId) {
         String[] splitCommand = message.split(" ");
-        String response = "Введена некорректная команда! Справка: /help";
+        String response;
 
-        if (!validateCommand(splitCommand)) {
-            return response;
+        if (!isValidCommand(splitCommand)) {
+            return INCORRECT_COMMAND_RESPONSE;
         }
 
         String command = splitCommand[0];
@@ -56,7 +60,8 @@ public class CommandService {
             case "/list" -> response = getUserPasswords(userId);
             case "/del" -> response = deletePassword(splitCommand, userId);
             case "/edit" -> response = updatePassword(splitCommand, userId);
-            case "/help", "/start" -> response = messageService.createWelcomeMessage();
+            case "/help", "/start" -> response = WELCOME_MESSAGE;
+            default -> response = INCORRECT_COMMAND_RESPONSE;
         }
 
         return response;
@@ -67,7 +72,7 @@ public class CommandService {
      * @param splitCommand разделённая по пробелам команда
      * @return true, если команда и её параметры корректны, иначе false
      */
-    private boolean validateCommand(String[] splitCommand) {
+    private boolean isValidCommand(String[] splitCommand) {
         String command = splitCommand[0];
         if (commandsAndNumberOfParams.containsKey(command) &&
                 commandsAndNumberOfParams.get(command).contains(splitCommand.length - 1)) {
@@ -90,10 +95,10 @@ public class CommandService {
      */
     private String validateGenerationParameters(int length, int complexity) {
         if (length < 8 || length > 128) {
-            return messageService.createMessageLengthError();
+            return LENGTH_ERROR_MESSAGE;
         }
         if (!(complexity == 1 || complexity == 2 || complexity == 3)) {
-            return messageService.createMessageComplexityError();
+            return COMPLEXITY_ERROR_MESSAGE;
         }
         return VALIDATION_OK;
     }
@@ -128,7 +133,7 @@ public class CommandService {
         }
 
         String password = passwordService.generatePasswordWithComplexity(length, complexity);
-        return messageService.createMessageWithPassword(password);
+        return String.format(PASSWORD_GENERATED_MESSAGE, password);
     }
 
     /**
@@ -139,14 +144,14 @@ public class CommandService {
      */
     private String savePassword(String[] splitCommand, long userId) {
         String password = splitCommand[1];
-        if (splitCommand.length == 2) {
+        if (splitCommand.length == SAVE_COMMAND_LENGTH_NO_DESCRIPTION) {
             passwordService.createUserPassword(password, "Неизвестно", userId);
         } else {
             String description = splitCommand[2];
             passwordService.createUserPassword(password, description, userId);
         }
 
-        return messageService.createMessagePasswordSaved();
+        return PASSWORD_SAVED_MESSAGE;
     }
 
     /**
@@ -156,7 +161,19 @@ public class CommandService {
      */
     private String getUserPasswords(long userId) {
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
-        return messageService.createMessagePasswordList(userPasswords);
+
+        if (userPasswords.isEmpty()) {
+            return NO_PASSWORDS_MESSAGE;
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < userPasswords.size(); i++) {
+            String description = userPasswords.get(i).getDescription();
+            String password = encodeService.decryptData(userPasswords.get(i).getPassword());
+            stringBuilder.append(String.format(PASSWORD_LIST_FORMAT, i + 1, description, password));
+        }
+
+        return stringBuilder.toString();
     }
 
     /**
@@ -165,16 +182,16 @@ public class CommandService {
      * @return сообщение об удалении или об ошибке в случае некорректного ID
      */
     private String deletePassword(String[] splitCommand, long userId) {
-        int passwordId = Integer.parseInt(splitCommand[1]);
+        int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
-        if (passwordId > userPasswords.size() || passwordId <= 0) {
-            return messageService.createMessageNotFoundError(passwordId);
+        if (passwordIndex > userPasswords.size() || passwordIndex <= 0) {
+            return String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex);
         }
 
-        String uuid = userPasswords.get(passwordId - 1).getUuid();
-        String description = userPasswords.get(passwordId - 1).getDescription();
+        String uuid = userPasswords.get(passwordIndex - 1).getUuid();
+        String description = userPasswords.get(passwordIndex - 1).getDescription();
         passwordService.deletePassword(uuid);
-        return messageService.createMessagePasswordDeleted(description);
+        return String.format(PASSWORD_DELETED_MESSAGE, description);
     }
 
     /**
@@ -185,10 +202,10 @@ public class CommandService {
      * @return сообщение с паролем или с ошибкой
      */
     private String updatePassword(String[] splitCommand, long userId) {
-        int passwordId = Integer.parseInt(splitCommand[1]);
+        int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
-        if (passwordId > userPasswords.size() || passwordId <= 0) {
-            return messageService.createMessageNotFoundError(passwordId);
+        if (passwordIndex > userPasswords.size() || passwordIndex <= 0) {
+            return String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex);
         }
 
         int length = Integer.parseInt(splitCommand[2]);
@@ -199,15 +216,15 @@ public class CommandService {
             return paramsValidationResult;
         }
 
-        String uuid = userPasswords.get(passwordId - 1).getUuid();
+        String uuid = userPasswords.get(passwordIndex - 1).getUuid();
         String description = passwordService.findPasswordByUuid(uuid).getDescription();
 
         String newPassword = passwordService.generatePasswordWithComplexity(length, complexity);
-        if (splitCommand.length == 5) {
+        if (splitCommand.length == EDIT_COMMAND_LENGTH_HAS_DESCRIPTION) {
             description = splitCommand[4];
         }
 
         passwordService.updatePassword(uuid, description, newPassword);
-        return messageService.createMessagePasswordUpdated(description, newPassword);
+        return String.format(PASSWORD_UPDATED_MESSAGE, description, newPassword);
     }
 }

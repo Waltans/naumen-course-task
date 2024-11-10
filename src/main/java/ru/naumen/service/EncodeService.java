@@ -1,4 +1,4 @@
-package naumenproject.naumenproject.service;
+package ru.naumen.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,10 +13,13 @@ import java.util.Base64;
 @Service
 public class EncodeService {
 
-    private final String ALGORITHM = "AES";
+    private static final String ALGORITHM = "AES";
 
-    @Value("${password.encrypt-key}")
-    private String secretKey;
+    private final String secretKey;
+
+   public EncodeService(@Value("${password.encrypt-key}") String secretKey) {
+       this.secretKey = secretKey;
+   }
 
     /**
      * Шифрует строку алгоритмом AES по заданному ключу

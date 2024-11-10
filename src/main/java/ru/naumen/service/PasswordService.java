@@ -1,8 +1,10 @@
-package naumenproject.naumenproject.service;
+package ru.naumen.service;
 
 import org.springframework.transaction.annotation.Transactional;
-import naumenproject.naumenproject.model.UserPassword;
-import naumenproject.naumenproject.repository.UserPasswordRepository;
+import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.model.User;
+import ru.naumen.model.UserPassword;
+import ru.naumen.repository.UserPasswordRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,7 @@ import java.util.List;
 @Service
 public class PasswordService {
 
-    private final SecureRandom RANDOM = new SecureRandom();
+    private final SecureRandom random = new SecureRandom();
     private final EncodeService encodeService;
     private final UserService userService;
     private final UserPasswordRepository userPasswordRepository;
@@ -34,18 +36,20 @@ public class PasswordService {
      *
      * @param password пароль
      * @param description описание пароля
-     * @param userTelegramId ID пользователя в telegram
+     * @param userId ID пользователя
      */
     @Transactional
-    public void createUserPassword(String password, String description, long userTelegramId) {
-        String encodedPassword = encodeService.encryptData(password);
-        UserPassword userPassword = new UserPassword();
-        userPassword.setDescription(description);
-        userPassword.setPassword(encodedPassword);
-        userPassword.setUser(userService.getUserByTelegramId(userTelegramId));
+    public void createUserPassword(String password, String description, long userId) {
+        try {
+            String encodedPassword = encodeService.encryptData(password);
+            User user = userService.getUserByTelegramId(userId);
+            UserPassword userPassword = new UserPassword(description, encodedPassword, user);
 
-        userPasswordRepository.save(userPassword);
-        log.info("Создан новый пароль {}", userPassword.getUuid());
+            userPasswordRepository.save(userPassword);
+            log.info("Создан новый пароль {}", userPassword.getUuid());
+        } catch (UserNotFoundException e) {
+            log.error("Ошибка при создании пароля - не найден пользователь", e);
+        }
     }
 
     /**
@@ -136,7 +140,7 @@ public class PasswordService {
             case 1 -> password.matches("^[a-z]+$");
             case 2 -> password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]+$");
             case 3 -> password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()\\-_=+<>?])[a-zA-Z\\d!@#$%^&*()\\-_=+<>?]+$");
-            default -> throw new IllegalStateException("Unexpected value: " + complexity);
+            default -> throw new IllegalArgumentException("Unexpected value: " + complexity);
         };
     }
 
@@ -151,7 +155,7 @@ public class PasswordService {
         StringBuilder password = new StringBuilder(length);
 
         for (int i = 0; i < length; i++) {
-            int index = RANDOM.nextInt(chars.length());
+            int index = random.nextInt(chars.length());
             password.append(chars.charAt(index));
         }
         return password.toString();
@@ -173,7 +177,7 @@ public class PasswordService {
             case 1 -> lowercase;
             case 2 -> lowercase + uppercase + digits;
             case 3 -> lowercase + uppercase + digits + specialChars;
-            default -> throw new IllegalStateException("Unexpected value: " + complexity);
+            default -> throw new IllegalArgumentException("Unexpected value: " + complexity);
         };
     }
 }

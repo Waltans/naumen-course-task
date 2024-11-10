@@ -1,8 +1,9 @@
-package naumenproject.naumenproject;
+package ru.naumen;
 
-import naumenproject.naumenproject.model.User;
-import naumenproject.naumenproject.repository.UserRepository;
-import naumenproject.naumenproject.service.UserService;
+import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.model.User;
+import ru.naumen.repository.UserRepository;
+import ru.naumen.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,7 @@ class UserServiceTest {
      * Тест получения объекта пользователя по Telegram ID
      */
     @Test
-    void testGetUserByTelegramId_UserExists() {
+    void testGetUserByTelegramId_UserExists() throws UserNotFoundException {
         long telegramId = 12345L;
         User user = new User();
         user.setTelegramId(telegramId);
@@ -67,7 +68,7 @@ class UserServiceTest {
 
         Mockito.when(userRepository.findByTelegramId(telegramId)).thenReturn(null);
 
-        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = Assertions.assertThrows(UserNotFoundException.class, () -> {
             userService.getUserByTelegramId(telegramId);
         });
 
@@ -84,7 +85,7 @@ class UserServiceTest {
 
         Mockito.when(userRepository.existsByTelegramId(telegramId)).thenReturn(true);
 
-        boolean exists = userService.checkUserExistsByTelegramId(telegramId);
+        boolean exists = userService.isUserExists(telegramId);
 
         Assertions.assertTrue(exists);
         Mockito.verify(userRepository, Mockito.times(1)).existsByTelegramId(telegramId);
@@ -99,7 +100,7 @@ class UserServiceTest {
 
         Mockito.when(userRepository.existsByTelegramId(telegramId)).thenReturn(false);
 
-        boolean exists = userService.checkUserExistsByTelegramId(telegramId);
+        boolean exists = userService.isUserExists(telegramId);
 
         Assertions.assertFalse(exists);
         Mockito.verify(userRepository, Mockito.times(1)).existsByTelegramId(telegramId);
