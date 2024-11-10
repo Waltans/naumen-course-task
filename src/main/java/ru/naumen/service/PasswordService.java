@@ -55,11 +55,11 @@ public class PasswordService {
     /**
      * Возвращает список паролей конкретного пользователя
      *
-     * @param userTelegramId ID пользователя в telegram
+     * @param userId ID пользователя
      */
     @Transactional(readOnly = true)
-    public List<UserPassword> getUserPasswords(long userTelegramId) {
-        return userPasswordRepository.findByUserTelegramId(userTelegramId);
+    public List<UserPassword> getUserPasswords(long userId) {
+        return userPasswordRepository.findByUserTelegramId(userId);
     }
 
     /**
