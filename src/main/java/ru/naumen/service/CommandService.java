@@ -1,5 +1,7 @@
 package ru.naumen.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.naumen.model.UserPassword;
 
@@ -14,6 +16,7 @@ import static ru.naumen.bot.Constants.*;
 @Service
 public class CommandService {
 
+    private static final Logger log = LoggerFactory.getLogger(CommandService.class);
     private final EncodeService encodeService;
     private final PasswordService passwordService;
     private final UserService userService;
@@ -180,6 +183,7 @@ public class CommandService {
         try {
             validateGenerationParameters(length, complexity);
         } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
             return e.getMessage();
         }
         String password = passwordService.generatePasswordWithComplexity(length, complexity);
@@ -272,6 +276,7 @@ public class CommandService {
         try {
             validateGenerationParameters(length, complexity);
         } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
             return e.getMessage();
         }
 
