@@ -3,6 +3,8 @@ package ru.naumen.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.naumen.bot.Command;
+import ru.naumen.bot.Constants;
 import ru.naumen.model.UserPassword;
 
 import java.util.List;
@@ -22,20 +24,6 @@ public class CommandService {
     private final UserService userService;
     private static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
     private static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
-
-    /**
-     * Карта, в которой ключи - команды, значения - список допустимых
-     * количеств параметров, передаваемых вместе с командой.
-     */
-    private final Map<String, List<Integer>> commandsAndNumberOfParams = Map.of (
-                "/start", List.of(0),
-                "/generate", List.of(2),
-                "/save", List.of(1, 2),
-                "/list", List.of(0),
-                "/edit", List.of(3, 4),
-                "/del", List.of(1),
-                "/help", List.of(0)
-            );
 
     public CommandService(EncodeService encodeService, PasswordService passwordService, UserService userService) {
         this.encodeService = encodeService;
@@ -79,8 +67,8 @@ public class CommandService {
     private boolean isValidCommand(String[] splitCommand) {
         String command = splitCommand[0];
         int paramsCount = splitCommand.length - 1;
-        if (commandsAndNumberOfParams.containsKey(command) &&
-                commandsAndNumberOfParams.get(command).contains(paramsCount)) {
+        if (Command.commandsAndNumberOfParams .containsKey(command) &&
+                Command.commandsAndNumberOfParams.get(command).contains(paramsCount)) {
             return switch (command) {
                 case "/generate" -> checkGenerationCommandParams(splitCommand);
                 case "/del" -> checkDeleteCommandParams(splitCommand);

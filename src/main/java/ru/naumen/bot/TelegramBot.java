@@ -1,5 +1,8 @@
 package ru.naumen.bot;
 
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.naumen.service.CommandService;
 import ru.naumen.service.UserService;
 import org.slf4j.Logger;
@@ -10,6 +13,9 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Сервис по принятию и отправки сообщений в бота
@@ -56,7 +62,30 @@ public class TelegramBot extends TelegramLongPollingBot {
         SendMessage tgMessage = new SendMessage();
         tgMessage.setText(message);
         tgMessage.setChatId(id);
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        tgMessage.setReplyMarkup(replyKeyboardMarkup);
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(true);
+
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow keyboardRowFirst = new KeyboardRow();
+        keyboardRowFirst.add(new KeyboardButton("Генерировать пароль"));
+        keyboardRowFirst.add(new KeyboardButton("Сохранить"));
+        keyboardRowFirst.add(new KeyboardButton("Пароли"));
+
+        KeyboardRow keyboardRowSecond = new KeyboardRow();
+        keyboardRowSecond.add(new KeyboardButton("Удалить"));
+        keyboardRowSecond.add(new KeyboardButton("Изменить"));
+        keyboardRowSecond.add(new KeyboardButton("Помощь"));
+
+        keyboardRows.add(keyboardRowFirst);
+        keyboardRows.add(keyboardRowSecond);
+
+        replyKeyboardMarkup.setKeyboard(keyboardRows);
         try {
+
             execute(tgMessage);
         } catch (TelegramApiException e) {
             log.error("Message could not be sent", e);
