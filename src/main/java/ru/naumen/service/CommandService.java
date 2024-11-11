@@ -16,7 +16,7 @@ import static ru.naumen.bot.Constants.*;
 @Service
 public class CommandService {
 
-    private static final Logger log = LoggerFactory.getLogger(CommandService.class);
+    private final Logger log = LoggerFactory.getLogger(CommandService.class);
     private final EncodeService encodeService;
     private final PasswordService passwordService;
     private final UserService userService;

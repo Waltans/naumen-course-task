@@ -16,7 +16,7 @@ import java.util.Base64;
 public class EncodeService {
 
     private static final String ALGORITHM = "AES";
-    private static final Logger log = LoggerFactory.getLogger(EncodeService.class);
+    private final Logger log = LoggerFactory.getLogger(EncodeService.class);
 
     private final String secretKey;
 
