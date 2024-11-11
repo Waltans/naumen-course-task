@@ -1,5 +1,7 @@
 package ru.naumen.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import java.util.Base64;
 public class EncodeService {
 
     private static final String ALGORITHM = "AES";
+    private static final Logger log = LoggerFactory.getLogger(EncodeService.class);
 
     private final String secretKey;
 
@@ -35,9 +38,9 @@ public class EncodeService {
             byte[] encryptedBytes = cipher.doFinal(plainString.getBytes());
             return Base64.getEncoder().encodeToString(encryptedBytes);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("При шифровании пароля произошла ошибка", e);
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     /**
@@ -56,8 +59,8 @@ public class EncodeService {
             byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
             return new String(decryptedBytes);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("При расшифровании пароля произошла ошибка", e);
+            throw new RuntimeException(e);
         }
-        return null;
     }
 }

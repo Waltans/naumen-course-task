@@ -1,7 +1,7 @@
 package ru.naumen.service;
 
-import ru.naumen.model.UserPassword;
 import org.springframework.stereotype.Service;
+import ru.naumen.model.UserPassword;
 
 import java.util.List;
 import java.util.Map;
@@ -16,7 +16,7 @@ public class CommandService {
 
     private final EncodeService encodeService;
     private final PasswordService passwordService;
-    private static final String VALIDATION_OK = "ok";
+    private final UserService userService;
     private static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
     private static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
 
@@ -34,53 +34,54 @@ public class CommandService {
                 "/help", List.of(0)
             );
 
-    public CommandService(EncodeService encodeService, PasswordService passwordService) {
+    public CommandService(EncodeService encodeService, PasswordService passwordService, UserService userService) {
         this.encodeService = encodeService;
         this.passwordService = passwordService;
+        this.userService = userService;
     }
 
     /**
      * Обрабатывает команду, введённую пользователем
+     *
      * @param message текст команды
-     * @param userId ID пользователя
+     * @param userId  ID пользователя
+     * @param username имя пользователя
      * @return ответ на команду
      */
-    public String performCommand(String message, long userId) {
-        String[] splitCommand = message.split(" ");
-        String response;
+    public String performCommand(String message, long userId, String username) {
+        userService.createUserIfUserNotExists(userId, username);
 
+        String[] splitCommand = message.split(" ");
         if (!isValidCommand(splitCommand)) {
             return INCORRECT_COMMAND_RESPONSE;
         }
 
-        String command = splitCommand[0];
-        switch (command) {
-            case "/generate" -> response = generatePassword(splitCommand);
-            case "/save" -> response = savePassword(splitCommand, userId);
-            case "/list" -> response = getUserPasswords(userId);
-            case "/del" -> response = deletePassword(splitCommand, userId);
-            case "/edit" -> response = updatePassword(splitCommand, userId);
-            case "/help", "/start" -> response = WELCOME_MESSAGE;
-            default -> response = INCORRECT_COMMAND_RESPONSE;
-        }
-
-        return response;
+        return switch (splitCommand[0]) {
+            case "/generate" -> generatePassword(splitCommand);
+            case "/save" -> savePassword(splitCommand, userId);
+            case "/list" -> getUserPasswords(userId);
+            case "/del" -> deletePassword(splitCommand, userId);
+            case "/edit" -> updatePassword(splitCommand, userId);
+            case "/help", "/start" -> WELCOME_MESSAGE;
+            default -> INCORRECT_COMMAND_RESPONSE;
+        };
     }
 
     /**
-     * Проверяет корректность команды и количества её параметров
+     * Проверяет корректность команды
+     *
      * @param splitCommand разделённая по пробелам команда
      * @return true, если команда и её параметры корректны, иначе false
      */
     private boolean isValidCommand(String[] splitCommand) {
         String command = splitCommand[0];
+        int paramsCount = splitCommand.length - 1;
         if (commandsAndNumberOfParams.containsKey(command) &&
-                commandsAndNumberOfParams.get(command).contains(splitCommand.length - 1)) {
-
+                commandsAndNumberOfParams.get(command).contains(paramsCount)) {
             return switch (command) {
-                case "/generate" -> isNumber(splitCommand[1]) && isNumber(splitCommand[2]);
-                case "/del" -> isNumber(splitCommand[1]);
-                case "/edit" -> isNumber(splitCommand[1]) && isNumber(splitCommand[2]) && isNumber(splitCommand[3]);
+                case "/generate" -> checkGenerationCommandParams(splitCommand);
+                case "/del" -> checkDeleteCommandParams(splitCommand);
+                case "/edit" -> checkEditCommandParams(splitCommand);
                 default -> true;
             };
         }
@@ -88,23 +89,71 @@ public class CommandService {
     }
 
     /**
-     * Проверяет параметры генерации пароля
-     * @param length длина
-     * @param complexity сложность
-     * @return ok, если параметры валидны, иначе - сообщение с ошибкой
+     * Проверяем валидность параметров команды /edit
+     *
+     * @param splitCommand - разделенный список параметров
+     * @return - true, если все параметры удовлетворяют
      */
-    private String validateGenerationParameters(int length, int complexity) {
-        if (length < 8 || length > 128) {
-            return LENGTH_ERROR_MESSAGE;
-        }
+    private boolean checkEditCommandParams(String[] splitCommand) {
+        return isNumber(splitCommand[1]) && isNumber(splitCommand[2]) && isNumber(splitCommand[3]);
+    }
+
+    /**
+     * Проверяем валидность параметров команды /delete
+     *
+     * @param splitCommand - разделенный список параметров
+     * @return - true, если все параметры удовлетворяют
+     */
+    private boolean checkDeleteCommandParams(String[] splitCommand) {
+        return isNumber(splitCommand[1]);
+    }
+
+    /**
+     * Проверяем валидность параметров команды /generation
+     *
+     * @param splitCommand - разделенный список параметров
+     * @return - true, если все параметры удовлетворяют
+     */
+    private boolean checkGenerationCommandParams(String[] splitCommand) {
+        return isNumber(splitCommand[1]) && isNumber(splitCommand[2]);
+    }
+
+    /**
+     * Проверяет параметры генерации пароля
+     *
+     * @param length     длина
+     * @param complexity сложность
+     */
+    private void validateGenerationParameters(int length, int complexity) {
+        checkLength(length);
+        checkComplexity(complexity);
+    }
+
+    /**
+     * Метод проверяет что указана правильная сложность (от 1 до 3)
+     *
+     * @param complexity - сложность пароля
+     */
+    private void checkComplexity(int complexity) {
         if (!(complexity == 1 || complexity == 2 || complexity == 3)) {
-            return COMPLEXITY_ERROR_MESSAGE;
+            throw new IllegalArgumentException(COMPLEXITY_ERROR_MESSAGE);
         }
-        return VALIDATION_OK;
+    }
+
+    /**
+     * Проверяем корректность введённой длины пароля
+     *
+     * @param length - длина пароля
+     */
+    private void checkLength(int length) {
+        if (length < 8 || length > 128) {
+            throw new IllegalArgumentException(LENGTH_ERROR_MESSAGE);
+        }
     }
 
     /**
      * Проверяет, является ли строка числом
+     *
      * @param string строка
      * @return true, если строка состоит из числа
      */
@@ -120,6 +169,7 @@ public class CommandService {
 
     /**
      * Генерирует пароль на основе заданных параметров
+     *
      * @param splitCommand разделённая по пробелам команда
      * @return сообщение с паролем или с ошибкой
      */
@@ -127,19 +177,21 @@ public class CommandService {
         int length = Integer.parseInt(splitCommand[1]);
         int complexity = Integer.parseInt(splitCommand[2]);
 
-        String paramsValidationResult = validateGenerationParameters(length, complexity);
-        if (!paramsValidationResult.equals(VALIDATION_OK)) {
-            return paramsValidationResult;
+        try {
+            validateGenerationParameters(length, complexity);
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
         }
-
         String password = passwordService.generatePasswordWithComplexity(length, complexity);
+
         return String.format(PASSWORD_GENERATED_MESSAGE, password);
     }
 
     /**
      * Сохраняет пароль для пользователя. Если описание не передано, туда подставляется "Неизвестно"
+     *
      * @param splitCommand разделённая по пробелам команда
-     * @param userId ID пользователя
+     * @param userId       ID пользователя
      * @return сообщение о сохранении
      */
     private String savePassword(String[] splitCommand, long userId) {
@@ -156,6 +208,7 @@ public class CommandService {
 
     /**
      * Получает список паролей пользователя
+     *
      * @param userId ID пользователя
      * @return сообщение со списком
      */
@@ -178,6 +231,7 @@ public class CommandService {
 
     /**
      * Удаляет пароль
+     *
      * @param userId ID пользователя
      * @return сообщение об удалении или об ошибке в случае некорректного ID
      */
@@ -187,9 +241,11 @@ public class CommandService {
         if (passwordIndex > userPasswords.size() || passwordIndex <= 0) {
             return String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex);
         }
+        // Пользователь получает список начиная с 1
+        int passwordIndexInSystem = passwordIndex - 1;
 
-        String uuid = userPasswords.get(passwordIndex - 1).getUuid();
-        String description = userPasswords.get(passwordIndex - 1).getDescription();
+        String uuid = userPasswords.get(passwordIndexInSystem).getUuid();
+        String description = userPasswords.get(passwordIndexInSystem).getDescription();
         passwordService.deletePassword(uuid);
         return String.format(PASSWORD_DELETED_MESSAGE, description);
     }
@@ -197,13 +253,15 @@ public class CommandService {
     /**
      * Обновляет пароль, генерирует новый по заданным параметрам.
      * Если описание не передано, туда подставляется null (т.е. не обновляется)
+     *
      * @param splitCommand разделённая по пробелам команда
-     * @param userId ID пользователя
+     * @param userId       ID пользователя
      * @return сообщение с паролем или с ошибкой
      */
     private String updatePassword(String[] splitCommand, long userId) {
         int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
+
         if (passwordIndex > userPasswords.size() || passwordIndex <= 0) {
             return String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex);
         }
@@ -211,13 +269,20 @@ public class CommandService {
         int length = Integer.parseInt(splitCommand[2]);
         int complexity = Integer.parseInt(splitCommand[3]);
 
-        String paramsValidationResult = validateGenerationParameters(length, complexity);
-        if (!paramsValidationResult.equals(VALIDATION_OK)) {
-            return paramsValidationResult;
+        try {
+            validateGenerationParameters(length, complexity);
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
         }
 
         String uuid = userPasswords.get(passwordIndex - 1).getUuid();
-        String description = passwordService.findPasswordByUuid(uuid).getDescription();
+        UserPassword passwordByUuid;
+        try {
+            passwordByUuid = passwordService.findPasswordByUuid(uuid);
+        } catch (IllegalArgumentException e) {
+            return String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex);
+        }
+        String description = passwordByUuid.getDescription();
 
         String newPassword = passwordService.generatePasswordWithComplexity(length, complexity);
         if (splitCommand.length == EDIT_COMMAND_LENGTH_HAS_DESCRIPTION) {

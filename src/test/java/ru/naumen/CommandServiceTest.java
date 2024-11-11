@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import ru.naumen.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,9 @@ class CommandServiceTest {
 
     @Mock
     private EncodeService encodeService;
+
+    @Mock
+    private UserService userService;
 
     @InjectMocks
     private CommandService commandService;
@@ -46,7 +50,7 @@ class CommandServiceTest {
     void testPerformCommandGenerate() {
         Mockito.when(passwordService.generatePasswordWithComplexity(12, 3)).thenReturn("generatedPassword");
 
-        String response = commandService.performCommand("/generate 12 3", 12345L);
+        String response = commandService.performCommand("/generate 12 3", 12345L, "username");
         Assertions.assertEquals("Сгенерирован пароль: generatedPassword", response);
     }
 
@@ -55,7 +59,7 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandGenerateLowLength() {
-        String response = commandService.performCommand("/generate 4 3", 12345L);
+        String response = commandService.performCommand("/generate 4 3", 12345L, "username");
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response);
     }
 
@@ -64,7 +68,7 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandGenerateHighLength() {
-        String response = commandService.performCommand("/generate 129 3", 12345L);
+        String response = commandService.performCommand("/generate 129 3", 12345L, "username");
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response);
     }
 
@@ -73,7 +77,7 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandGenerateInvalidComplexity() {
-        String response = commandService.performCommand("/generate 15 4", 12345L);
+        String response = commandService.performCommand("/generate 15 4", 12345L, "username");
         String expectedResponse = "Сложность должна быть от 1 до 3, где:\n" +
                 "1 - простой пароль;\n" +
                 "2 - пароль средней сложности;\n" +
@@ -87,7 +91,7 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandSaveWithDescription() {
-        String response = commandService.performCommand("/save pass desc", 12345L);
+        String response = commandService.performCommand("/save pass desc", 12345L, "username");
         Assertions.assertEquals("Пароль успешно сохранён", response);
     }
 
@@ -96,7 +100,7 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandSaveWithoutDescription() {
-        String response = commandService.performCommand("/save pass", 12345L);
+        String response = commandService.performCommand("/save pass", 12345L, "username");
         Assertions.assertEquals("Пароль успешно сохранён", response);
     }
 
@@ -113,7 +117,7 @@ class CommandServiceTest {
         Mockito.when(encodeService.decryptData("pass1")).thenReturn("dec1");
         Mockito.when(encodeService.decryptData("pass2")).thenReturn("dec2");
 
-        String response = commandService.performCommand("/list", 12345L);
+        String response = commandService.performCommand("/list", 12345L, "username");
         Assertions.assertEquals("\n1) Сайт: desc1, Пароль: dec1\n" +
                 "2) Сайт: desc2, Пароль: dec2", response);
     }
@@ -132,7 +136,7 @@ class CommandServiceTest {
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
 
-        String response = commandService.performCommand("/del 1", 12345L);
+        String response = commandService.performCommand("/del 1", 12345L, "username");
         Assertions.assertEquals("Удалён пароль для сайта site", response);
         Mockito.verify(passwordService).deletePassword(passUuid);
     }
@@ -151,7 +155,7 @@ class CommandServiceTest {
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
 
-        String response = commandService.performCommand("/del 2", 12345L);
+        String response = commandService.performCommand("/del 2", 12345L, "username");
         Assertions.assertEquals("Не найден пароль с id 2", response);
     }
 
@@ -169,7 +173,7 @@ class CommandServiceTest {
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
 
-        String response = commandService.performCommand("/del -2", 12345L);
+        String response = commandService.performCommand("/del -2", 12345L, "username");
         Assertions.assertEquals("Не найден пароль с id -2", response);
     }
 
@@ -189,7 +193,7 @@ class CommandServiceTest {
         Mockito.when(passwordService.generatePasswordWithComplexity(12, 2)).thenReturn("newPass");
         Mockito.when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
 
-        String response = commandService.performCommand("/edit 1 12 2 updDesc", 12345L);
+        String response = commandService.performCommand("/edit 1 12 2 updDesc", 12345L, "username");
 
         Assertions.assertEquals("Обновлён пароль для updDesc: newPass", response);
     }
@@ -210,7 +214,7 @@ class CommandServiceTest {
         Mockito.when(passwordService.generatePasswordWithComplexity(12, 2)).thenReturn("newPass");
         Mockito.when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
 
-        String response = commandService.performCommand("/edit 1 12 2", 12345L);
+        String response = commandService.performCommand("/edit 1 12 2", 12345L, "username");
 
         Assertions.assertEquals("Обновлён пароль для site: newPass", response);
     }
@@ -230,7 +234,7 @@ class CommandServiceTest {
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
 
-        String response = commandService.performCommand("/edit 1 129 2 updDesc", 12345L);
+        String response = commandService.performCommand("/edit 1 129 2 updDesc", 12345L, "username");
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response);
     }
 
@@ -249,7 +253,7 @@ class CommandServiceTest {
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
 
-        String response = commandService.performCommand("/edit 1 12 4 updDesc", 12345L);
+        String response = commandService.performCommand("/edit 1 12 4 updDesc", 12345L, "username");
         String expectedResponse = "Сложность должна быть от 1 до 3, где:\n" +
                 "1 - простой пароль;\n" +
                 "2 - пароль средней сложности;\n" +
@@ -272,7 +276,7 @@ class CommandServiceTest {
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
 
-        String response = commandService.performCommand("/edit 2 10 2 updDesc", 12345L);
+        String response = commandService.performCommand("/edit 2 10 2 updDesc", 12345L, "username");
         Assertions.assertEquals("Не найден пароль с id 2", response);
     }
 
@@ -281,7 +285,7 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandEditInvalidCommand() {
-        String response = commandService.performCommand("/edit 2 10 2 15 14", 12345L);
+        String response = commandService.performCommand("/edit 2 10 2 15 14", 12345L, "username");
         Assertions.assertEquals("Введена некорректная команда! Справка: /help", response);
     }
 
@@ -290,7 +294,7 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandHelp() {
-        String response = commandService.performCommand("/help", 12345L);
+        String response = commandService.performCommand("/help", 12345L, "username");
         String expectedResponse = "Здравствуйте. Я бот, который поможет Вам генерировать и управлять паролями.\n\n" +
                 "Доступны следующие команды:\n" +
                 "- /generate [length] [complexity] – Генерировать пароль длиной [length] символов и сложностью [complexity] (1, 2 или 3, где 1 - простой, 3 - сложный);\n" +
@@ -308,7 +312,7 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandInvalidCommand() {
-        String response = commandService.performCommand("/invalid 123", 12345L);
+        String response = commandService.performCommand("/invalid 123", 12345L, "username");
         Assertions.assertEquals("Введена некорректная команда! Справка: /help", response);
     }
 }

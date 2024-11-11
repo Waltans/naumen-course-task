@@ -121,7 +121,7 @@ public class PasswordService {
         boolean passwordMatch = false;
         String password = "";
         while (!passwordMatch) {
-            password = generatePasswordWithComplexity(length, chars);
+            password = generatePassword(length, chars);
             passwordMatch = matchPassword(complexity, password);
         }
 
@@ -151,7 +151,7 @@ public class PasswordService {
      * @param chars - допустимые символы для пароля
      * @return сгенерированный пароль
      */
-    private String generatePasswordWithComplexity(int length, String chars) {
+    private String generatePassword(int length, String chars) {
         StringBuilder password = new StringBuilder(length);
 
         for (int i = 0; i < length; i++) {

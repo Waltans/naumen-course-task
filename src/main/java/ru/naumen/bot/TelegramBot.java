@@ -18,13 +18,11 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final Logger log = LoggerFactory.getLogger(TelegramBot.class);
-    private final UserService userService;
     private final CommandService commandService;
     private final String botName;
 
     public TelegramBot(@Value("${bot.token}") String botToken, UserService userService, CommandService commandService, @Value("${bot.name}") String botName) {
         super(botToken);
-        this.userService = userService;
         this.commandService = commandService;
         this.botName = botName;
     }
@@ -43,11 +41,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             long userId = update.getMessage().getFrom().getId();
             String username = update.getMessage().getFrom().getUserName();
 
-            if (!userService.isUserExists(userId)) {
-                userService.createUser(userId, username);
-            }
-
-            String response = commandService.performCommand(messageText, userId);
+            String response = commandService.performCommand(messageText, userId, username);
             sendMessageToChat(response, chatId);
         }
     }

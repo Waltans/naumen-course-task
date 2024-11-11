@@ -21,7 +21,7 @@ class BotInitializer {
     private final TelegramBot telegramBot;
 
     @Autowired
-    public BotInitializer(TelegramBot telegramBot) {
+    private BotInitializer(TelegramBot telegramBot) {
         this.telegramBot = telegramBot;
     }
 

@@ -1,12 +1,12 @@
 package ru.naumen.service;
 
-import ru.naumen.exception.UserNotFoundException;
-import ru.naumen.model.User;
-import ru.naumen.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.model.User;
+import ru.naumen.repository.UserRepository;
 
 /**
  * Класс для работы с пользователями
@@ -22,17 +22,21 @@ public class UserService {
     }
 
     /**
-     * Создаёт пользователя и сохраняет в БД
+     * Создаёт пользователя и сохраняет в БД, если его ещё нет
      *
      * @param telegramId ID пользователя в telegram
      * @param name       имя пользоваетля
      */
     @Transactional
-    public void createUser(long telegramId, String name) {
-        User user = new User(name, telegramId);
+    public void createUserIfUserNotExists(long telegramId, String name) {
+        if (userRepository.existsByTelegramId(telegramId)) {
+            log.trace("Пользователь с telegramId {} уже существует", telegramId);
+        } else {
+            User user = new User(name, telegramId);
 
-        userRepository.save(user);
-        log.info("Создан пользователь с telegram id {}", telegramId);
+            userRepository.save(user);
+            log.info("Создан пользователь с telegram id {}", telegramId);
+        }
     }
 
     /**
