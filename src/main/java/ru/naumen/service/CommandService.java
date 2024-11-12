@@ -4,13 +4,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.naumen.bot.Command;
-import ru.naumen.bot.Constants;
+import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static ru.naumen.bot.Constants.*;
+import static ru.naumen.model.State.*;
 
 /**
  * Класс для работы с командами бота
@@ -24,6 +27,13 @@ public class CommandService {
     private final UserService userService;
     private static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
     private static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
+    /**
+     * Отображение текущего состояния пользователя,
+     * ключи - пользователь,
+     * значение - отображение, где ключи состояние, а значения - полученные от пользователя данные
+     */
+    private final Map<Long, State> totalUserState = new ConcurrentHashMap<>();
+    private final Map<Long, List<String>> totalUserParams = new ConcurrentHashMap<>();
 
     public CommandService(EncodeService encodeService, PasswordService passwordService, UserService userService) {
         this.encodeService = encodeService;
@@ -34,8 +44,8 @@ public class CommandService {
     /**
      * Обрабатывает команду, введённую пользователем
      *
-     * @param message текст команды
-     * @param userId  ID пользователя
+     * @param message  текст команды
+     * @param userId   ID пользователя
      * @param username имя пользователя
      * @return ответ на команду
      */
@@ -43,36 +53,140 @@ public class CommandService {
         userService.createUserIfUserNotExists(userId, username);
 
         String[] splitCommand = message.split(" ");
-        if (!isValidCommand(splitCommand)) {
+        if (!isValidCommand(splitCommand, userId)) {
             return INCORRECT_COMMAND_RESPONSE;
         }
 
         return switch (splitCommand[0]) {
-            case "/generate" -> generatePassword(splitCommand);
-            case "/save" -> savePassword(splitCommand, userId);
-            case "/list" -> getUserPasswords(userId);
-            case "/del" -> deletePassword(splitCommand, userId);
-            case "/edit" -> updatePassword(splitCommand, userId);
-            case "/help", "/start" -> WELCOME_MESSAGE;
+            case Command.GENERATE, Command.GENERATE_KEYBOARD -> generatePassword(splitCommand, userId);
+            case Command.SAVE, Command.SAVE_KEYBOARD -> savePassword(splitCommand, userId);
+            case Command.LIST, Command.LIST_KEYBOARD -> getUserPasswords(userId);
+            case Command.DELETE, Command.DELETE_KEYBOARD -> deletePassword(splitCommand, userId);
+            case Command.EDIT, Command.EDIT_KEYBOARD -> updatePassword(splitCommand, userId);
+            case Command.HELP, Command.START, Command.HELP_KEYBOARD -> WELCOME_MESSAGE;
+            default -> performNotCommandMessage(splitCommand, userId);
+        };
+    }
+
+    private String performNotCommandMessage(String[] splitCommand, long userId) {
+        if (splitCommand.length > 1) {
+            return INCORRECT_COMMAND_RESPONSE;
+        }
+        final String command = splitCommand[0];
+        return switch (totalUserState.get(userId)) {
+            case GENERATION_STEP_1 -> getPasswordLength(command, userId, GENERATION_STEP_2);
+            case GENERATION_STEP_2 -> getComplexity(command, userId, NONE, null);
+            case SAVE_STEP_1 -> getPassword(command, userId);
+            case SAVE_STEP_2 -> getDescription(command, userId, NONE, null);
+            case EDIT_STEP_1 -> getIndexPassword(command, userId);
+            case EDIT_STEP_2 -> getPasswordLength(command, userId, EDIT_STEP_3);
+            case EDIT_STEP_3 -> getComplexity(command, userId, EDIT_STEP_4, ENTER_PASSWORD_DESCRIPTION);
+            case EDIT_STEP_4 -> getDescription(command, userId, NONE, null);
+            case DELETE_STEP_1 -> getIndexPassword(command, userId);
             default -> INCORRECT_COMMAND_RESPONSE;
         };
+    }
+
+    private String getIndexPassword(String index, long userId) {
+        totalUserParams.get(userId).add(index);
+        State currentState = totalUserState.get(userId);
+
+        if (currentState.equals(EDIT_STEP_1)) {
+            totalUserState.put(userId, EDIT_STEP_2);
+        } else if (currentState.equals(DELETE_STEP_1)) {
+            String[] splitCommand = new String[]{Command.DELETE, index};
+            return deletePassword(splitCommand, userId);
+        }
+
+        return ENTER_PASSWORD_LENGTH;
+    }
+
+    private String getDescription(String description, long userId, State nextState, String response) {
+        List<String> params = totalUserParams.get(userId);
+        params.add(description);
+        State currentState = totalUserState.get(userId);
+        totalUserState.put(userId, nextState);
+
+        if (currentState.equals(SAVE_STEP_2)) {
+            String[] splitCommand = {Command.SAVE, params.getFirst(), description};
+
+            return savePassword(splitCommand, userId);
+        } else if (currentState.equals(EDIT_STEP_4)) {
+            String[] splitCommand = {Command.EDIT, params.getFirst(), params.get(1), params.get(2), description};
+
+            return updatePassword(splitCommand, userId);
+        }
+
+        return response;
+    }
+
+    private String getPassword(String s, long userId) {
+        totalUserParams.get(userId).add(s);
+        totalUserState.put(userId, SAVE_STEP_2);
+
+        return ENTER_PASSWORD_DESCRIPTION;
+    }
+
+    private String getComplexity(String complexity, long userId, State nextState, String response) {
+        try {
+            checkComplexity(Integer.parseInt(complexity));
+            List<String> params = totalUserParams.get(userId);
+            params.add(complexity);
+            totalUserState.put(userId, nextState);
+            if (nextState == null) {
+                String[] splitCommand = {Command.EDIT, params.getFirst(), complexity};
+
+                return generatePassword(splitCommand, userId);
+            }
+
+            return response;
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
+    }
+
+    private String getPasswordLength(String length, long userId, State state) {
+        try {
+            checkLength(Integer.parseInt(length));
+            totalUserState.put(userId, state);
+            totalUserParams.get(userId).add(length);
+            return ENTER_PASSWORD_COMPLEXITY;
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
     }
 
     /**
      * Проверяет корректность команды
      *
      * @param splitCommand разделённая по пробелам команда
+     * @param userId
      * @return true, если команда и её параметры корректны, иначе false
      */
-    private boolean isValidCommand(String[] splitCommand) {
+    private boolean isValidCommand(String[] splitCommand, long userId) {
         String command = splitCommand[0];
         int paramsCount = splitCommand.length - 1;
-        if (Command.commandsAndNumberOfParams .containsKey(command) &&
-                Command.commandsAndNumberOfParams.get(command).contains(paramsCount)) {
+
+        State state = totalUserState.get(userId);
+        if (state != null && !state.equals(NONE)) {
+            return switch (state) {
+                case SAVE_STEP_1, SAVE_STEP_2, EDIT_STEP_4 -> true;
+                case GENERATION_STEP_1, GENERATION_STEP_2, EDIT_STEP_1, EDIT_STEP_2, EDIT_STEP_3, DELETE_STEP_1 ->
+                        isNumber(command);
+                default -> false;
+            };
+        }
+
+        List<Integer> params = Command.commandsAndNumberOfParams.get(command) == null
+                ? Command.commandsAndNumberOfParams.getOrDefault(Command.commandKeyMapping.get(command), List.of())
+                : Command.commandsAndNumberOfParams.get(command);
+
+        if (params != null &&
+                params.contains(paramsCount)) {
             return switch (command) {
-                case "/generate" -> checkGenerationCommandParams(splitCommand);
-                case "/del" -> checkDeleteCommandParams(splitCommand);
-                case "/edit" -> checkEditCommandParams(splitCommand);
+                case Command.GENERATE -> splitCommand.length == 1 || checkGenerationCommandParams(splitCommand);
+                case Command.DELETE -> splitCommand.length == 1 || checkDeleteCommandParams(splitCommand);
+                case Command.EDIT -> splitCommand.length == 1 || checkEditCommandParams(splitCommand);
                 default -> true;
             };
         }
@@ -164,7 +278,14 @@ public class CommandService {
      * @param splitCommand разделённая по пробелам команда
      * @return сообщение с паролем или с ошибкой
      */
-    private String generatePassword(String[] splitCommand) {
+    private String generatePassword(String[] splitCommand, Long userId) {
+
+        if (splitCommand.length == 1) {
+            totalUserState.put(userId, GENERATION_STEP_1);
+            totalUserParams.put(userId, new ArrayList<>());
+            return ENTER_PASSWORD_LENGTH;
+        }
+
         int length = Integer.parseInt(splitCommand[1]);
         int complexity = Integer.parseInt(splitCommand[2]);
 
@@ -175,6 +296,7 @@ public class CommandService {
             return e.getMessage();
         }
         String password = passwordService.generatePasswordWithComplexity(length, complexity);
+        totalUserState.put(userId, NONE);
 
         return String.format(PASSWORD_GENERATED_MESSAGE, password);
     }
@@ -187,6 +309,13 @@ public class CommandService {
      * @return сообщение о сохранении
      */
     private String savePassword(String[] splitCommand, long userId) {
+        if (splitCommand.length == 1) {
+            totalUserState.put(userId, SAVE_STEP_1);
+            totalUserParams.put(userId, new ArrayList<>());
+
+            return ENTER_PASSWORD;
+        }
+
         String password = splitCommand[1];
         if (splitCommand.length == SAVE_COMMAND_LENGTH_NO_DESCRIPTION) {
             passwordService.createUserPassword(password, "Неизвестно", userId);
@@ -194,6 +323,7 @@ public class CommandService {
             String description = splitCommand[2];
             passwordService.createUserPassword(password, description, userId);
         }
+        totalUserParams.put(userId, new ArrayList<>());
 
         return PASSWORD_SAVED_MESSAGE;
     }
@@ -228,6 +358,13 @@ public class CommandService {
      * @return сообщение об удалении или об ошибке в случае некорректного ID
      */
     private String deletePassword(String[] splitCommand, long userId) {
+        if (splitCommand.length == 1) {
+            totalUserState.put(userId, DELETE_STEP_1);
+            totalUserParams.put(userId, new ArrayList<>());
+
+            return ENTER_PASSWORD_INDEX;
+        }
+
         int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
         if (passwordIndex > userPasswords.size() || passwordIndex <= 0) {
@@ -239,6 +376,8 @@ public class CommandService {
         String uuid = userPasswords.get(passwordIndexInSystem).getUuid();
         String description = userPasswords.get(passwordIndexInSystem).getDescription();
         passwordService.deletePassword(uuid);
+        totalUserState.put(userId, NONE);
+
         return String.format(PASSWORD_DELETED_MESSAGE, description);
     }
 
@@ -251,6 +390,13 @@ public class CommandService {
      * @return сообщение с паролем или с ошибкой
      */
     private String updatePassword(String[] splitCommand, long userId) {
+        if (splitCommand.length == 1) {
+            totalUserState.put(userId, EDIT_STEP_1);
+            totalUserParams.put(userId, new ArrayList<>());
+
+            return ENTER_PASSWORD_INDEX;
+        }
+
         int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
@@ -283,6 +429,8 @@ public class CommandService {
         }
 
         passwordService.updatePassword(uuid, description, newPassword);
+        totalUserState.put(userId, NONE);
+
         return String.format(PASSWORD_UPDATED_MESSAGE, description, newPassword);
     }
 }

@@ -62,34 +62,39 @@ public class TelegramBot extends TelegramLongPollingBot {
         SendMessage tgMessage = new SendMessage();
         tgMessage.setText(message);
         tgMessage.setChatId(id);
+
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         tgMessage.setReplyMarkup(replyKeyboardMarkup);
         replyKeyboardMarkup.setSelective(true);
         replyKeyboardMarkup.setResizeKeyboard(true);
         replyKeyboardMarkup.setOneTimeKeyboard(true);
 
-        List<KeyboardRow> keyboardRows = new ArrayList<>();
-
-        KeyboardRow keyboardRowFirst = new KeyboardRow();
-        keyboardRowFirst.add(new KeyboardButton("Генерировать пароль"));
-        keyboardRowFirst.add(new KeyboardButton("Сохранить"));
-        keyboardRowFirst.add(new KeyboardButton("Пароли"));
-
-        KeyboardRow keyboardRowSecond = new KeyboardRow();
-        keyboardRowSecond.add(new KeyboardButton("Удалить"));
-        keyboardRowSecond.add(new KeyboardButton("Изменить"));
-        keyboardRowSecond.add(new KeyboardButton("Помощь"));
-
-        keyboardRows.add(keyboardRowFirst);
-        keyboardRows.add(keyboardRowSecond);
+        List<KeyboardRow> keyboardRows = mainKeyboard();
 
         replyKeyboardMarkup.setKeyboard(keyboardRows);
         try {
-
             execute(tgMessage);
         } catch (TelegramApiException e) {
             log.error("Message could not be sent", e);
         }
+    }
+
+    private List<KeyboardRow> mainKeyboard() {
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow keyboardRowFirst = new KeyboardRow();
+        keyboardRowFirst.add(new KeyboardButton(Command.GENERATE_KEYBOARD));
+        keyboardRowFirst.add(new KeyboardButton(Command.SAVE_KEYBOARD));
+        keyboardRowFirst.add(new KeyboardButton(Command.LIST_KEYBOARD));
+
+        KeyboardRow keyboardRowSecond = new KeyboardRow();
+        keyboardRowSecond.add(new KeyboardButton(Command.DELETE_KEYBOARD));
+        keyboardRowSecond.add(new KeyboardButton(Command.EDIT_KEYBOARD));
+        keyboardRowSecond.add(new KeyboardButton(Command.HELP));
+
+        keyboardRows.add(keyboardRowFirst);
+        keyboardRows.add(keyboardRowSecond);
+        return keyboardRows;
     }
 
     @Override
