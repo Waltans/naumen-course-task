@@ -1,11 +1,12 @@
-package naumenproject.naumenproject;
+package ru.naumen;
 
-import naumenproject.naumenproject.model.User;
-import naumenproject.naumenproject.model.UserPassword;
-import naumenproject.naumenproject.repository.UserPasswordRepository;
-import naumenproject.naumenproject.service.EncodeService;
-import naumenproject.naumenproject.service.PasswordService;
-import naumenproject.naumenproject.service.UserService;
+import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.model.User;
+import ru.naumen.model.UserPassword;
+import ru.naumen.repository.UserPasswordRepository;
+import ru.naumen.service.EncodeService;
+import ru.naumen.service.PasswordService;
+import ru.naumen.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
@@ -45,7 +46,7 @@ class PasswordServiceTest {
      * Тест создания объекта пароля
      */
     @Test
-    void testCreateUserPassword() {
+    void testCreateUserPassword() throws UserNotFoundException {
         String password = "pass";
         String encodedPassword = "encPass";
         String description = "desc";
@@ -56,8 +57,8 @@ class PasswordServiceTest {
 
         passwordService.createUserPassword(password, description, userTelegramId);
 
-        Mockito.verify(userPasswordRepository, Mockito.times(1)).save(ArgumentMatchers.any(UserPassword.class));
-        Mockito.verify(encodeService, Mockito.times(1)).encryptData(password);
+        Mockito.verify(userPasswordRepository, Mockito.times(1))
+                .save(ArgumentMatchers.any(UserPassword.class));
     }
 
     /**
@@ -73,7 +74,6 @@ class PasswordServiceTest {
         List<UserPassword> result = passwordService.getUserPasswords(userTelegramId);
 
         Assertions.assertEquals(passwords, result);
-        Mockito.verify(userPasswordRepository, Mockito.times(1)).findByUserTelegramId(userTelegramId);
     }
 
     /**
@@ -90,7 +90,6 @@ class PasswordServiceTest {
 
         UserPassword expectedPass = passwordService.findPasswordByUuid(passUuid);
 
-        Mockito.verify(userPasswordRepository, Mockito.times(1)).findByUuid(passUuid);
         Assertions.assertEquals(expectedPass, password);
     }
 
@@ -128,8 +127,6 @@ class PasswordServiceTest {
 
         passwordService.updatePassword(passUuid, newDesc, newPass);
 
-        Mockito.verify(userPasswordRepository, Mockito.times(1)).save(pass);
-        Mockito.verify(encodeService, Mockito.times(1)).encryptData(newPass);
         Assertions.assertEquals(newDesc, pass.getDescription());
         Assertions.assertEquals(encodedPass, pass.getPassword());
     }

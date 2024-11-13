@@ -1,6 +1,6 @@
-package naumenproject.naumenproject.configuration;
+package ru.naumen.initialize;
 
-import naumenproject.naumenproject.service.BotService;
+import ru.naumen.bot.TelegramBot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,17 +12,17 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 /**
- * Компонент по инициализации бота
+ * Инициализатор бота
  */
 @Component
-public class BotInitialize {
+class BotInitializer {
 
-    private final Logger log = LoggerFactory.getLogger(BotInitialize.class);
-    private final BotService botService;
+    private final Logger log = LoggerFactory.getLogger(BotInitializer.class);
+    private final TelegramBot telegramBot;
 
     @Autowired
-    public BotInitialize(BotService botService) {
-        this.botService = botService;
+    private BotInitializer(TelegramBot telegramBot) {
+        this.telegramBot = telegramBot;
     }
 
     /**
@@ -32,10 +32,10 @@ public class BotInitialize {
     public void initialize() {
         try{
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-            telegramBotsApi.registerBot(botService);
+            telegramBotsApi.registerBot(telegramBot);
         } catch (TelegramApiException e) {
-            log.error("Error initializing Bot {}", e.getMessage());
-            e.printStackTrace();
+            log.error("Error initializing Bot", e);
+            System.exit(1);
         }
     }
 

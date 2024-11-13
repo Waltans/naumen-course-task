@@ -1,4 +1,4 @@
-package naumenproject.naumenproject.model;
+package ru.naumen.model;
 
 import jakarta.persistence.*;
 
@@ -46,6 +46,12 @@ public class UserPassword {
 
     public UserPassword() {
 
+    }
+
+    public UserPassword(String description, String password, User user) {
+        this.description = description;
+        this.password = password;
+        this.user = user;
     }
 
     public String getUuid() {

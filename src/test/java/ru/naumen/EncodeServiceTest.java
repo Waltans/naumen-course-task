@@ -1,10 +1,9 @@
-package naumenproject.naumenproject;
+package ru.naumen;
 
-import naumenproject.naumenproject.service.EncodeService;
+import ru.naumen.service.EncodeService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Класс модульных тестов для CommandService
@@ -18,9 +17,7 @@ public class EncodeServiceTest {
      */
     @BeforeEach
     void setUp() {
-        encodeService = new EncodeService();
-        String TEST_KEY = "BC1D9VG58QKH6CYK99DGB1UBESR8VRXD";
-        ReflectionTestUtils.setField(encodeService, "secretKey", TEST_KEY);
+        encodeService = new EncodeService("BC1D9VG58QKH6CYK99DGB1UBESR8VRXD");
     }
 
     /**

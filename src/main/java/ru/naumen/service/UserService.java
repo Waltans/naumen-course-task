@@ -1,11 +1,12 @@
-package naumenproject.naumenproject.service;
+package ru.naumen.service;
 
-import naumenproject.naumenproject.model.User;
-import naumenproject.naumenproject.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.model.User;
+import ru.naumen.repository.UserRepository;
 
 /**
  * Класс для работы с пользователями
@@ -21,16 +22,14 @@ public class UserService {
     }
 
     /**
-     * Создаёт пользователя и сохраняет в БД
+     * Создаёт пользователя и сохраняет в БД или обновляет его
      *
      * @param telegramId ID пользователя в telegram
      * @param name       имя пользоваетля
      */
     @Transactional
     public void createUser(long telegramId, String name) {
-        User user = new User();
-        user.setUsername(name);
-        user.setTelegramId(telegramId);
+        User user = new User(name, telegramId);
 
         userRepository.save(user);
         log.info("Создан пользователь с telegram id {}", telegramId);
@@ -42,11 +41,11 @@ public class UserService {
      * @param telegramId telegram ID пользователя
      */
     @Transactional(readOnly = true)
-    public User getUserByTelegramId(long telegramId) {
+    public User getUserByTelegramId(long telegramId) throws UserNotFoundException {
         User user = userRepository.findByTelegramId(telegramId);
 
         if (user == null) {
-            throw new IllegalArgumentException(String.format("Пользователь с id %s не найден", telegramId));
+            throw new UserNotFoundException(String.format("Пользователь с id %s не найден", telegramId));
         } else {
             log.debug("Найден пользователь с id {}", telegramId);
             return user;
@@ -60,7 +59,7 @@ public class UserService {
      * @return true, если пользователь существует, иначе - false
      */
     @Transactional(readOnly = true)
-    public boolean checkUserExistsByTelegramId(long telegramId) {
+    public boolean isUserExists(long telegramId) {
         return userRepository.existsByTelegramId(telegramId);
     }
 }
