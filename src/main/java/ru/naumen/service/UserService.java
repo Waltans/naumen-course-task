@@ -22,21 +22,17 @@ public class UserService {
     }
 
     /**
-     * Создаёт пользователя и сохраняет в БД, если его ещё нет
+     * Создаёт пользователя и сохраняет в БД или обновляет его
      *
      * @param telegramId ID пользователя в telegram
      * @param name       имя пользоваетля
      */
     @Transactional
-    public void createUserIfUserNotExists(long telegramId, String name) {
-        if (userRepository.existsByTelegramId(telegramId)) {
-            log.trace("Пользователь с telegramId {} уже существует", telegramId);
-        } else {
-            User user = new User(name, telegramId);
+    public void createUser(long telegramId, String name) {
+        User user = new User(name, telegramId);
 
-            userRepository.save(user);
-            log.info("Создан пользователь с telegram id {}", telegramId);
-        }
+        userRepository.save(user);
+        log.info("Создан пользователь с telegram id {}", telegramId);
     }
 
     /**

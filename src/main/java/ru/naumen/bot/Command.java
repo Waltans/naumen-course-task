@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public class Command {
     public static final String GENERATE = "/generate";
-    public static final String GENERATE_KEYBOARD = "Генерировать пароль";
+    public static final String GENERATE_KEYBOARD = "Генерировать";
     public static final String EDIT = "/edit";
     public static final String EDIT_KEYBOARD = "Изменить";
     public static final String DELETE = "/del";
@@ -20,6 +20,9 @@ public class Command {
     public static final String HELP = "/help";
     public static final String HELP_KEYBOARD = "Помощь";
     public static final String START = "/start";
+    public static final String COMPLEXITY_1 = "1";
+    public static final String COMPLEXITY_2 = "2";
+    public static final String COMPLEXITY_3 = "3";
     /**
      * Отображение, в которой ключи - команды,
      * значения - список допустимых количеств параметров, передаваемых вместе с командой.
@@ -33,6 +36,9 @@ public class Command {
             DELETE, List.of(1, 0),
             HELP, List.of(0)
     );
+    /**
+     * Отображение, где кнопки соотносятся с командами
+     */
     public static final Map<String, String> commandKeyMapping = Map.of(
             GENERATE_KEYBOARD, GENERATE,
             EDIT_KEYBOARD, EDIT,
