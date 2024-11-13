@@ -32,11 +32,11 @@ class UserServiceTest {
      * Тест создания объекта пользователя
      */
     @Test
-    void testCreateUserIfUserNotExists() {
+    void testCreateUser() {
         long telegramId = 12345L;
         String name = "TestUser";
 
-        userService.createUserIfUserNotExists(telegramId, name);
+        userService.createUser(telegramId, name);
 
         Mockito.verify(userRepository, Mockito.times(1)).save(ArgumentMatchers.any(User.class));
     }

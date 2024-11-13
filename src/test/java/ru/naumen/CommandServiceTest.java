@@ -1,10 +1,5 @@
 package ru.naumen;
 
-import ru.naumen.model.User;
-import ru.naumen.model.UserPassword;
-import ru.naumen.service.CommandService;
-import ru.naumen.service.EncodeService;
-import ru.naumen.service.PasswordService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +7,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import ru.naumen.bot.Response;
+import ru.naumen.model.State;
+import ru.naumen.model.User;
+import ru.naumen.model.UserPassword;
+import ru.naumen.service.CommandService;
+import ru.naumen.service.EncodeService;
+import ru.naumen.service.PasswordService;
 import ru.naumen.service.UserService;
 
 import java.util.ArrayList;
@@ -50,8 +52,9 @@ class CommandServiceTest {
     void testPerformCommandGenerate() {
         Mockito.when(passwordService.generatePasswordWithComplexity(12, 3)).thenReturn("generatedPassword");
 
-        String response = commandService.performCommand("/generate 12 3", 12345L, "username");
-        Assertions.assertEquals("Сгенерирован пароль: generatedPassword", response);
+        Response response = commandService.performCommand("/generate 12 3", 12345L, "username");
+        Assertions.assertEquals("Сгенерирован пароль: generatedPassword", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -59,8 +62,9 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandGenerateLowLength() {
-        String response = commandService.performCommand("/generate 4 3", 12345L, "username");
-        Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response);
+        Response response = commandService.performCommand("/generate 4 3", 12345L, "username");
+        Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -68,8 +72,9 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandGenerateHighLength() {
-        String response = commandService.performCommand("/generate 129 3", 12345L, "username");
-        Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response);
+        Response response = commandService.performCommand("/generate 129 3", 12345L, "username");
+        Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -77,13 +82,14 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandGenerateInvalidComplexity() {
-        String response = commandService.performCommand("/generate 15 4", 12345L, "username");
+        Response response = commandService.performCommand("/generate 15 4", 12345L, "username");
         String expectedResponse = "Сложность должна быть от 1 до 3, где:\n" +
                 "1 - простой пароль;\n" +
                 "2 - пароль средней сложности;\n" +
                 "3 - сложный пароль.";
 
-        Assertions.assertEquals(expectedResponse, response);
+        Assertions.assertEquals(expectedResponse, response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -91,8 +97,9 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandSaveWithDescription() {
-        String response = commandService.performCommand("/save pass desc", 12345L, "username");
-        Assertions.assertEquals("Пароль успешно сохранён", response);
+        Response response = commandService.performCommand("/save pass desc", 12345L, "username");
+        Assertions.assertEquals("Пароль успешно сохранён", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -100,8 +107,9 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandSaveWithoutDescription() {
-        String response = commandService.performCommand("/save pass", 12345L, "username");
-        Assertions.assertEquals("Пароль успешно сохранён", response);
+        Response response = commandService.performCommand("/save pass", 12345L, "username");
+        Assertions.assertEquals("Пароль успешно сохранён", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -117,9 +125,10 @@ class CommandServiceTest {
         Mockito.when(encodeService.decryptData("pass1")).thenReturn("dec1");
         Mockito.when(encodeService.decryptData("pass2")).thenReturn("dec2");
 
-        String response = commandService.performCommand("/list", 12345L, "username");
+        Response response = commandService.performCommand("/list", 12345L, "username");
         Assertions.assertEquals("\n1) Сайт: desc1, Пароль: dec1\n" +
-                "2) Сайт: desc2, Пароль: dec2", response);
+                "2) Сайт: desc2, Пароль: dec2", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -136,8 +145,9 @@ class CommandServiceTest {
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
 
-        String response = commandService.performCommand("/del 1", 12345L, "username");
-        Assertions.assertEquals("Удалён пароль для сайта site", response);
+        Response response = commandService.performCommand("/del 1", 12345L, "username");
+        Assertions.assertEquals("Удалён пароль для сайта site", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(passwordService).deletePassword(passUuid);
     }
 
@@ -155,8 +165,9 @@ class CommandServiceTest {
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
 
-        String response = commandService.performCommand("/del 2", 12345L, "username");
-        Assertions.assertEquals("Не найден пароль с id 2", response);
+        Response response = commandService.performCommand("/del 2", 12345L, "username");
+        Assertions.assertEquals("Не найден пароль с id 2", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -173,8 +184,9 @@ class CommandServiceTest {
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
 
-        String response = commandService.performCommand("/del -2", 12345L, "username");
-        Assertions.assertEquals("Не найден пароль с id -2", response);
+        Response response = commandService.performCommand("/del -2", 12345L, "username");
+        Assertions.assertEquals("Не найден пароль с id -2", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -193,9 +205,10 @@ class CommandServiceTest {
         Mockito.when(passwordService.generatePasswordWithComplexity(12, 2)).thenReturn("newPass");
         Mockito.when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
 
-        String response = commandService.performCommand("/edit 1 12 2 updDesc", 12345L, "username");
+        Response response = commandService.performCommand("/edit 1 12 2 updDesc", 12345L, "username");
 
-        Assertions.assertEquals("Обновлён пароль для updDesc: newPass", response);
+        Assertions.assertEquals("Обновлён пароль для updDesc: newPass", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -214,9 +227,10 @@ class CommandServiceTest {
         Mockito.when(passwordService.generatePasswordWithComplexity(12, 2)).thenReturn("newPass");
         Mockito.when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
 
-        String response = commandService.performCommand("/edit 1 12 2", 12345L, "username");
+        Response response = commandService.performCommand("/edit 1 12 2", 12345L, "username");
 
-        Assertions.assertEquals("Обновлён пароль для site: newPass", response);
+        Assertions.assertEquals("Обновлён пароль для site: newPass", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -234,8 +248,9 @@ class CommandServiceTest {
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
 
-        String response = commandService.performCommand("/edit 1 129 2 updDesc", 12345L, "username");
-        Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response);
+        Response response = commandService.performCommand("/edit 1 129 2 updDesc", 12345L, "username");
+        Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -253,13 +268,14 @@ class CommandServiceTest {
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
 
-        String response = commandService.performCommand("/edit 1 12 4 updDesc", 12345L, "username");
+        Response response = commandService.performCommand("/edit 1 12 4 updDesc", 12345L, "username");
         String expectedResponse = "Сложность должна быть от 1 до 3, где:\n" +
                 "1 - простой пароль;\n" +
                 "2 - пароль средней сложности;\n" +
                 "3 - сложный пароль.";
 
-        Assertions.assertEquals(expectedResponse, response);
+        Assertions.assertEquals(expectedResponse, response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -276,8 +292,9 @@ class CommandServiceTest {
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
 
-        String response = commandService.performCommand("/edit 2 10 2 updDesc", 12345L, "username");
-        Assertions.assertEquals("Не найден пароль с id 2", response);
+        Response response = commandService.performCommand("/edit 2 10 2 updDesc", 12345L, "username");
+        Assertions.assertEquals("Не найден пароль с id 2", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -285,8 +302,8 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandEditInvalidCommand() {
-        String response = commandService.performCommand("/edit 2 10 2 15 14", 12345L, "username");
-        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response);
+        Response response = commandService.performCommand("/edit 2 10 2 15 14", 12345L, "username");
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 
     /**
@@ -294,7 +311,7 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandHelp() {
-        String response = commandService.performCommand("/help", 12345L, "username");
+        Response response = commandService.performCommand("/help", 12345L, "username");
         String expectedResponse = "Здравствуйте. Я бот, который поможет Вам генерировать и управлять паролями.\n\n" +
                 "Доступны следующие команды:\n" +
                 "- /generate [length] [complexity] – Генерировать пароль длиной [length] символов и сложностью [complexity] (1, 2 или 3, где 1 - простой, 3 - сложный);\n" +
@@ -304,7 +321,8 @@ class CommandServiceTest {
                 "- /del [passwordID] – Удалить сохранённый пароль с ID [passwordID];\n" +
                 "- /help - Справка.";
 
-        Assertions.assertEquals(expectedResponse, response);
+        Assertions.assertEquals(expectedResponse, response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -312,7 +330,127 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandInvalidCommand() {
-        String response = commandService.performCommand("/invalid 123", 12345L, "username");
-        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response);
+        Response response = commandService.performCommand("/invalid 123", 12345L, "username");
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
+    }
+
+    /**
+     * Тест, когда генерация должна проходить успешно
+     */
+    @Test
+    void testPerformCommandGenerateKeyboard() {
+        Response firstStep = commandService.performCommand("Генерировать", 12345L, "username");
+        Response secondStep = commandService.performCommand("20", 12345L, "username");
+        Response thirdStep = commandService.performCommand("3", 12345L, "username");
+
+        Assertions.assertEquals("Введите длину пароля", firstStep.message());
+        Assertions.assertEquals(State.GENERATION_STEP_1, firstStep.botState());
+        Assertions.assertEquals("Выберите сложность пароля", secondStep.message());
+        Assertions.assertEquals(State.GENERATION_STEP_2, secondStep.botState());
+        Assertions.assertTrue(thirdStep.message().startsWith("Сгенерирован пароль:"));
+        Assertions.assertEquals(State.NONE, thirdStep.botState());
+    }
+
+    /**
+     * Тест генерации пароля, при неверных параметрах длины
+     */
+    @Test
+    void testPerformCommandGenerateKeyboard_lengthUnCorrect() {
+        Response firstStep = commandService.performCommand("Генерировать", 12345L, "username");
+        Response secondStep = commandService.performCommand("200", 12345L, "username");
+
+        Assertions.assertEquals("Введите длину пароля", firstStep.message());
+        Assertions.assertEquals(State.GENERATION_STEP_1, firstStep.botState());
+        Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", secondStep.message());
+        Assertions.assertEquals(State.NONE, secondStep.botState());
+    }
+
+    /**
+     * Тест генерации пароля, при неверных параметрах сложности
+     */
+    @Test
+    void testPerformCommandGenerateKeyboard_ComplexityUnCorrect() {
+        Response firstStep = commandService.performCommand("Генерировать", 12345L, "username");
+        Response secondStep = commandService.performCommand("20", 12345L, "username");
+        Response thirdStep = commandService.performCommand("4", 12345L, "username");
+
+        Assertions.assertEquals("Введите длину пароля", firstStep.message());
+        Assertions.assertEquals(State.GENERATION_STEP_1, firstStep.botState());
+        Assertions.assertEquals("Выберите сложность пароля", secondStep.message());
+        Assertions.assertEquals(State.GENERATION_STEP_2, secondStep.botState());
+        Assertions.assertEquals(
+                """
+                        Сложность должна быть от 1 до 3, где:
+                        1 - простой пароль;
+                        2 - пароль средней сложности;
+                        3 - сложный пароль.""", thirdStep.message());
+        Assertions.assertEquals(State.NONE, thirdStep.botState());
+    }
+
+    /**
+     * Тест, когда сохранение должно проходить успешно
+     */
+    @Test
+    void testPerformCommandSaveKeyboard() {
+        Response firstStep = commandService.performCommand("Сохранить", 12345L, "username");
+        Response secondStep = commandService.performCommand("password", 12345L, "username");
+        Response thirdStep = commandService.performCommand("description", 12345L, "username");
+
+        Assertions.assertEquals("Введите пароль", firstStep.message());
+        Assertions.assertEquals(State.SAVE_STEP_1, firstStep.botState());
+        Assertions.assertEquals("Введите описание пароля", secondStep.message());
+        Assertions.assertEquals(State.SAVE_STEP_2, secondStep.botState());
+        Assertions.assertEquals("Пароль успешно сохранён", thirdStep.message());
+        Assertions.assertEquals(State.NONE, thirdStep.botState());
+    }
+
+    /**
+     * Тест, когда изменение должно проходить успешно
+     */
+    @Test
+    void testPerformCommandEditKeyboard() {
+        User user = new User("userUuid", "name", 12345L, new ArrayList<>());
+        UserPassword password = new UserPassword("uuid", "description", "pass", user);
+
+        Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(List.of(password));
+        Mockito.when(passwordService.findPasswordByUuid("uuid")).thenReturn(password);
+
+        Response firstStep = commandService.performCommand("Изменить", 12345L, "username");
+        Response secondStep = commandService.performCommand("1", 12345L, "username");
+        Response thirdStep = commandService.performCommand("20", 12345L, "username");
+        Response fourStep = commandService.performCommand("2", 12345L, "username");
+        Response fiveStep = commandService.performCommand("description", 12345L, "username");
+
+        Assertions.assertEquals("Введите индекс пароля", firstStep.message());
+        Assertions.assertEquals(State.EDIT_STEP_1, firstStep.botState());
+        Assertions.assertEquals("Введите длину пароля", secondStep.message());
+        Assertions.assertEquals(State.EDIT_STEP_2, secondStep.botState());
+        Assertions.assertEquals("Выберите сложность пароля", thirdStep.message());
+        Assertions.assertEquals(State.EDIT_STEP_3, thirdStep.botState());
+        Assertions.assertEquals("Введите описание пароля", fourStep.message());
+        Assertions.assertEquals(State.EDIT_STEP_4, fourStep.botState());
+        Assertions.assertTrue(fiveStep.message().startsWith("Обновлён пароль для description"));
+        Assertions.assertEquals(State.NONE, fiveStep.botState());
+    }
+
+    /**
+     * Тест, когда удаление должно проходить успешно
+     */
+    @Test
+    void testPerformCommandDeleteKeyboard() {
+        User user = new User("userUuid", "name", 12345L, new ArrayList<>());
+        UserPassword password = new UserPassword("uuid", "description", "pass", user);
+
+        Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(List.of(password));
+        Mockito.when(passwordService.findPasswordByUuid("uuid")).thenReturn(password);
+
+        Response firstStep = commandService.performCommand("Удалить", 12345L, "username");
+        Response secondStep = commandService.performCommand("1", 12345L, "username");
+
+        Assertions.assertEquals("Введите индекс пароля", firstStep.message());
+        Assertions.assertEquals(State.DELETE_STEP_1, firstStep.botState());
+        Assertions.assertEquals("Удалён пароль для сайта description", secondStep.message());
+        Assertions.assertEquals(State.NONE,secondStep.botState());
+        Mockito.verify(passwordService).deletePassword("uuid");
     }
 }
