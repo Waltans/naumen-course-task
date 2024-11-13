@@ -76,6 +76,12 @@ public class TelegramBot extends TelegramLongPollingBot {
                 || response.botState().equals(State.EDIT_STEP_3)) {
             List<KeyboardRow> keyboardRows = complexityKeyBoard();
             replyKeyboardMarkup.setKeyboard(keyboardRows);
+        } else if (response.botState().equals(State.SORT_STEP_1)) {
+            List<KeyboardRow> keyboardRows = sortKeyBoard();
+            replyKeyboardMarkup.setKeyboard(keyboardRows);
+        } else if (response.botState().equals(State.IN_LIST)) {
+            List<KeyboardRow> keyboardRows = listKeyBoard();
+            replyKeyboardMarkup.setKeyboard(keyboardRows);
         } else {
             replyKeyboardMarkup.setKeyboard(List.of());
         }
@@ -100,6 +106,36 @@ public class TelegramBot extends TelegramLongPollingBot {
         return keyboardRows;
     }
 
+    private List<KeyboardRow> sortKeyBoard() {
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow keyboardRowFirst = new KeyboardRow();
+        keyboardRowFirst.add(new KeyboardButton(Command.DATE));
+        keyboardRowFirst.add(new KeyboardButton(Command.DESCRIPTION));
+
+        keyboardRows.add(keyboardRowFirst);
+
+        return keyboardRows;
+    }
+
+    private List<KeyboardRow> listKeyBoard() {
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow keyboardRowFirst = new KeyboardRow();
+        keyboardRowFirst.add(new KeyboardButton(Command.MENU_KEYBOARD));
+        keyboardRowFirst.add(new KeyboardButton(Command.DELETE_KEYBOARD));
+        keyboardRowFirst.add(new KeyboardButton(Command.EDIT_KEYBOARD));
+
+        KeyboardRow keyboardRowSecond = new KeyboardRow();
+        keyboardRowSecond.add(new KeyboardButton(Command.SORT_KEYBOARD));
+        keyboardRowSecond.add(new KeyboardButton(Command.FIND_KEYBOARD));
+
+        keyboardRows.add(keyboardRowFirst);
+        keyboardRows.add(keyboardRowSecond);
+
+        return keyboardRows;
+    }
+
     private List<KeyboardRow> mainKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
@@ -107,14 +143,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         keyboardRowFirst.add(new KeyboardButton(Command.GENERATE_KEYBOARD));
         keyboardRowFirst.add(new KeyboardButton(Command.SAVE_KEYBOARD));
         keyboardRowFirst.add(new KeyboardButton(Command.LIST_KEYBOARD));
-
-        KeyboardRow keyboardRowSecond = new KeyboardRow();
-        keyboardRowSecond.add(new KeyboardButton(Command.DELETE_KEYBOARD));
-        keyboardRowSecond.add(new KeyboardButton(Command.EDIT_KEYBOARD));
-        keyboardRowSecond.add(new KeyboardButton(Command.HELP_KEYBOARD));
+        keyboardRowFirst.add(new KeyboardButton(Command.HELP_KEYBOARD));
 
         keyboardRows.add(keyboardRowFirst);
-        keyboardRows.add(keyboardRowSecond);
         return keyboardRows;
     }
 
