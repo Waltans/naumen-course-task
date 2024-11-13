@@ -29,11 +29,16 @@ public class CommandService {
     private static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
     private static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
     /**
-     * Отображение текущего состояния пользователя,
+     * Используется как кеш, где хранятся состояния пользователя
      * ключи - пользователь,
-     * значение - отображение, где ключи состояние, а значения - полученные от пользователя данные
+     * значение - состояния
      */
     private final Map<Long, State> totalUserState = new ConcurrentHashMap<>();
+    /**
+     * Используется как кеш, где хранятся введенные параметры пользователя
+     * ключи - пользователь,
+     * значение - список параметров
+     */
     private final Map<Long, List<String>> totalUserParams = new ConcurrentHashMap<>();
 
     public CommandService(EncodeService encodeService, PasswordService passwordService, UserService userService) {
@@ -132,6 +137,11 @@ public class CommandService {
     private Response getIndexPassword(String index, long userId) {
         totalUserParams.get(userId).add(index);
         State currentState = totalUserState.get(userId);
+        List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
+
+        if (isNumber(index) && !isValidIndexPassword(userId, Integer.parseInt(index), userPasswords)) {
+            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index), NONE);
+        }
 
         if (currentState.equals(EDIT_STEP_1)) {
             totalUserState.put(userId, EDIT_STEP_2);
@@ -455,10 +465,11 @@ public class CommandService {
 
         int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
-        if (passwordIndex > userPasswords.size() || passwordIndex <= 0) {
-            totalUserState.put(userId, NONE);
+
+        if (!isValidIndexPassword(userId, passwordIndex, userPasswords)){
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
         }
+
         // Пользователь получает список начиная с 1
         int passwordIndexInSystem = passwordIndex - 1;
 
@@ -489,8 +500,7 @@ public class CommandService {
         int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        if (passwordIndex > userPasswords.size() || passwordIndex <= 0) {
-            totalUserState.put(userId, NONE);
+        if (!isValidIndexPassword(userId, passwordIndex, userPasswords)){
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
         }
 
@@ -527,5 +537,14 @@ public class CommandService {
         totalUserState.put(userId, NONE);
 
         return new Response(String.format(PASSWORD_UPDATED_MESSAGE, description, newPassword), NONE);
+    }
+
+    private boolean isValidIndexPassword(long userId, int passwordIndex, List<UserPassword> userPasswords) {
+        if (passwordIndex > userPasswords.size() || passwordIndex <= 0) {
+            totalUserState.put(userId, NONE);
+
+            return false;
+        }
+        return true;
     }
 }
