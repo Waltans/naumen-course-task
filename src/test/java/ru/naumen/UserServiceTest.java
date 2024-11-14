@@ -32,77 +32,47 @@ class UserServiceTest {
      * Тест создания объекта пользователя
      */
     @Test
-    void testCreateUser() {
-        long telegramId = 12345L;
+    void testCreateUserIfUserNotExists() {
+        long id = 12345L;
         String name = "TestUser";
 
-        userService.createUser(telegramId, name);
+        userService.createUserIfUserNotExists(id, name);
 
         Mockito.verify(userRepository, Mockito.times(1)).save(ArgumentMatchers.any(User.class));
     }
 
     /**
-     * Тест получения объекта пользователя по Telegram ID
+     * Тест получения объекта пользователя по ID
      */
     @Test
-    void testGetUserByTelegramId_UserExists() throws UserNotFoundException {
-        long telegramId = 12345L;
+    void testGetUserById_UserExists() throws UserNotFoundException {
+        long id = 12345L;
         User user = new User();
-        user.setTelegramId(telegramId);
+        user.setId(id);
         user.setUsername("TestUser");
 
-        Mockito.when(userRepository.findByTelegramId(telegramId)).thenReturn(user);
+        Mockito.when(userRepository.findById(id)).thenReturn(user);
 
-        User result = userService.getUserByTelegramId(telegramId);
+        User result = userService.getUserById(id);
 
         Assertions.assertEquals(user, result);
-        Mockito.verify(userRepository, Mockito.times(1)).findByTelegramId(telegramId);
+        Mockito.verify(userRepository, Mockito.times(1)).findById(id);
     }
 
     /**
-     * Тест получения объекта пользователя по Telegram ID, когда такого не существует
+     * Тест получения объекта пользователя по ID, когда такого не существует
      */
     @Test
-    void testGetUserByTelegramId_UserNotFound() {
-        long telegramId = 12345L;
+    void testGetUserById_UserNotFound() {
+        long id = 12345L;
 
-        Mockito.when(userRepository.findByTelegramId(telegramId)).thenReturn(null);
+        Mockito.when(userRepository.findById(id)).thenReturn(null);
 
         Exception exception = Assertions.assertThrows(UserNotFoundException.class, () -> {
-            userService.getUserByTelegramId(telegramId);
+            userService.getUserById(id);
         });
 
-        Assertions.assertEquals(String.format("Пользователь с id %s не найден", telegramId), exception.getMessage());
-        Mockito.verify(userRepository, Mockito.times(1)).findByTelegramId(telegramId);
-    }
-
-    /**
-     * Тест проверки существования пользователя по Telegram ID, если пользователь есть
-     */
-    @Test
-    void testCheckUserExistsByTelegramId_UserExists() {
-        long telegramId = 12345L;
-
-        Mockito.when(userRepository.existsByTelegramId(telegramId)).thenReturn(true);
-
-        boolean exists = userService.isUserExists(telegramId);
-
-        Assertions.assertTrue(exists);
-        Mockito.verify(userRepository, Mockito.times(1)).existsByTelegramId(telegramId);
-    }
-
-    /**
-     * Тест проверки существования пользователя по Telegram ID, когда такого не существует
-     */
-    @Test
-    void testCheckUserExistsByTelegramId_UserNotExists() {
-        long telegramId = 12345L;
-
-        Mockito.when(userRepository.existsByTelegramId(telegramId)).thenReturn(false);
-
-        boolean exists = userService.isUserExists(telegramId);
-
-        Assertions.assertFalse(exists);
-        Mockito.verify(userRepository, Mockito.times(1)).existsByTelegramId(telegramId);
+        Assertions.assertEquals(String.format("Пользователь с id %s не найден", id), exception.getMessage());
+        Mockito.verify(userRepository, Mockito.times(1)).findById(id);
     }
 }

@@ -37,6 +37,11 @@ public class DeleteHandler {
      * @return сообщение об удалении или об ошибке в случае некорректного ID
      */
     public Response deletePassword(String[] splitCommand, long userId) {
+        if (splitCommand.length != COMMAND_WITHOUT_PARAMS_LENGTH &&
+                !validationService.areNumbersDeleteCommandParams(splitCommand)) {
+            return new Response(INCORRECT_COMMAND_RESPONSE, NONE);
+        }
+
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.getTotalUserState().put(userId, DELETE_STEP_1);
             userStateCache.getTotalUserParams().put(userId, new ArrayList<>());
@@ -47,7 +52,7 @@ public class DeleteHandler {
         int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        if (validationService.isValidPasswordIndex(userId, passwordIndex, userPasswords)){
+        if (validationService.isValidPasswordIndex(userId, passwordIndex)){
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
         }
 

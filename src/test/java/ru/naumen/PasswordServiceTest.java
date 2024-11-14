@@ -1,5 +1,6 @@
 package ru.naumen;
 
+import ru.naumen.exception.PasswordNotFoundException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
@@ -50,12 +51,12 @@ class PasswordServiceTest {
         String password = "pass";
         String encodedPassword = "encPass";
         String description = "desc";
-        long userTelegramId = 12345L;
+        long userId = 12345L;
 
         Mockito.when(encodeService.encryptData(password)).thenReturn(encodedPassword);
-        Mockito.when(userService.getUserByTelegramId(userTelegramId)).thenReturn(new User());
+        Mockito.when(userService.getUserById(userId)).thenReturn(new User());
 
-        passwordService.createUserPassword(password, description, userTelegramId);
+        passwordService.createUserPassword(password, description, userId);
 
         Mockito.verify(userPasswordRepository, Mockito.times(1))
                 .save(ArgumentMatchers.any(UserPassword.class));
@@ -66,24 +67,39 @@ class PasswordServiceTest {
      */
     @Test
     void testGetUserPasswords() {
-        long userTelegramId = 12345L;
+        long userId = 12345L;
         List<UserPassword> passwords = List.of(new UserPassword(), new UserPassword());
 
-        Mockito.when(userPasswordRepository.findByUserTelegramId(userTelegramId)).thenReturn(passwords);
+        Mockito.when(userPasswordRepository.findByUserId(userId)).thenReturn(passwords);
 
-        List<UserPassword> result = passwordService.getUserPasswords(userTelegramId);
+        List<UserPassword> result = passwordService.getUserPasswords(userId);
 
         Assertions.assertEquals(passwords, result);
+    }
+
+    /**
+     * Тест подсчёта паролей
+     */
+    @Test
+    void testCountUserPasswords() {
+        long userId = 12345L;
+        List<UserPassword> passwords = List.of(new UserPassword(), new UserPassword());
+
+        Mockito.when(userPasswordRepository.countByUserId(userId)).thenReturn(passwords.size());
+
+        int result = passwordService.countPasswordsByUserId(userId);
+
+        Assertions.assertEquals(2, result);
     }
 
     /**
      * Тест поиска пароля по UUID
      */
     @Test
-    void testFindPasswordByUuid() {
+    void testFindPasswordByUuid() throws PasswordNotFoundException {
         String passUuid = UUID.randomUUID().toString();
-        String userUuid = UUID.randomUUID().toString();
-        User user = new User(userUuid, "name", 12345L, new ArrayList<>());
+        
+        User user = new User("name", 12345L, new ArrayList<>());
         UserPassword password = new UserPassword(passUuid, "desc", "pass", user);
 
         Mockito.when(userPasswordRepository.findByUuid(passUuid)).thenReturn(password);
@@ -112,9 +128,9 @@ class PasswordServiceTest {
      */
     @Test
     void testUpdatePassword() {
-        String userUuid = UUID.randomUUID().toString();
+        
         String passUuid = UUID.randomUUID().toString();
-        User user = new User(userUuid, "name", 12345L, new ArrayList<>());
+        User user = new User("name", 12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user);
 
         String newPass = "newPass";
@@ -134,12 +150,12 @@ class PasswordServiceTest {
     /**
      * Тест генерации пароля для сложности 1
      */
-    @Test
+    @RepeatedTest(20)
     void testGeneratePassword_WithComplexity_Level1() {
         int length = 10;
         int complexity = 1;
 
-        String password = passwordService.generatePasswordWithComplexity(length, complexity);
+        String password = passwordService.generatePassword(length, complexity);
 
         Assertions.assertEquals(length, password.length());
         Assertions.assertTrue(password.matches("^[a-z]+$"));
@@ -148,12 +164,12 @@ class PasswordServiceTest {
     /**
      * Тест генерации пароля для сложности 2
      */
-    @Test
+    @RepeatedTest(20)
     void testGeneratePassword_WithComplexity_Level2() {
         int length = 12;
         int complexity = 2;
 
-        String password = passwordService.generatePasswordWithComplexity(length, complexity);
+        String password = passwordService.generatePassword(length, complexity);
 
         Assertions.assertEquals(length, password.length());
         Assertions.assertTrue(password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]+$"));
@@ -162,12 +178,12 @@ class PasswordServiceTest {
     /**
      * Тест генерации пароля для сложности 3
      */
-    @Test
+    @RepeatedTest(20)
     void testGeneratePassword_WithComplexity_Level3() {
         int length = 15;
         int complexity = 3;
 
-        String password = passwordService.generatePasswordWithComplexity(length, complexity);
+        String password = passwordService.generatePassword(length, complexity);
 
         Assertions.assertEquals(length, password.length());
         Assertions.assertTrue(password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()\\-_=+<>?])[a-zA-Z\\d!@#$%^&*()\\-_=+<>?]+$"));
@@ -181,8 +197,8 @@ class PasswordServiceTest {
         int length = 10;
         int complexity = 2;
 
-        String password1 = passwordService.generatePasswordWithComplexity(length, complexity);
-        String password2 = passwordService.generatePasswordWithComplexity(length, complexity);
+        String password1 = passwordService.generatePassword(length, complexity);
+        String password2 = passwordService.generatePassword(length, complexity);
 
         Assertions.assertNotEquals(password1, password2);
     }

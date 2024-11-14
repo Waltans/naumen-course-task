@@ -36,6 +36,10 @@ public class GenerateHandler {
      * @return сообщение с паролем или с ошибкой
      */
     public Response generatePassword(String[] splitCommand, Long userId) {
+        if (splitCommand.length != COMMAND_WITHOUT_PARAMS_LENGTH &&
+                !validationService.areNumbersGenerationCommandParams(splitCommand)) {
+            return new Response(INCORRECT_COMMAND_RESPONSE, NONE);
+        }
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.getTotalUserState().put(userId, GENERATION_STEP_1);
             userStateCache.getTotalUserParams().put(userId, new ArrayList<>());
@@ -52,7 +56,7 @@ public class GenerateHandler {
             userStateCache.getTotalUserState().put(userId, NONE);
             return new Response(e.getMessage(), NONE);
         }
-        String password = passwordService.generatePasswordWithComplexity(length, complexity);
+        String password = passwordService.generatePassword(length, complexity);
         userStateCache.getTotalUserState().put(userId, NONE);
 
         return new Response(String.format(PASSWORD_GENERATED_MESSAGE, password), NONE);

@@ -30,7 +30,7 @@ public class StartHelpHandler {
      * @return Ответ с приветственным сообщением
      */
     public Response startCommand(long userId, String username) {
-        userService.createUser(userId, username);
+        userService.createUserIfUserNotExists(userId, username);
 
         userStateCache.getTotalUserState().put(userId, NONE);
         return new Response(WELCOME_MESSAGE, NONE);

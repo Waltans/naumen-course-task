@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import ru.naumen.bot.Command;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
-import ru.naumen.model.UserPassword;
 
 import java.util.List;
 
@@ -19,11 +18,14 @@ import static ru.naumen.model.State.NONE;
 @Service
 public class ValidationService {
 
+    private final PasswordService passwordService;
+
     private final UserStateCache userStateCache;
     private static int MINIMUM_PASSWORD_LENGTH = 8;
     private static int MAXIMUM_PASSWORD_LENGTH = 128;
 
-    public ValidationService(UserStateCache userStateCache) {
+    public ValidationService(PasswordService passwordService, UserStateCache userStateCache) {
+        this.passwordService = passwordService;
         this.userStateCache = userStateCache;
     }
 
@@ -58,32 +60,19 @@ public class ValidationService {
                             .getOrDefault(command, ""), List.of());
         }
 
-        if (params != null &&
-                params.contains(paramsCount)) {
-            return switch (command) {
-                case Command.GENERATE -> splitCommand.length == 1 || areNumbersGenerationCommandParams(splitCommand);
-                case Command.DELETE -> splitCommand.length == 1 || areNumbersDeleteCommandParams(splitCommand);
-                case Command.EDIT -> splitCommand.length == 1 || areNumbersEditCommandParams(splitCommand);
-                default -> true;
-            };
-        }
-        return false;
+        return params != null &&
+                params.contains(paramsCount);
     }
 
     /**
      * Проверяет валидность индекса пароля
      * @param userId id пользователя
      * @param passwordIndex индекс
-     * @param userPasswords список паролей
      * @return true, если индекс валиден
      */
-    public boolean isValidPasswordIndex(long userId, int passwordIndex, List<UserPassword> userPasswords) {
-        if (passwordIndex <= 0 || passwordIndex > userPasswords.size()) {
-            userStateCache.getTotalUserState().put(userId, NONE);
-            return true;
-        }
-
-        return false;
+    public boolean isValidPasswordIndex(long userId, int passwordIndex) {
+        long passwordsSize = passwordService.countPasswordsByUserId(userId);
+        return passwordIndex > passwordsSize || passwordIndex <= 0;
     }
 
     /**
@@ -125,7 +114,7 @@ public class ValidationService {
      * @param splitCommand - разделенный список параметров
      * @return - true, если все параметры удовлетворяют
      */
-    private boolean areNumbersEditCommandParams(String[] splitCommand) {
+    public boolean areNumbersEditCommandParams(String[] splitCommand) {
         return isNumber(splitCommand[1]) && isNumber(splitCommand[2]) && isNumber(splitCommand[3]);
     }
 
@@ -135,7 +124,7 @@ public class ValidationService {
      * @param splitCommand - разделенный список параметров
      * @return - true, если все параметры удовлетворяют
      */
-    private boolean areNumbersDeleteCommandParams(String[] splitCommand) {
+    public boolean areNumbersDeleteCommandParams(String[] splitCommand) {
         return isNumber(splitCommand[1]);
     }
 
@@ -145,7 +134,7 @@ public class ValidationService {
      * @param splitCommand - разделенный список параметров
      * @return - true, если все параметры удовлетворяют
      */
-    private boolean areNumbersGenerationCommandParams(String[] splitCommand) {
+    public boolean areNumbersGenerationCommandParams(String[] splitCommand) {
         return isNumber(splitCommand[1]) && isNumber(splitCommand[2]);
     }
 

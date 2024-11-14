@@ -149,7 +149,7 @@ public class NonCommandHandler {
         State currentState = userStateCache.getTotalUserState().get(userId);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        if (validationService.isValidPasswordIndex(userId, Integer.parseInt(index), userPasswords)) {
+        if (validationService.isValidPasswordIndex(userId, Integer.parseInt(index))) {
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index), NONE);
         }
 

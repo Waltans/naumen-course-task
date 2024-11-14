@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.exception.PasswordNotFoundException;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
@@ -43,6 +44,10 @@ public class EditHandler {
      * @return сообщение с паролем или с ошибкой
      */
     public Response updatePassword(String[] splitCommand, long userId) {
+        if (splitCommand.length != COMMAND_WITHOUT_PARAMS_LENGTH &&
+                !validationService.areNumbersEditCommandParams(splitCommand)) {
+            return new Response(INCORRECT_COMMAND_RESPONSE, NONE);
+        }
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.getTotalUserState().put(userId, EDIT_STEP_1);
             userStateCache.getTotalUserParams().put(userId, new ArrayList<>());
@@ -53,7 +58,7 @@ public class EditHandler {
         int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        if (validationService.isValidPasswordIndex(userId, passwordIndex, userPasswords)){
+        if (validationService.isValidPasswordIndex(userId, passwordIndex)){
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
         }
 
@@ -73,7 +78,7 @@ public class EditHandler {
         UserPassword passwordByUuid;
         try {
             passwordByUuid = passwordService.findPasswordByUuid(uuid);
-        } catch (IllegalArgumentException e) {
+        } catch (PasswordNotFoundException e) {
             log.error(e.getMessage());
             userStateCache.getTotalUserState().put(userId, NONE);
 
@@ -81,7 +86,7 @@ public class EditHandler {
         }
         String description = passwordByUuid.getDescription();
 
-        String newPassword = passwordService.generatePasswordWithComplexity(length, complexity);
+        String newPassword = passwordService.generatePassword(length, complexity);
         if (splitCommand.length == EDIT_COMMAND_LENGTH_HAS_DESCRIPTION) {
             description = splitCommand[4];
         }

@@ -3,7 +3,7 @@ package ru.naumen.bot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Сервис по принятию и отправки сообщений в бота
+ * Телеграм бот
  */
-@Service
+@Component
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final Logger log = LoggerFactory.getLogger(TelegramBot.class);
