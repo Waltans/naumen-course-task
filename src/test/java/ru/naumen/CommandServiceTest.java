@@ -1,5 +1,6 @@
 package ru.naumen;
 
+import ru.naumen.exception.PasswordNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.CommandService;
@@ -32,6 +33,7 @@ class CommandServiceTest {
     @Mock
     private UserService userService;
 
+
     @InjectMocks
     private CommandService commandService;
 
@@ -48,7 +50,7 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandGenerate() {
-        Mockito.when(passwordService.generatePasswordWithComplexity(12, 3)).thenReturn("generatedPassword");
+        Mockito.when(passwordService.generatePassword(12, 3)).thenReturn("generatedPassword");
 
         String response = commandService.performCommand("/generate 12 3", 12345L, "username");
         Assertions.assertEquals("Сгенерирован пароль: generatedPassword", response);
@@ -127,14 +129,14 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandDelete() {
-        String userUuid = UUID.randomUUID().toString();
         String passUuid = UUID.randomUUID().toString();
-        User user = new User(userUuid, "name", 12345L, new ArrayList<>());
+        User user = new User("name", 12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user);
 
         List<UserPassword> userPasswords = List.of(pass);
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
+        Mockito.when(passwordService.countPasswordsByUserId(12345L)).thenReturn(userPasswords.size());
 
         String response = commandService.performCommand("/del 1", 12345L, "username");
         Assertions.assertEquals("Удалён пароль для сайта site", response);
@@ -146,9 +148,8 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandDeleteInvalidId() {
-        String userUuid = UUID.randomUUID().toString();
         String passUuid = UUID.randomUUID().toString();
-        User user = new User(userUuid, "name", 12345L, new ArrayList<>());
+        User user = new User("name", 12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user);
 
         List<UserPassword> userPasswords = List.of(pass);
@@ -164,9 +165,8 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandDeleteMinusId() {
-        String userUuid = UUID.randomUUID().toString();
         String passUuid = UUID.randomUUID().toString();
-        User user = new User(userUuid, "name", 12345L, new ArrayList<>());
+        User user = new User("name", 12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user);
 
         List<UserPassword> userPasswords = List.of(pass);
@@ -181,16 +181,16 @@ class CommandServiceTest {
      * Тест команды /edit
      */
     @Test
-    void testPerformCommandEditValid() {
-        String userUuid = UUID.randomUUID().toString();
+    void testPerformCommandEditValid() throws PasswordNotFoundException {
         String passUuid = UUID.randomUUID().toString();
 
-        User user = new User(userUuid, "name", 12345L, new ArrayList<>());
+        User user = new User("name", 12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user);
         List<UserPassword> userPasswords = List.of(pass);
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
-        Mockito.when(passwordService.generatePasswordWithComplexity(12, 2)).thenReturn("newPass");
+        Mockito.when(passwordService.countPasswordsByUserId(12345L)).thenReturn(userPasswords.size());
+        Mockito.when(passwordService.generatePassword(12, 2)).thenReturn("newPass");
         Mockito.when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
 
         String response = commandService.performCommand("/edit 1 12 2 updDesc", 12345L, "username");
@@ -202,16 +202,16 @@ class CommandServiceTest {
      * Тест команды /edit, если не задано описание
      */
     @Test
-    void testPerformCommandEditValidWithoutDescription() {
-        String userUuid = UUID.randomUUID().toString();
+    void testPerformCommandEditValidWithoutDescription() throws PasswordNotFoundException {
         String passUuid = UUID.randomUUID().toString();
 
-        User user = new User(userUuid, "name", 12345L, new ArrayList<>());
+        User user = new User("name", 12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user);
         List<UserPassword> userPasswords = List.of(pass);
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
-        Mockito.when(passwordService.generatePasswordWithComplexity(12, 2)).thenReturn("newPass");
+        Mockito.when(passwordService.countPasswordsByUserId(12345L)).thenReturn(userPasswords.size());
+        Mockito.when(passwordService.generatePassword(12, 2)).thenReturn("newPass");
         Mockito.when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
 
         String response = commandService.performCommand("/edit 1 12 2", 12345L, "username");
@@ -223,16 +223,16 @@ class CommandServiceTest {
      * Тест команды /edit, если некорректно задана длина
      */
     @Test
-    void testPerformCommandEditInvalidLength() {
-        String userUuid = UUID.randomUUID().toString();
+    void testPerformCommandEditInvalidLength() throws PasswordNotFoundException {
         String passUuid = UUID.randomUUID().toString();
 
-        User user = new User(userUuid, "name", 12345L, new ArrayList<>());
+        User user = new User("name", 12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user);
         List<UserPassword> userPasswords = List.of(pass);
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
+        Mockito.when(passwordService.countPasswordsByUserId(12345L)).thenReturn(userPasswords.size());
 
         String response = commandService.performCommand("/edit 1 129 2 updDesc", 12345L, "username");
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response);
@@ -242,16 +242,16 @@ class CommandServiceTest {
      * Тест команды /edit, если некорректно задана сложность
      */
     @Test
-    void testPerformCommandEditInvalidComplexity() {
-        String userUuid = UUID.randomUUID().toString();
+    void testPerformCommandEditInvalidComplexity() throws PasswordNotFoundException {
         String passUuid = UUID.randomUUID().toString();
 
-        User user = new User(userUuid, "name", 12345L, new ArrayList<>());
+        User user = new User("name", 12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user);
         List<UserPassword> userPasswords = List.of(pass);
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(passwordService.findPasswordByUuid(passUuid)).thenReturn(pass);
+        Mockito.when(passwordService.countPasswordsByUserId(12345L)).thenReturn(userPasswords.size());
 
         String response = commandService.performCommand("/edit 1 12 4 updDesc", 12345L, "username");
         String expectedResponse = "Сложность должна быть от 1 до 3, где:\n" +
@@ -267,10 +267,9 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandEditPasswordNotFound() {
-        String userUuid = UUID.randomUUID().toString();
         String passUuid = UUID.randomUUID().toString();
 
-        User user = new User(userUuid, "name", 12345L, new ArrayList<>());
+        User user = new User("name", 12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user);
         List<UserPassword> userPasswords = List.of(pass);
 

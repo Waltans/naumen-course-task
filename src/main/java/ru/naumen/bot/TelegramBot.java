@@ -1,5 +1,6 @@
 package ru.naumen.bot;
 
+import org.springframework.stereotype.Component;
 import ru.naumen.service.CommandService;
 import ru.naumen.service.UserService;
 import org.slf4j.Logger;
@@ -12,9 +13,9 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 /**
- * Сервис по принятию и отправки сообщений в бота
+ * Телеграм бот
  */
-@Service
+@Component
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final Logger log = LoggerFactory.getLogger(TelegramBot.class);

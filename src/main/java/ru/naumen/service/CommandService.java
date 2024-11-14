@@ -3,6 +3,8 @@ package ru.naumen.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.naumen.exception.PasswordNotFoundException;
+import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.UserPassword;
 
 import java.util.List;
@@ -79,16 +81,8 @@ public class CommandService {
     private boolean isValidCommand(String[] splitCommand) {
         String command = splitCommand[0];
         int paramsCount = splitCommand.length - 1;
-        if (commandsAndNumberOfParams.containsKey(command) &&
-                commandsAndNumberOfParams.get(command).contains(paramsCount)) {
-            return switch (command) {
-                case "/generate" -> checkGenerationCommandParams(splitCommand);
-                case "/del" -> checkDeleteCommandParams(splitCommand);
-                case "/edit" -> checkEditCommandParams(splitCommand);
-                default -> true;
-            };
-        }
-        return false;
+        return commandsAndNumberOfParams.containsKey(command) &&
+                commandsAndNumberOfParams.get(command).contains(paramsCount);
     }
 
     /**
@@ -97,7 +91,7 @@ public class CommandService {
      * @param splitCommand - разделенный список параметров
      * @return - true, если все параметры удовлетворяют
      */
-    private boolean checkEditCommandParams(String[] splitCommand) {
+    private boolean areNumbersEditCommandParams(String[] splitCommand) {
         return isNumber(splitCommand[1]) && isNumber(splitCommand[2]) && isNumber(splitCommand[3]);
     }
 
@@ -107,7 +101,7 @@ public class CommandService {
      * @param splitCommand - разделенный список параметров
      * @return - true, если все параметры удовлетворяют
      */
-    private boolean checkDeleteCommandParams(String[] splitCommand) {
+    private boolean areNumbersDeleteCommandParams(String[] splitCommand) {
         return isNumber(splitCommand[1]);
     }
 
@@ -117,7 +111,7 @@ public class CommandService {
      * @param splitCommand - разделенный список параметров
      * @return - true, если все параметры удовлетворяют
      */
-    private boolean checkGenerationCommandParams(String[] splitCommand) {
+    private boolean areNumbersGenerationCommandParams(String[] splitCommand) {
         return isNumber(splitCommand[1]) && isNumber(splitCommand[2]);
     }
 
@@ -177,6 +171,9 @@ public class CommandService {
      * @return сообщение с паролем или с ошибкой
      */
     private String generatePassword(String[] splitCommand) {
+        if (!areNumbersGenerationCommandParams(splitCommand)) {
+            return INCORRECT_COMMAND_RESPONSE;
+        }
         int length = Integer.parseInt(splitCommand[1]);
         int complexity = Integer.parseInt(splitCommand[2]);
 
@@ -186,7 +183,7 @@ public class CommandService {
             log.error(e.getMessage());
             return e.getMessage();
         }
-        String password = passwordService.generatePasswordWithComplexity(length, complexity);
+        String password = passwordService.generatePassword(length, complexity);
 
         return String.format(PASSWORD_GENERATED_MESSAGE, password);
     }
@@ -240,14 +237,19 @@ public class CommandService {
      * @return сообщение об удалении или об ошибке в случае некорректного ID
      */
     private String deletePassword(String[] splitCommand, long userId) {
+        if (!areNumbersDeleteCommandParams(splitCommand)) {
+            return INCORRECT_COMMAND_RESPONSE;
+        }
         int passwordIndex = Integer.parseInt(splitCommand[1]);
-        List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
-        if (passwordIndex > userPasswords.size() || passwordIndex <= 0) {
+
+        long passwordsSize = passwordService.countPasswordsByUserId(userId);
+        if (passwordIndex > passwordsSize || passwordIndex <= 0) {
             return String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex);
         }
         // Пользователь получает список начиная с 1
         int passwordIndexInSystem = passwordIndex - 1;
 
+        List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
         String uuid = userPasswords.get(passwordIndexInSystem).getUuid();
         String description = userPasswords.get(passwordIndexInSystem).getDescription();
         passwordService.deletePassword(uuid);
@@ -263,10 +265,13 @@ public class CommandService {
      * @return сообщение с паролем или с ошибкой
      */
     private String updatePassword(String[] splitCommand, long userId) {
+        if (!areNumbersEditCommandParams(splitCommand)) {
+            return INCORRECT_COMMAND_RESPONSE;
+        }
         int passwordIndex = Integer.parseInt(splitCommand[1]);
-        List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        if (passwordIndex > userPasswords.size() || passwordIndex <= 0) {
+        long passwordsSize = passwordService.countPasswordsByUserId(userId);
+        if (passwordIndex > passwordsSize || passwordIndex <= 0) {
             return String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex);
         }
 
@@ -280,16 +285,17 @@ public class CommandService {
             return e.getMessage();
         }
 
+        List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
         String uuid = userPasswords.get(passwordIndex - 1).getUuid();
         UserPassword passwordByUuid;
         try {
             passwordByUuid = passwordService.findPasswordByUuid(uuid);
-        } catch (IllegalArgumentException e) {
+        } catch (PasswordNotFoundException e) {
             return String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex);
         }
         String description = passwordByUuid.getDescription();
 
-        String newPassword = passwordService.generatePasswordWithComplexity(length, complexity);
+        String newPassword = passwordService.generatePassword(length, complexity);
         if (splitCommand.length == EDIT_COMMAND_LENGTH_HAS_DESCRIPTION) {
             description = splitCommand[4];
         }

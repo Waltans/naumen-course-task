@@ -9,14 +9,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
-     * Проверяет, существует ли пользователь по telegramId
-     * @param telegramId Id пользователя в телеграм
+     * Проверяет, существует ли пользователь по Id
+     * @param id Id пользователя
      */
-    boolean existsByTelegramId(long telegramId);
+    boolean existsById(long id);
 
     /**
-     * Находит пользователя с указанным telegramId
-     * @param telegramId Id пользователя в телеграм
+     * Находит пользователя с указанным Id
+     * @param id Id пользователя
      */
-    User findByTelegramId(long telegramId);
+    User findById(long id);
 }
