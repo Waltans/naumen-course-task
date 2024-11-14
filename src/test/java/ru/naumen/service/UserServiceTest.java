@@ -1,9 +1,8 @@
-package ru.naumen;
+package ru.naumen.service;
 
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.repository.UserRepository;
-import ru.naumen.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,9 +46,7 @@ class UserServiceTest {
     @Test
     void testGetUserById_UserExists() throws UserNotFoundException {
         long id = 12345L;
-        User user = new User();
-        user.setId(id);
-        user.setUsername("TestUser");
+        User user = new User("TestUser", id);
 
         Mockito.when(userRepository.findById(id)).thenReturn(user);
 

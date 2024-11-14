@@ -72,7 +72,7 @@ public class ValidationService {
      */
     public boolean isValidPasswordIndex(long userId, int passwordIndex) {
         long passwordsSize = passwordService.countPasswordsByUserId(userId);
-        return passwordIndex > passwordsSize || passwordIndex <= 0;
+        return (passwordIndex <= passwordsSize) && (passwordIndex >= 1);
     }
 
     /**
@@ -119,7 +119,7 @@ public class ValidationService {
     }
 
     /**
-     * Проверяем валидность параметров команды /delete
+     * Проверяем валидность параметров команды /del
      *
      * @param splitCommand - разделенный список параметров
      * @return - true, если все параметры удовлетворяют
@@ -129,7 +129,7 @@ public class ValidationService {
     }
 
     /**
-     * Проверяем валидность параметров команды /generation
+     * Проверяем валидность параметров команды /generate
      *
      * @param splitCommand - разделенный список параметров
      * @return - true, если все параметры удовлетворяют
@@ -144,8 +144,8 @@ public class ValidationService {
      * @return true, если тип введен корректно
      */
     private boolean isValidSortType(String sortType) {
-        return sortType.equals(Command.DATE)
-                || sortType.equals(Command.DESCRIPTION);
+        return sortType.equals(Command.BY_DATE)
+                || sortType.equals(Command.BY_DESCRIPTION);
     }
 
     /**

@@ -1,19 +1,17 @@
-package ru.naumen;
+package ru.naumen.service;
 
 import ru.naumen.exception.PasswordNotFoundException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
 import ru.naumen.repository.UserPasswordRepository;
-import ru.naumen.service.EncodeService;
-import ru.naumen.service.PasswordService;
-import ru.naumen.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -100,7 +98,7 @@ class PasswordServiceTest {
         String passUuid = UUID.randomUUID().toString();
         
         User user = new User("name", 12345L, new ArrayList<>());
-        UserPassword password = new UserPassword(passUuid, "desc", "pass", user);
+        UserPassword password = new UserPassword(passUuid, "desc", "pass", user, LocalDate.of(2010, 1, 1));
 
         Mockito.when(userPasswordRepository.findByUuid(passUuid)).thenReturn(password);
 
@@ -131,7 +129,7 @@ class PasswordServiceTest {
         
         String passUuid = UUID.randomUUID().toString();
         User user = new User("name", 12345L, new ArrayList<>());
-        UserPassword pass = new UserPassword(passUuid, "site", "pass", user);
+        UserPassword pass = new UserPassword(passUuid, "site", "pass", user, LocalDate.of(2010, 1, 1));
 
         String newPass = "newPass";
         String newDesc = "newDesc";

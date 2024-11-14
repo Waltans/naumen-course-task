@@ -58,7 +58,8 @@ public class EditHandler {
         int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        if (validationService.isValidPasswordIndex(userId, passwordIndex)){
+        if (!validationService.isValidPasswordIndex(userId, passwordIndex)){
+            userStateCache.getTotalUserState().put(userId, NONE);
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
         }
 

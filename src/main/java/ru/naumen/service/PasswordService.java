@@ -142,10 +142,13 @@ public class PasswordService {
         if (complexity >= 2) {
             password.append(getRandomCharacter(DIGITS));
             password.append(getRandomCharacter(UPPERCASE));
+            password.append(getRandomCharacter(LOWERCASE));
         }
         if (complexity == 3) {
             password.append(getRandomCharacter(DIGITS));
             password.append(getRandomCharacter(SPECIAL_CHARACTERS));
+            password.append(getRandomCharacter(UPPERCASE));
+            password.append(getRandomCharacter(LOWERCASE));
         }
 
         while (password.length() < length) {
@@ -156,7 +159,7 @@ public class PasswordService {
     }
 
     /**
-     * Получить случайный символ из набора
+     * Получает случайный символ из набора
      * @param characters набор символов
      */
     private char getRandomCharacter(String characters) {

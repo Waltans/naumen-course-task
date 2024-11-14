@@ -48,10 +48,10 @@ public class SortHandler {
             if (!userPasswords.isEmpty()) {
                 List<UserPassword> sortedPasswords = new ArrayList<>();
                 switch (sortType) {
-                    case Command.DATE -> sortedPasswords = userPasswords.stream()
+                    case Command.BY_DATE -> sortedPasswords = userPasswords.stream()
                             .sorted(Comparator.comparing(UserPassword::getLastModifyDate))
                             .toList();
-                    case Command.DESCRIPTION -> sortedPasswords = userPasswords.stream()
+                    case Command.BY_DESCRIPTION -> sortedPasswords = userPasswords.stream()
                                     .sorted((p1, p2) -> p1.getDescription().compareToIgnoreCase(p2.getDescription()))
                                     .toList();
                 }

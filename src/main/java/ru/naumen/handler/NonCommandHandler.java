@@ -1,15 +1,13 @@
 package ru.naumen.handler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Command;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
-import ru.naumen.model.UserPassword;
 import ru.naumen.service.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static ru.naumen.bot.Constants.*;
@@ -21,9 +19,6 @@ import static ru.naumen.model.State.*;
  */
 @Component
 public class NonCommandHandler {
-
-    private final Logger log = LoggerFactory.getLogger(NonCommandHandler.class);
-    private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final ValidationService validationService;
     private final GenerateHandler generateHandler;
@@ -33,8 +28,7 @@ public class NonCommandHandler {
     private final SortHandler sortHandler;
     private final FindHandler findHandler;
 
-    public NonCommandHandler(PasswordService passwordService, UserStateCache userStateCache, ValidationService validationService, GenerateHandler generateHandler, EditHandler editHandler, DeleteHandler deleteHandler, SaveHandler saveHandler, SortHandler sortHandler, FindHandler findHandler) {
-        this.passwordService = passwordService;
+    public NonCommandHandler(UserStateCache userStateCache, ValidationService validationService, GenerateHandler generateHandler, EditHandler editHandler, DeleteHandler deleteHandler, SaveHandler saveHandler, SortHandler sortHandler, FindHandler findHandler) {
         this.userStateCache = userStateCache;
         this.validationService = validationService;
         this.generateHandler = generateHandler;
@@ -55,6 +49,7 @@ public class NonCommandHandler {
      * @return ответ и состояние пользователя
      */
     public Response getComplexity(String complexity, long userId, State nextState, String response) {
+        State currentState = userStateCache.getTotalUserState().get(userId);
         try {
             validationService.validateComplexity(Integer.parseInt(complexity));
             List<String> params = userStateCache.getTotalUserParams().get(userId);
@@ -68,7 +63,9 @@ public class NonCommandHandler {
 
             return new Response(response, nextState);
         } catch (IllegalArgumentException e) {
-            return new Response(e.getMessage(), NONE);
+            userStateCache.getTotalUserState().put(userId, currentState);
+
+            return new Response(e.getMessage(), currentState);
         }
     }
 
@@ -81,6 +78,7 @@ public class NonCommandHandler {
      * @return ответ и состояние пользователя
      */
     public Response getPasswordLength(String length, long userId, State nextState) {
+        State currentState = userStateCache.getTotalUserState().get(userId);
         try {
             validationService.validateLength(Integer.parseInt(length));
             userStateCache.getTotalUserState().put(userId, nextState);
@@ -88,9 +86,9 @@ public class NonCommandHandler {
 
             return new Response(ENTER_PASSWORD_COMPLEXITY, nextState);
         } catch (IllegalArgumentException e) {
-            userStateCache.getTotalUserState().put(userId, nextState);
+            userStateCache.getTotalUserState().put(userId, currentState);
 
-            return new Response(e.getMessage(), NONE);
+            return new Response(e.getMessage(), currentState);
         }
     }
 
@@ -147,9 +145,9 @@ public class NonCommandHandler {
     public Response getIndexPassword(String index, long userId) {
         userStateCache.getTotalUserParams().get(userId).add(index);
         State currentState = userStateCache.getTotalUserState().get(userId);
-        List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        if (validationService.isValidPasswordIndex(userId, Integer.parseInt(index))) {
+        if (!validationService.isValidPasswordIndex(userId, Integer.parseInt(index))) {
+            userStateCache.getTotalUserState().put(userId, NONE);
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index), NONE);
         }
 

@@ -27,8 +27,8 @@ public class Command {
     public static final String COMPLEXITY_1 = "1";
     public static final String COMPLEXITY_2 = "2";
     public static final String COMPLEXITY_3 = "3";
-    public static final String DATE = "Дате";
-    public static final String DESCRIPTION = "Описанию";
+    public static final String BY_DATE = "Дате";
+    public static final String BY_DESCRIPTION = "Описанию";
     public static final String MENU_KEYBOARD = "Меню";
     /**
      * Отображение, в которой ключи - команды,

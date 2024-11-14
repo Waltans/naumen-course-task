@@ -45,11 +45,12 @@ public class UserPassword {
     @Column(name = "date", nullable = false, unique = false)
     private LocalDate lastModifyDate;
 
-    public UserPassword(String uuid, String description, String password, User user) {
+    public UserPassword(String uuid, String description, String password, User user, LocalDate lastModifyDate) {
         this.uuid = uuid;
         this.description = description;
         this.password = password;
         this.user = user;
+        this.lastModifyDate = lastModifyDate;
     }
 
     public UserPassword() {

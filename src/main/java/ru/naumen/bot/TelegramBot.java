@@ -27,7 +27,9 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final CommandService commandService;
     private final String botName;
 
-    public TelegramBot(@Value("${bot.token}") String botToken, CommandService commandService, @Value("${bot.name}") String botName) {
+    public TelegramBot(@Value("${bot.token}") String botToken,
+                       CommandService commandService,
+                       @Value("${bot.name}") String botName) {
         super(botToken);
         this.commandService = commandService;
         this.botName = botName;
@@ -93,6 +95,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     * Клавиатура с выбором сложности
+     */
     private List<KeyboardRow> complexityKeyBoard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
@@ -106,18 +111,24 @@ public class TelegramBot extends TelegramLongPollingBot {
         return keyboardRows;
     }
 
+    /**
+     * Клавиатура с выбором типа сортировки
+     */
     private List<KeyboardRow> sortKeyBoard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
-        keyboardRowFirst.add(new KeyboardButton(Command.DATE));
-        keyboardRowFirst.add(new KeyboardButton(Command.DESCRIPTION));
+        keyboardRowFirst.add(new KeyboardButton(Command.BY_DATE));
+        keyboardRowFirst.add(new KeyboardButton(Command.BY_DESCRIPTION));
 
         keyboardRows.add(keyboardRowFirst);
 
         return keyboardRows;
     }
 
+    /**
+     * Клавиатура в менеджере паролей
+     */
     private List<KeyboardRow> listKeyBoard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
@@ -136,6 +147,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         return keyboardRows;
     }
 
+    /**
+     * Клавиатура основная
+     */
     private List<KeyboardRow> mainKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
