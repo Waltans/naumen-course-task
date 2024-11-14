@@ -22,7 +22,9 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final CommandService commandService;
     private final String botName;
 
-    public TelegramBot(@Value("${bot.token}") String botToken, CommandService commandService, @Value("${bot.name}") String botName) {
+    public TelegramBot(@Value("${bot.token}") String botToken,
+                       CommandService commandService,
+                       @Value("${bot.name}") String botName) {
         super(botToken);
         this.commandService = commandService;
         this.botName = botName;
