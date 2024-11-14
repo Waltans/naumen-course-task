@@ -1,7 +1,5 @@
 package ru.naumen.handler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
@@ -17,8 +15,6 @@ import static ru.naumen.model.State.*;
  */
 @Component
 public class GenerateHandler {
-
-    private final Logger log = LoggerFactory.getLogger(GenerateHandler.class);
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final ValidationService validationService;

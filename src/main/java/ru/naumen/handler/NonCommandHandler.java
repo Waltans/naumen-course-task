@@ -7,7 +7,6 @@ import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.service.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static ru.naumen.bot.Constants.*;
