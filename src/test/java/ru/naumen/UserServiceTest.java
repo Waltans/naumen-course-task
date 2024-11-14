@@ -42,7 +42,7 @@ class UserServiceTest {
     }
 
     /**
-     * Тест получения объекта пользователя по Telegram ID
+     * Тест получения объекта пользователя по ID
      */
     @Test
     void testGetUserById_UserExists() throws UserNotFoundException {

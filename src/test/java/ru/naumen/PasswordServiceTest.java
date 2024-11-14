@@ -51,12 +51,12 @@ class PasswordServiceTest {
         String password = "pass";
         String encodedPassword = "encPass";
         String description = "desc";
-        long userTelegramId = 12345L;
+        long userId = 12345L;
 
         Mockito.when(encodeService.encryptData(password)).thenReturn(encodedPassword);
-        Mockito.when(userService.getUserById(userTelegramId)).thenReturn(new User());
+        Mockito.when(userService.getUserById(userId)).thenReturn(new User());
 
-        passwordService.createUserPassword(password, description, userTelegramId);
+        passwordService.createUserPassword(password, description, userId);
 
         Mockito.verify(userPasswordRepository, Mockito.times(1))
                 .save(ArgumentMatchers.any(UserPassword.class));
@@ -67,14 +67,29 @@ class PasswordServiceTest {
      */
     @Test
     void testGetUserPasswords() {
-        long userTelegramId = 12345L;
+        long userId = 12345L;
         List<UserPassword> passwords = List.of(new UserPassword(), new UserPassword());
 
-        Mockito.when(userPasswordRepository.findByUserId(userTelegramId)).thenReturn(passwords);
+        Mockito.when(userPasswordRepository.findByUserId(userId)).thenReturn(passwords);
 
-        List<UserPassword> result = passwordService.getUserPasswords(userTelegramId);
+        List<UserPassword> result = passwordService.getUserPasswords(userId);
 
         Assertions.assertEquals(passwords, result);
+    }
+
+    /**
+     * Тест подсчёта паролей
+     */
+    @Test
+    void testCountUserPasswords() {
+        long userId = 12345L;
+        List<UserPassword> passwords = List.of(new UserPassword(), new UserPassword());
+
+        Mockito.when(userPasswordRepository.countByUserId(userId)).thenReturn(passwords.size());
+
+        int result = passwordService.countPasswordsByUserId(userId);
+
+        Assertions.assertEquals(2, result);
     }
 
     /**
@@ -185,5 +200,4 @@ class PasswordServiceTest {
 
         Assertions.assertNotEquals(password1, password2);
     }
-    //TODO подсчёт
 }

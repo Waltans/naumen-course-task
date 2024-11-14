@@ -155,6 +155,10 @@ public class PasswordService {
         return password.toString();
     }
 
+    /**
+     * Получает случайный символ из набора
+     * @param characters набор символов
+     */
     private char getRandomCharacter(String characters) {
         return characters.charAt(random.nextInt(characters.length()));
     }
