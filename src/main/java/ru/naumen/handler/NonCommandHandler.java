@@ -51,7 +51,7 @@ public class NonCommandHandler {
     public Response getComplexity(String complexity, long userId, State nextState, String response) {
         State currentState = userStateCache.getTotalUserState().get(userId);
         try {
-            validationService.validateComplexity(Integer.parseInt(complexity));
+            validationService.isValidComplexity(Integer.parseInt(complexity));
             List<String> params = userStateCache.getTotalUserParams().get(userId);
             params.add(complexity);
             userStateCache.getTotalUserState().put(userId, nextState);
@@ -80,7 +80,7 @@ public class NonCommandHandler {
     public Response getPasswordLength(String length, long userId, State nextState) {
         State currentState = userStateCache.getTotalUserState().get(userId);
         try {
-            validationService.validateLength(Integer.parseInt(length));
+            validationService.isValidLength(Integer.parseInt(length));
             userStateCache.getTotalUserState().put(userId, nextState);
             userStateCache.getTotalUserParams().get(userId).add(length);
 

@@ -97,38 +97,27 @@ class ValidationServiceTest {
     }
 
     /**
-     * Тест проверки валидности параметров генерации пароля при корректном вводе
+     * Тест проверки валидности длины пароля при корректном вводе
      */
     @Test
-    void testValidateGenerationParameters_ValidParameters() {
-        Assertions.assertDoesNotThrow(() -> validationService.validateGenerationParameters(10, 2));
+    void testValidateLength_ValidParameter() {
+        Assertions.assertTrue(validationService.isValidLength(12));
     }
 
     /**
-     * Тест проверки валидности параметров генерации пароля при некорректном вводе длины
+     * Тест проверки валидности длины пароля при некорректном вводе (ниже)
      */
     @Test
-    void testValidateGenerationParameters_InvalidLength() {
-        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class,
-                () -> validationService.validateGenerationParameters(5, 2));
-
-        Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", exception.getMessage());
+    void testValidateLength_LowParameter() {
+        Assertions.assertFalse(validationService.isValidLength(6));
     }
 
     /**
-     * Тест проверки валидности параметров генерации пароля при некорректном вводе сложности
+     * Тест проверки валидности длины пароля при некорректном вводе (выше)
      */
     @Test
-    void testValidateGenerationParameters_InvalidComplexity() {
-        IllegalArgumentException exception = Assertions.assertThrows(IllegalArgumentException.class,
-                () -> validationService.validateGenerationParameters(10, 5));
-
-        String expectedMessage = "Сложность должна быть от 1 до 3, где:\n" +
-                "1 - простой пароль;\n" +
-                "2 - пароль средней сложности;\n" +
-                "3 - сложный пароль.";
-
-        Assertions.assertEquals(expectedMessage, exception.getMessage());
+    void testValidateLength_ValidParameters() {
+        Assertions.assertFalse(validationService.isValidLength(130));
     }
 
     /**

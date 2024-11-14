@@ -1,8 +1,12 @@
 package ru.naumen.handler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.exception.EncryptException;
+import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.service.PasswordService;
 
 import java.util.ArrayList;
@@ -20,6 +24,7 @@ public class SaveHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
+    private final Logger log = LoggerFactory.getLogger(SaveHandler.class);
 
     public SaveHandler(PasswordService passwordService, UserStateCache userStateCache) {
         this.passwordService = passwordService;
@@ -41,16 +46,23 @@ public class SaveHandler {
             return new Response(ENTER_PASSWORD, SAVE_STEP_1);
         }
 
-        String password = splitCommand[1];
-        if (splitCommand.length == SAVE_COMMAND_LENGTH_NO_DESCRIPTION) {
-            passwordService.createUserPassword(password, "Неизвестно", userId);
-        } else {
-            String description = splitCommand[2];
-            passwordService.createUserPassword(password, description, userId);
-        }
-        userStateCache.getTotalUserParams().put(userId, new ArrayList<>());
-        userStateCache.getTotalUserState().put(userId, NONE);
+        try {
+            String password = splitCommand[1];
+            if (splitCommand.length == SAVE_COMMAND_LENGTH_NO_DESCRIPTION) {
+                passwordService.createUserPassword(password, "Неизвестно", userId);
+            } else {
+                String description = splitCommand[2];
+                passwordService.createUserPassword(password, description, userId);
+            }
 
-        return new Response(PASSWORD_SAVED_MESSAGE, NONE);
+            return new Response(PASSWORD_SAVED_MESSAGE, NONE);
+        } catch (UserNotFoundException e){
+            log.error("Ошибка при сохранении пароля - не найден пользователь", e);
+            return new Response(USER_NOT_FOUND, NONE);
+        }
+        catch (EncryptException e){
+            log.error("Ошибка шифрования при сохранении пароля", e);
+            return new Response(ENCRYPT_EXCEPTION, NONE);
+        }
     }
 }

@@ -55,6 +55,16 @@ public class CommandService {
             return new Response(INCORRECT_COMMAND_RESPONSE, userStateCache.getTotalUserState().get(userId));
         }
 
+        return doCommand(userId, splitCommand, username);
+    }
+
+    /**
+     * Метод принимает команду и исполняет её
+     * @param userId - ID пользователя
+     * @param splitCommand - разделенная команда
+     * @return - результат обработки команды
+     */
+    private Response doCommand(long userId, String[] splitCommand, String username) {
         return switch (splitCommand[0]) {
             case Command.GENERATE, Command.GENERATE_KEYBOARD -> generateHandler.generatePassword(splitCommand, userId);
             case Command.SAVE, Command.SAVE_KEYBOARD -> saveHandler.savePassword(splitCommand, userId);

@@ -56,6 +56,8 @@ class EditHandlerTest {
         Mockito.when(validationService.areNumbersEditCommandParams(command)).thenReturn(true);
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
+        Mockito.when(validationService.isValidLength(12)).thenReturn(true);
+        Mockito.when(validationService.isValidComplexity(3)).thenReturn(true);
         Mockito.when(passwordService.generatePassword(12, 3)).thenReturn("npass");
         Mockito.when(passwordService.findPasswordByUuid("uuid")).thenReturn(password);
 
@@ -77,6 +79,8 @@ class EditHandlerTest {
         Mockito.when(validationService.areNumbersEditCommandParams(command)).thenReturn(true);
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
+        Mockito.when(validationService.isValidLength(12)).thenReturn(true);
+        Mockito.when(validationService.isValidComplexity(3)).thenReturn(true);
         Mockito.when(passwordService.generatePassword(12, 3)).thenReturn("npass");
         Mockito.when(passwordService.findPasswordByUuid("uuid")).thenReturn(password);
 
@@ -142,8 +146,6 @@ class EditHandlerTest {
         Mockito.when(validationService.areNumbersEditCommandParams(command)).thenReturn(true);
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
-        Mockito.doThrow(new IllegalArgumentException("Длина пароля должна быть от 8 до 128 символов!"))
-                .when(validationService).validateGenerationParameters(5, 4);
 
         Response response = editHandler.updatePassword(command, 12345L);
 

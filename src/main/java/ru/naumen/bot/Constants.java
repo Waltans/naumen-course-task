@@ -50,6 +50,11 @@ public class Constants {
 
     public static final String NO_PASSWORDS_FOUND = "Не найдены пароли по вашему запросу";
     public static final String ENTER_SEARCH_REQUEST = "Введите поисковый запрос";
+    public static final String USER_NOT_FOUND = "Пользователь не найден";
+
+    public static final String ENCRYPT_EXCEPTION = "Ошибка шифрования пароля";
+
+    public static final String DECRYPT_EXCEPTION = "Ошибка дешифрования пароля";
     public static final int COMMAND_WITHOUT_PARAMS_LENGTH = 1;
 
     /**

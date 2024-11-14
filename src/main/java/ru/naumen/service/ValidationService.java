@@ -7,7 +7,6 @@ import ru.naumen.model.State;
 
 import java.util.List;
 
-import static ru.naumen.bot.Constants.*;
 import static ru.naumen.model.State.IN_LIST;
 import static ru.naumen.model.State.NONE;
 
@@ -76,36 +75,23 @@ public class ValidationService {
     }
 
     /**
-     * Проверяет параметры генерации пароля
-     *
-     * @param length     длина
-     * @param complexity сложность
-     */
-    public void validateGenerationParameters(int length, int complexity) {
-        validateLength(length);
-        validateComplexity(complexity);
-    }
-
-    /**
      * Метод проверяет что указана правильная сложность (от 1 до 3)
      *
      * @param complexity - сложность пароля
+     * @return корректна ли сложность
      */
-    public void validateComplexity(int complexity) {
-        if (!(complexity == 1 || complexity == 2 || complexity == 3)) {
-            throw new IllegalArgumentException(COMPLEXITY_ERROR_MESSAGE);
-        }
+    public boolean isValidComplexity(int complexity) {
+        return complexity == 1 || complexity == 2 || complexity == 3;
     }
 
     /**
      * Проверяем корректность введённой длины пароля
      *
      * @param length - длина пароля
+     * @return корректна ли длина
      */
-    public void validateLength(int length) {
-        if (length < MINIMUM_PASSWORD_LENGTH || length > MAXIMUM_PASSWORD_LENGTH) {
-            throw new IllegalArgumentException(LENGTH_ERROR_MESSAGE);
-        }
+    public boolean isValidLength(int length) {
+        return length >= MINIMUM_PASSWORD_LENGTH && length <= MAXIMUM_PASSWORD_LENGTH;
     }
 
     /**

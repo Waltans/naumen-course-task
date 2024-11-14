@@ -45,6 +45,8 @@ class GenerateHandlerTest {
     void testGeneratePassword_CorrectParameters() {
         Mockito.when(validationService.areNumbersGenerationCommandParams(Mockito.any(String[].class))).thenReturn(true);
         Mockito.when(passwordService.generatePassword(12, 3)).thenReturn("generatedPassword");
+        Mockito.when(validationService.isValidLength(12)).thenReturn(true);
+        Mockito.when(validationService.isValidComplexity(3)).thenReturn(true);
 
         String[] command = {"/generate", "12", "3"};
         Response response = generateHandler.generatePassword(command, 12345L);
@@ -59,10 +61,10 @@ class GenerateHandlerTest {
     @Test
     void testGeneratePassword_LowLength() {
         Mockito.when(validationService.areNumbersGenerationCommandParams(Mockito.any(String[].class))).thenReturn(true);
+        Mockito.when(validationService.isValidComplexity(3)).thenReturn(true);
+        Mockito.when(validationService.isValidLength(4)).thenReturn(false);
 
         String[] command = {"/generate", "4", "3"};
-        Mockito.doThrow(new IllegalArgumentException("Длина пароля должна быть от 8 до 128 символов!"))
-                .when(validationService).validateGenerationParameters(4, 3);
 
         Response response = generateHandler.generatePassword(command, 12345L);
 
@@ -76,10 +78,10 @@ class GenerateHandlerTest {
     @Test
     void testGeneratePassword_HighLength() {
         Mockito.when(validationService.areNumbersGenerationCommandParams(Mockito.any(String[].class))).thenReturn(true);
+        Mockito.when(validationService.isValidComplexity(3)).thenReturn(true);
+        Mockito.when(validationService.isValidLength(129)).thenReturn(false);
 
         String[] command = {"/generate", "129", "3"};
-        Mockito.doThrow(new IllegalArgumentException("Длина пароля должна быть от 8 до 128 символов!"))
-                .when(validationService).validateGenerationParameters(129, 3);
 
         Response response = generateHandler.generatePassword(command, 12345L);
 
@@ -100,8 +102,6 @@ class GenerateHandlerTest {
                 "2 - пароль средней сложности;\n" +
                 "3 - сложный пароль.";
 
-        Mockito.doThrow(new IllegalArgumentException(expectedResponse))
-                .when(validationService).validateGenerationParameters(15, 4);
 
         Response response = generateHandler.generatePassword(command, 12345L);
 

@@ -61,8 +61,6 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetComplexity() {
-        Mockito.doNothing().when(validationService).validateComplexity(3);
-
         Response response = nonCommandHandler.getComplexity("3", 12345L, SAVE_STEP_2, "complexity entered");
 
         List<String> params = userStateCache.getTotalUserParams().get(12345L);
@@ -76,8 +74,6 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetPasswordLength() {
-        Mockito.doNothing().when(validationService).validateLength(8);
-
         Response response = nonCommandHandler.getPasswordLength("8", 12345L, SAVE_STEP_1);
 
         Assertions.assertEquals(ENTER_PASSWORD_COMPLEXITY, response.message());

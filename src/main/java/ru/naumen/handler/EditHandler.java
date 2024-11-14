@@ -66,13 +66,11 @@ public class EditHandler {
         int length = Integer.parseInt(splitCommand[2]);
         int complexity = Integer.parseInt(splitCommand[3]);
 
-        try {
-            validationService.validateGenerationParameters(length, complexity);
-        } catch (IllegalArgumentException e) {
-            log.error(e.getMessage());
-            userStateCache.getTotalUserState().put(userId, NONE);
-
-            return new Response(e.getMessage(), NONE);
+        if (!validationService.isValidLength(length)) {
+            return new Response(LENGTH_ERROR_MESSAGE, NONE);
+        }
+        if (!validationService.isValidComplexity(complexity)) {
+            return new Response(COMPLEXITY_ERROR_MESSAGE, NONE);
         }
 
         String uuid = userPasswords.get(passwordIndex - 1).getUuid();

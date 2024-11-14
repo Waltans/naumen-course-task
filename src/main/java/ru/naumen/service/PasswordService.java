@@ -1,6 +1,7 @@
 package ru.naumen.service;
 
 import org.springframework.transaction.annotation.Transactional;
+import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.PasswordNotFoundException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
@@ -44,17 +45,14 @@ public class PasswordService {
      * @param userId ID пользователя
      */
     @Transactional
-    public void createUserPassword(String password, String description, long userId) {
-        try {
-            String encodedPassword = encodeService.encryptData(password);
-            User user = userService.getUserById(userId);
-            UserPassword userPassword = new UserPassword(description, encodedPassword, user);
+    public void createUserPassword(String password, String description, long userId)
+            throws UserNotFoundException, EncryptException {
+        String encodedPassword = encodeService.encryptData(password);
+        User user = userService.getUserById(userId);
+        UserPassword userPassword = new UserPassword(description, encodedPassword, user);
 
-            userPasswordRepository.save(userPassword);
-            log.info("Создан новый пароль {}", userPassword.getUuid());
-        } catch (UserNotFoundException e) {
-            log.error("Ошибка при создании пароля - не найден пользователь", e);
-        }
+        userPasswordRepository.save(userPassword);
+        log.info("Создан новый пароль {}", userPassword.getUuid());
     }
 
     /**
