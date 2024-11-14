@@ -3,6 +3,8 @@ package ru.naumen.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.naumen.exception.DecryptException;
+import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.PasswordNotFoundException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.UserPassword;
@@ -61,6 +63,16 @@ public class CommandService {
             return INCORRECT_COMMAND_RESPONSE;
         }
 
+        return doCommand(userId, splitCommand);
+    }
+
+    /**
+     * Метод принимает команду и исполняет её
+     * @param userId - ID пользователя
+     * @param splitCommand - разделенная команда
+     * @return - результат обработки команды
+     */
+    private String doCommand(long userId, String[] splitCommand) {
         return switch (splitCommand[0]) {
             case "/generate" -> generatePassword(splitCommand);
             case "/save" -> savePassword(splitCommand, userId);
@@ -116,36 +128,23 @@ public class CommandService {
     }
 
     /**
-     * Проверяет параметры генерации пароля
-     *
-     * @param length     длина
-     * @param complexity сложность
-     */
-    private void validateGenerationParameters(int length, int complexity) {
-        checkLength(length);
-        checkComplexity(complexity);
-    }
-
-    /**
      * Метод проверяет что указана правильная сложность (от 1 до 3)
      *
      * @param complexity - сложность пароля
+     * @return корректна ли сложность
      */
-    private void checkComplexity(int complexity) {
-        if (!(complexity == 1 || complexity == 2 || complexity == 3)) {
-            throw new IllegalArgumentException(COMPLEXITY_ERROR_MESSAGE);
-        }
+    private boolean checkComplexity(int complexity) {
+        return complexity == 1 || complexity == 2 || complexity == 3;
     }
 
     /**
      * Проверяем корректность введённой длины пароля
      *
      * @param length - длина пароля
+     * @return корректна ли длина
      */
-    private void checkLength(int length) {
-        if (length < 8 || length > 128) {
-            throw new IllegalArgumentException(LENGTH_ERROR_MESSAGE);
-        }
+    private boolean checkLength(int length) {
+        return length >= 8 && length <= 128;
     }
 
     /**
@@ -177,11 +176,11 @@ public class CommandService {
         int length = Integer.parseInt(splitCommand[1]);
         int complexity = Integer.parseInt(splitCommand[2]);
 
-        try {
-            validateGenerationParameters(length, complexity);
-        } catch (IllegalArgumentException e) {
-            log.error(e.getMessage());
-            return e.getMessage();
+        if (!checkComplexity(complexity)) {
+            return COMPLEXITY_ERROR_MESSAGE;
+        }
+        if (!checkLength(length)) {
+            return LENGTH_ERROR_MESSAGE;
         }
         String password = passwordService.generatePassword(length, complexity);
 
@@ -196,15 +195,24 @@ public class CommandService {
      * @return сообщение о сохранении
      */
     private String savePassword(String[] splitCommand, long userId) {
-        String password = splitCommand[1];
-        if (splitCommand.length == SAVE_COMMAND_LENGTH_NO_DESCRIPTION) {
-            passwordService.createUserPassword(password, "Неизвестно", userId);
-        } else {
-            String description = splitCommand[2];
-            passwordService.createUserPassword(password, description, userId);
-        }
+        try {
+            String password = splitCommand[1];
+            if (splitCommand.length == SAVE_COMMAND_LENGTH_NO_DESCRIPTION) {
+                passwordService.createUserPassword(password, "Неизвестно", userId);
+            } else {
+                String description = splitCommand[2];
+                passwordService.createUserPassword(password, description, userId);
+            }
 
-        return PASSWORD_SAVED_MESSAGE;
+            return PASSWORD_SAVED_MESSAGE;
+        } catch (UserNotFoundException e){
+            log.error("Ошибка при сохранении пароля - не найден пользователь", e);
+            return USER_NOT_FOUND;
+        }
+        catch (EncryptException e){
+            log.error("Ошибка шифрования при сохранении пароля", e);
+            return ENCRYPT_EXCEPTION;
+        }
     }
 
     /**
@@ -214,20 +222,25 @@ public class CommandService {
      * @return сообщение со списком
      */
     private String getUserPasswords(long userId) {
-        List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
+        try {
+            List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        if (userPasswords.isEmpty()) {
-            return NO_PASSWORDS_MESSAGE;
+            if (userPasswords.isEmpty()) {
+                return NO_PASSWORDS_MESSAGE;
+            }
+
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i < userPasswords.size(); i++) {
+                String description = userPasswords.get(i).getDescription();
+                String password = encodeService.decryptData(userPasswords.get(i).getPassword());
+                stringBuilder.append(String.format(PASSWORD_LIST_FORMAT, i + 1, description, password));
+            }
+
+            return stringBuilder.toString();
+        } catch (DecryptException e){
+            log.error("Произошла ошибка дешифрования", e);
+            return DECRYPT_EXCEPTION;
         }
-
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < userPasswords.size(); i++) {
-            String description = userPasswords.get(i).getDescription();
-            String password = encodeService.decryptData(userPasswords.get(i).getPassword());
-            stringBuilder.append(String.format(PASSWORD_LIST_FORMAT, i + 1, description, password));
-        }
-
-        return stringBuilder.toString();
     }
 
     /**
@@ -278,11 +291,11 @@ public class CommandService {
         int length = Integer.parseInt(splitCommand[2]);
         int complexity = Integer.parseInt(splitCommand[3]);
 
-        try {
-            validateGenerationParameters(length, complexity);
-        } catch (IllegalArgumentException e) {
-            log.error(e.getMessage());
-            return e.getMessage();
+        if (!checkLength(length)){
+            return LENGTH_ERROR_MESSAGE;
+        }
+        if (!checkComplexity(complexity)) {
+            return COMPLEXITY_ERROR_MESSAGE;
         }
 
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
@@ -299,8 +312,8 @@ public class CommandService {
         if (splitCommand.length == EDIT_COMMAND_LENGTH_HAS_DESCRIPTION) {
             description = splitCommand[4];
         }
-
         passwordService.updatePassword(uuid, description, newPassword);
+
         return String.format(PASSWORD_UPDATED_MESSAGE, description, newPassword);
     }
 }

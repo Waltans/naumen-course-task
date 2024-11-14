@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.naumen.exception.DecryptException;
+import ru.naumen.exception.EncryptException;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -20,9 +22,9 @@ public class EncodeService {
 
     private final String secretKey;
 
-   public EncodeService(@Value("${password.encrypt-key}") String secretKey) {
-       this.secretKey = secretKey;
-   }
+    public EncodeService(@Value("${password.encrypt-key}") String secretKey) {
+        this.secretKey = secretKey;
+    }
 
     /**
      * Шифрует строку алгоритмом AES по заданному ключу
@@ -38,8 +40,7 @@ public class EncodeService {
             byte[] encryptedBytes = cipher.doFinal(plainString.getBytes());
             return Base64.getEncoder().encodeToString(encryptedBytes);
         } catch (Exception e) {
-            log.error("При шифровании пароля произошла ошибка", e);
-            throw new RuntimeException(e);
+            throw new EncryptException("Ошибка при шифровании пароля", e);
         }
     }
 
@@ -57,10 +58,10 @@ public class EncodeService {
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
             byte[] encryptedBytes = Base64.getDecoder().decode(encryptedString);
             byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
+
             return new String(decryptedBytes);
         } catch (Exception e) {
-            log.error("При расшифровании пароля произошла ошибка", e);
-            throw new RuntimeException(e);
+            throw new DecryptException("При расшифровании пароля произошла ошибка", e);
         }
     }
 }

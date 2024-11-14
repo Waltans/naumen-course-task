@@ -35,6 +35,12 @@ public class Constants {
 
     public static final String PASSWORD_UPDATED_MESSAGE = "Обновлён пароль для %s: %s";
 
+    public static final String USER_NOT_FOUND = "Пользователь не найден";
+
+    public static final String ENCRYPT_EXCEPTION = "Ошибка шифрования пароля";
+
+    public static final String DECRYPT_EXCEPTION = "Ошибка дешифрования пароля";
+
     /**
      * Приватный конструктор, чтобы нельзя было создавать объекты
      */

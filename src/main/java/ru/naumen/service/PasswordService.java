@@ -1,14 +1,16 @@
 package ru.naumen.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.naumen.exception.DecryptException;
+import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.PasswordNotFoundException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
 import ru.naumen.repository.UserPasswordRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -39,22 +41,19 @@ public class PasswordService {
     /**
      * Создаёт пароль и сохраняет в БД
      *
-     * @param password пароль
+     * @param password    пароль
      * @param description описание пароля
-     * @param userId ID пользователя
+     * @param userId      ID пользователя
      */
     @Transactional
-    public void createUserPassword(String password, String description, long userId) {
-        try {
-            String encodedPassword = encodeService.encryptData(password);
-            User user = userService.getUserById(userId);
-            UserPassword userPassword = new UserPassword(description, encodedPassword, user);
+    public void createUserPassword(String password, String description, long userId)
+            throws UserNotFoundException, EncryptException {
+        String encodedPassword = encodeService.encryptData(password);
+        User user = userService.getUserById(userId);
+        UserPassword userPassword = new UserPassword(description, encodedPassword, user);
 
-            userPasswordRepository.save(userPassword);
-            log.info("Создан новый пароль {}", userPassword.getUuid());
-        } catch (UserNotFoundException e) {
-            log.error("Ошибка при создании пароля - не найден пользователь", e);
-        }
+        userPasswordRepository.save(userPassword);
+        log.info("Создан новый пароль {}", userPassword.getUuid());
     }
 
     /**
@@ -82,11 +81,12 @@ public class PasswordService {
 
     /**
      * Обновляет данные для пароля
-     * @param uuid uuid
+     *
+     * @param uuid        uuid
      * @param description описание (если передаётся null, то не обновляется)
-     * @param password пароль
+     * @param password    пароль
      */
-    public void updatePassword(String uuid, String description, String password) {
+    public void updatePassword(String uuid, String description, String password) throws EncryptException {
         if (userPasswordRepository.existsByUuid(uuid)) {
             UserPassword userPassword = userPasswordRepository.findByUuid(uuid);
 
@@ -103,6 +103,7 @@ public class PasswordService {
 
     /**
      * Ищет пароль по UUID
+     *
      * @param uuid uuid
      * @return найденный пароль
      */
@@ -116,6 +117,7 @@ public class PasswordService {
 
     /**
      * Подсчитывает количество паролей пользователя
+     *
      * @param userId id пользователя
      */
     public int countPasswordsByUserId(long userId) {
@@ -124,8 +126,9 @@ public class PasswordService {
 
     /**
      * Генерирует пароль по заданным параметрам
+     *
      * @param complexity сложность
-     * @param length длина
+     * @param length     длина
      * @return пароль
      */
     public String generatePassword(int length, int complexity) {
@@ -160,6 +163,7 @@ public class PasswordService {
 
     /**
      * Получает случайный символ из набора
+     *
      * @param characters набор символов
      */
     private char getRandomCharacter(String characters) {
