@@ -1,16 +1,16 @@
 package ru.naumen.service;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
 import ru.naumen.exception.IncorrectSortTypeException;
 import ru.naumen.exception.PasswordNotFoundException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
 import ru.naumen.repository.UserPasswordRepository;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
-import org.mockito.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -153,7 +153,7 @@ class PasswordServiceTest {
     @Test
     void testFindPasswordByUuid() throws PasswordNotFoundException {
         String passUuid = UUID.randomUUID().toString();
-        
+
         User user = new User(12345L, new ArrayList<>());
         UserPassword password = new UserPassword(passUuid, "desc", "pass", user, LocalDate.of(2010, 1, 1));
 
@@ -183,7 +183,7 @@ class PasswordServiceTest {
      */
     @Test
     void testUpdatePassword() {
-        
+
         String passUuid = UUID.randomUUID().toString();
         User user = new User(12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user, LocalDate.of(2010, 1, 1));

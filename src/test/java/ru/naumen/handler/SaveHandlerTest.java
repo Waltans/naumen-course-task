@@ -13,10 +13,11 @@ import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.service.PasswordService;
 
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static ru.naumen.bot.Constants.*;
-import static ru.naumen.model.State.*;
+import static ru.naumen.bot.Constants.ENTER_PASSWORD;
+import static ru.naumen.bot.Constants.PASSWORD_SAVED_MESSAGE;
+import static ru.naumen.model.State.NONE;
+import static ru.naumen.model.State.SAVE_STEP_1;
 
 /**
  * Класс модульных тестов для SaveHandler

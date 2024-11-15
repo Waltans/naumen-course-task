@@ -17,10 +17,11 @@ import ru.naumen.service.ValidationService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static ru.naumen.bot.Constants.*;
-import static ru.naumen.model.State.*;
+import static ru.naumen.bot.Constants.ENTER_PASSWORD_INDEX;
+import static ru.naumen.bot.Constants.INCORRECT_COMMAND_RESPONSE;
+import static ru.naumen.model.State.EDIT_STEP_1;
+import static ru.naumen.model.State.NONE;
 
 /**
  * Класс модульных тестов для EditHandler
@@ -66,6 +67,7 @@ class EditHandlerTest {
 
         Assertions.assertEquals("Обновлён пароль для newd: npass", response.message());
         Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(passwordService).updatePassword("uuid", "newd", "npass");
     }
 
     /**
@@ -74,7 +76,8 @@ class EditHandlerTest {
     @Test
     void testUpdatePassword_WithCorrectParamsWithoutDescription() throws PasswordNotFoundException {
         String[] command = {"/edit", "1", "12", "3"};
-        UserPassword password = new UserPassword("uuid", "d", "pass", null, LocalDate.of(2010, 1, 1));
+        UserPassword password = new UserPassword("uuid", "d", "pass", null,
+                LocalDate.of(2010, 1, 1));
         List<UserPassword> userPasswords = List.of(password);
 
         Mockito.when(validationService.areNumbersEditCommandParams(command)).thenReturn(true);
@@ -89,6 +92,7 @@ class EditHandlerTest {
 
         Assertions.assertEquals("Обновлён пароль для d: npass", response.message());
         Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(passwordService).updatePassword("uuid", "d", "npass");
     }
 
     /**
@@ -104,6 +108,8 @@ class EditHandlerTest {
 
         Assertions.assertEquals("Не найден пароль с id 5", response.message());
         Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(passwordService, Mockito.never())
+                .updatePassword(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }
 
     /**
@@ -152,5 +158,7 @@ class EditHandlerTest {
 
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
         Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(passwordService, Mockito.never())
+                .updatePassword(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }
 }

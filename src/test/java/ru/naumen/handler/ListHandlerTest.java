@@ -15,7 +15,8 @@ import ru.naumen.service.PasswordService;
 
 import java.util.List;
 
-import static ru.naumen.model.State.*;
+import static ru.naumen.model.State.IN_LIST;
+import static ru.naumen.model.State.NONE;
 
 /**
  * Класс модульных тестов для ListHandler
