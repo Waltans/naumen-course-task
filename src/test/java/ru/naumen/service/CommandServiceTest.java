@@ -180,7 +180,7 @@ class CommandServiceTest {
      */
     @Test
     void testPerformCommandList() {
-        User user = new User( 12345L);
+        User user = new User(12345L);
         List<UserPassword> userPasswords = List.of(new UserPassword("desc1", "pass1", user),
                 new UserPassword("desc2", "pass2", user));
 
@@ -245,7 +245,7 @@ class CommandServiceTest {
      * Тест команды /edit
      */
     @Test
-    void testPerformCommandEditValid()  {
+    void testPerformCommandEditValid() {
         Mockito.when(validationService.isValidCommand(new String[]{"/edit", "1", "12", "2", "updDesc"}, 12345L)).thenReturn(true);
         Mockito.when(editHandler.handle(new String[]{"/edit", "1", "12", "2", "updDesc"}, 12345L))
                 .thenReturn(new Response("Обновлён пароль для updDesc: newPass", State.NONE));
@@ -423,10 +423,10 @@ class CommandServiceTest {
         Mockito.when(validationService.isValidCommand(Mockito.any(String[].class), Mockito.eq(12345L))).thenReturn(true);
 
         String expectedMessage = """
-                        Сложность должна быть от 1 до 3, где:
-                        1 - простой пароль;
-                        2 - пароль средней сложности;
-                        3 - сложный пароль.""";
+                Сложность должна быть от 1 до 3, где:
+                1 - простой пароль;
+                2 - пароль средней сложности;
+                3 - сложный пароль.""";
 
         Mockito.when(generateHandler.handle(new String[]{"Генерировать"}, 12345L))
                 .thenReturn(new Response("Введите длину пароля", State.GENERATION_STEP_1));
@@ -541,7 +541,7 @@ class CommandServiceTest {
         Assertions.assertEquals("Введите индекс пароля", firstStep.message());
         Assertions.assertEquals(State.DELETE_STEP_1, firstStep.botState());
         Assertions.assertEquals("Удалён пароль для сайта description", secondStep.message());
-        Assertions.assertEquals(State.NONE,secondStep.botState());
+        Assertions.assertEquals(State.NONE, secondStep.botState());
     }
 
     /**
@@ -563,7 +563,7 @@ class CommandServiceTest {
         Assertions.assertEquals("Отсортировать по:", firstStep.message());
         Assertions.assertEquals(State.SORT_STEP_1, firstStep.botState());
         Assertions.assertEquals("Отсортированные пароли", secondStep.message());
-        Assertions.assertEquals(State.NONE,secondStep.botState());
+        Assertions.assertEquals(State.NONE, secondStep.botState());
     }
 
     /**
@@ -585,6 +585,6 @@ class CommandServiceTest {
         Assertions.assertEquals("Введите поисковый запрос", firstStep.message());
         Assertions.assertEquals(State.FIND_STEP_1, firstStep.botState());
         Assertions.assertEquals("Найденные пароли", secondStep.message());
-        Assertions.assertEquals(State.NONE,secondStep.botState());
+        Assertions.assertEquals(State.NONE, secondStep.botState());
     }
 }

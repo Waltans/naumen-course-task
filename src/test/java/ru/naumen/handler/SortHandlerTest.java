@@ -18,10 +18,10 @@ import ru.naumen.service.SortType;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static ru.naumen.bot.Constants.*;
-import static ru.naumen.model.State.*;
+import static ru.naumen.bot.Constants.CHOOSE_SORT_TYPE;
+import static ru.naumen.model.State.NONE;
+import static ru.naumen.model.State.SORT_STEP_1;
 
 /**
  * Класс модульных тестов для SortHandler
@@ -80,9 +80,9 @@ class SortHandlerTest {
     void testSortPasswords_ByDate() throws IncorrectSortTypeException {
         String[] command = {"Дате"};
         List<UserPassword> passwords = List.of(
-                new UserPassword("uuid1", "desc1", "pass1", null, LocalDate.of(2010, 1 ,1)),
-                new UserPassword("uuid3", "desc3", "pass3", null, LocalDate.of(2012, 1,1)),
-                new UserPassword("uuid2", "desc2", "pass2", null, LocalDate.of(2013, 1,1))
+                new UserPassword("uuid1", "desc1", "pass1", null, LocalDate.of(2010, 1, 1)),
+                new UserPassword("uuid3", "desc3", "pass3", null, LocalDate.of(2012, 1, 1)),
+                new UserPassword("uuid2", "desc2", "pass2", null, LocalDate.of(2013, 1, 1))
         );
 
         String expectedResponse = "\n" +

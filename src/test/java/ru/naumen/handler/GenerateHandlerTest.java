@@ -13,9 +13,9 @@ import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
 
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static ru.naumen.model.State.*;
+import static ru.naumen.model.State.GENERATION_STEP_1;
+import static ru.naumen.model.State.NONE;
 
 /**
  * Класс модульных тестов для GenerateHandler

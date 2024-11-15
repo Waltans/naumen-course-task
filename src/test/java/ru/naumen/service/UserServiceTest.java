@@ -1,12 +1,12 @@
 package ru.naumen.service;
 
-import ru.naumen.exception.UserNotFoundException;
-import ru.naumen.model.User;
-import ru.naumen.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.model.User;
+import ru.naumen.repository.UserRepository;
 
 /**
  * Класс модульных тестов для UserService

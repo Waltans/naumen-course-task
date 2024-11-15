@@ -9,9 +9,7 @@ import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
 
-import java.util.Map;
-
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 /**
  * Класс модульных тестов для ValidationService

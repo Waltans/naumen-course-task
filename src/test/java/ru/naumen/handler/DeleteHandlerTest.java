@@ -15,13 +15,13 @@ import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static ru.naumen.bot.Constants.*;
-import static ru.naumen.model.State.*;
+import static ru.naumen.bot.Constants.ENTER_PASSWORD_INDEX;
+import static ru.naumen.bot.Constants.INCORRECT_COMMAND_RESPONSE;
+import static ru.naumen.model.State.DELETE_STEP_1;
+import static ru.naumen.model.State.NONE;
 
 /**
  * Класс модульных тестов для DeleteHandler
@@ -54,8 +54,8 @@ class DeleteHandlerTest {
         String[] command = {"/del", "2"};
         User user = new User(12345L, new ArrayList<>());
         List<UserPassword> userPasswords = List.of(
-                new UserPassword("uuid","desc", "pass", user, LocalDate.now()),
-                new UserPassword("uuid2","desc", "pass", user, LocalDate.now()));
+                new UserPassword("uuid", "desc", "pass", user, LocalDate.now()),
+                new UserPassword("uuid2", "desc", "pass", user, LocalDate.now()));
 
         Mockito.when(validationService.areNumbersDeleteCommandParams(command)).thenReturn(true);
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);

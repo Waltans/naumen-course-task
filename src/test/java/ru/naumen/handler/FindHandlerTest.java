@@ -15,10 +15,11 @@ import ru.naumen.service.PasswordService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static ru.naumen.bot.Constants.*;
-import static ru.naumen.model.State.*;
+import static ru.naumen.bot.Constants.ENTER_SEARCH_REQUEST;
+import static ru.naumen.bot.Constants.NO_PASSWORDS_FOUND;
+import static ru.naumen.model.State.FIND_STEP_1;
+import static ru.naumen.model.State.NONE;
 
 /**
  * Класс модульных тестов для FindHandler

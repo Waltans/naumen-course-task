@@ -8,12 +8,12 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
-import ru.naumen.service.*;
+import ru.naumen.service.ValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.naumen.bot.Constants.*;
+import static ru.naumen.bot.Constants.ENTER_PASSWORD_COMPLEXITY;
 import static ru.naumen.model.State.*;
 
 /**
@@ -71,7 +71,7 @@ class NonCommandHandlerTest {
                 startHelpHandler
         );
 
-                nonCommandHandler = new NonCommandHandler(
+        nonCommandHandler = new NonCommandHandler(
                 userStateCache,
                 validationService,
                 handlerMapper
