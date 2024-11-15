@@ -14,6 +14,8 @@ import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,18 +51,22 @@ class DeleteHandlerTest {
      */
     @Test
     void testDeletePassword_CorrectIndex() {
-        String[] command = {"/del", "1"};
+        String[] command = {"/del", "2"};
         User user = new User(12345L, new ArrayList<>());
-        List<UserPassword> userPasswords = List.of(new UserPassword("desc", "pass", user));
+        List<UserPassword> userPasswords = List.of(
+                new UserPassword("uuid","desc", "pass", user, LocalDate.now()),
+                new UserPassword("uuid2","desc", "pass", user, LocalDate.now()));
 
         Mockito.when(validationService.areNumbersDeleteCommandParams(command)).thenReturn(true);
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
-        Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
+        Mockito.when(validationService.isValidPasswordIndex(12345L, 2)).thenReturn(true);
 
         Response response = deleteHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Удалён пароль для сайта desc", response.message());
         Assertions.assertEquals(NONE, response.botState());
+
+        Mockito.verify(passwordService).deletePassword("uuid2");
     }
 
     /**
@@ -80,6 +86,8 @@ class DeleteHandlerTest {
 
         Assertions.assertEquals("Не найден пароль с id 5", response.message());
         Assertions.assertEquals(NONE, response.botState());
+
+        Mockito.verify(passwordService, Mockito.never()).deletePassword(Mockito.anyString());
     }
 
     /**
