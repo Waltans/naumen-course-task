@@ -1,6 +1,5 @@
-package ru.naumen;
+package ru.naumen.service;
 
-import ru.naumen.service.EncodeService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

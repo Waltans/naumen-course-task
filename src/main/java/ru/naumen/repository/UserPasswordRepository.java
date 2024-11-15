@@ -11,9 +11,9 @@ import java.util.List;
 public interface UserPasswordRepository extends JpaRepository<UserPassword, Long> {
     /**
      * Находит список паролей для пользователя с указанным id
-     * @param userTelegramId Id пользователя в телеграм
+     * @param userId Id пользователя
      */
-    List<UserPassword> findByUserTelegramId(long userTelegramId);
+    List<UserPassword> findByUserId(long userId);
 
     /**
      * Проверяет, существует ли пароль с указанным uuid
@@ -32,4 +32,31 @@ public interface UserPasswordRepository extends JpaRepository<UserPassword, Long
      * @param uuid uuid пароля
      */
     UserPassword findByUuid(String uuid);
+
+    /**
+     * Подсчитывает количество паролей для пользователя с указанным id
+     * @param userId Id пользователя
+     * @return Количество паролей пользователя
+     */
+    int countByUserId(long userId);
+
+    /**
+     * Находит список паролей для пользователя с указанным id и по описанию.
+     * Описание может быть передано не полностью, регистр не учитывается
+     * @param userId Id пользователя
+     * @param searchRequest поисковый запрос пароля
+     */
+    List<UserPassword> findByDescriptionContainsIgnoreCaseAndUserId(String searchRequest, long userId);
+
+    /**
+     * Находит список паролей для пользователя с указанным id, отсортированный по описанию
+     * @param userId Id пользователя
+     */
+    List<UserPassword> findByUserIdOrderByDescriptionAsc(long userId);
+
+    /**
+     * Находит список паролей для пользователя с указанным id, отсортированный по дате
+     * @param userId Id пользователя
+     */
+    List<UserPassword> findByUserIdOrderByLastModifyDate(long userId);
 }

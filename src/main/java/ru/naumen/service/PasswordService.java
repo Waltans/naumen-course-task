@@ -1,6 +1,9 @@
 package ru.naumen.service;
 
 import org.springframework.transaction.annotation.Transactional;
+import ru.naumen.exception.EncryptException;
+import ru.naumen.exception.IncorrectSortTypeException;
+import ru.naumen.exception.PasswordNotFoundException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
@@ -23,6 +26,10 @@ public class PasswordService {
     private final UserService userService;
     private final UserPasswordRepository userPasswordRepository;
     private final Logger log = LoggerFactory.getLogger(PasswordService.class);
+    private static final String LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
+    private static final String UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String DIGITS = "0123456789";
+    private static final String SPECIAL_CHARACTERS = "!@#$%^&*()-_=+<>";
 
 
     public PasswordService(EncodeService encodeService, UserService userService, UserPasswordRepository userPasswordRepository) {
@@ -39,17 +46,14 @@ public class PasswordService {
      * @param userId ID пользователя
      */
     @Transactional
-    public void createUserPassword(String password, String description, long userId) {
-        try {
-            String encodedPassword = encodeService.encryptData(password);
-            User user = userService.getUserByTelegramId(userId);
-            UserPassword userPassword = new UserPassword(description, encodedPassword, user);
+    public void createUserPassword(String password, String description, long userId)
+            throws UserNotFoundException, EncryptException {
+        String encodedPassword = encodeService.encryptData(password);
+        User user = userService.getUserById(userId);
+        UserPassword userPassword = new UserPassword(description, encodedPassword, user);
 
-            userPasswordRepository.save(userPassword);
-            log.info("Создан новый пароль {}", userPassword.getUuid());
-        } catch (UserNotFoundException e) {
-            log.error("Ошибка при создании пароля - не найден пользователь", e);
-        }
+        userPasswordRepository.save(userPassword);
+        log.info("Создан новый пароль {}", userPassword.getUuid());
     }
 
     /**
@@ -59,8 +63,43 @@ public class PasswordService {
      */
     @Transactional(readOnly = true)
     public List<UserPassword> getUserPasswords(long userId) {
-        return userPasswordRepository.findByUserTelegramId(userId);
+        return userPasswordRepository.findByUserId(userId);
     }
+
+    /**
+     * Ищет пароли у конкретного пользователя
+     *
+     * @param userId ID пользователя
+     * @param searchRequest поисковый запрос пароля (частичное описание без учёта регистра)
+     */
+    @Transactional(readOnly = true)
+    public List<UserPassword> getUserPasswordsWithPartialDescription(long userId, String searchRequest) {
+        return userPasswordRepository.findByDescriptionContainsIgnoreCaseAndUserId(searchRequest, userId);
+        // TODO test
+    }
+
+    /**
+     * Ищет пароли у конкретного пользователя
+     *
+     * @param userId ID пользователя
+     * @return список с отсортированными паролями или пустой список, если паролей у пользователя нет
+     */
+    @Transactional(readOnly = true)
+    public List<UserPassword> getUserPasswordsSorted(long userId, SortType sortType) throws IncorrectSortTypeException {
+        switch (sortType) {
+            case BY_DATE -> {
+                return userPasswordRepository.findByUserIdOrderByLastModifyDate(userId);
+            }
+            case BY_DESCRIPTION -> {
+                return userPasswordRepository.findByUserIdOrderByDescriptionAsc(userId);
+            }
+            default -> {
+                throw new IncorrectSortTypeException("Некорректный тип сортировки!");
+            }
+        }
+        // TODO test
+    }
+
 
     /**
      * Удаляет пароль
@@ -101,83 +140,63 @@ public class PasswordService {
      * @param uuid uuid
      * @return найденный пароль
      */
-    public UserPassword findPasswordByUuid(String uuid) {
+    public UserPassword findPasswordByUuid(String uuid) throws PasswordNotFoundException {
         UserPassword password = userPasswordRepository.findByUuid(uuid);
         if (password == null) {
-            throw new IllegalArgumentException("Пароль не найден!");
+            throw new PasswordNotFoundException("Пароль не найден!");
         }
         return password;
     }
 
     /**
-     * Генерирует пароль заданной длины и сложности и проверяет его соответствие.
-     *
-     * @param length     длина пароля
-     * @param complexity сложность пароля
-     * @return сгенерированный пароль
+     * Подсчитывает количество паролей пользователя
+     * @param userId id пользователя
      */
-    public String generatePasswordWithComplexity(int length, int complexity) {
-        String chars = getCharsForPassword(complexity);
-        boolean passwordMatch = false;
-        String password = "";
-        while (!passwordMatch) {
-            password = generatePassword(length, chars);
-            passwordMatch = matchPassword(complexity, password);
-        }
-
-        log.info("Сгенерирован пароль");
-        return password;
+    public int countPasswordsByUserId(long userId) {
+        return userPasswordRepository.countByUserId(userId);
     }
 
     /**
-     * Проверяет на соответствия пароля заданной сложности
-     * @param complexity - сложность пароля (от 1 до 3)
-     * @param password - пароль
-     * @return true - в случае соответствия, false - в случае не соответствия, ошибку - при неверном значении сложности
+     * Генерирует пароль по заданным параметрам
+     * @param complexity сложность
+     * @param length длина
+     * @return пароль
      */
-    private boolean matchPassword(int complexity, String password){
-        return switch (complexity) {
-            case 1 -> password.matches("^[a-z]+$");
-            case 2 -> password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]+$");
-            case 3 -> password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()\\-_=+<>?])[a-zA-Z\\d!@#$%^&*()\\-_=+<>?]+$");
-            default -> throw new IllegalArgumentException("Unexpected value: " + complexity);
-        };
-    }
-
-    /**
-     * Метод генерации пароля
-     *
-     * @param length - длина пароля
-     * @param chars - допустимые символы для пароля
-     * @return сгенерированный пароль
-     */
-    private String generatePassword(int length, String chars) {
+    public String generatePassword(int length, int complexity) {
         StringBuilder password = new StringBuilder(length);
+        String characterSet = LOWERCASE;
 
-        for (int i = 0; i < length; i++) {
-            int index = random.nextInt(chars.length());
-            password.append(chars.charAt(index));
+        if (complexity >= 2) {
+            characterSet += DIGITS + UPPERCASE;
         }
+        if (complexity == 3) {
+            characterSet += SPECIAL_CHARACTERS;
+        }
+
+        if (complexity >= 2) {
+            password.append(getRandomCharacter(DIGITS));
+            password.append(getRandomCharacter(UPPERCASE));
+            password.append(getRandomCharacter(LOWERCASE));
+        }
+        if (complexity == 3) {
+            password.append(getRandomCharacter(DIGITS));
+            password.append(getRandomCharacter(SPECIAL_CHARACTERS));
+            password.append(getRandomCharacter(UPPERCASE));
+            password.append(getRandomCharacter(LOWERCASE));
+        }
+
+        while (password.length() < length) {
+            password.append(getRandomCharacter(characterSet));
+        }
+
         return password.toString();
     }
 
     /**
-     * Определяет набор символов в зависимости от сложности.
-     *
-     * @param complexity сложность пароля
-     * @return строка символов для использования в пароле
+     * Получает случайный символ из набора
+     * @param characters набор символов
      */
-    private String getCharsForPassword(int complexity) {
-        String lowercase = "abcdefghijklmnopqrstuvwxyz";
-        String digits = "0123456789";
-        String uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String specialChars = "!@#$%^&*()-_=+<>?";
-
-        return switch (complexity) {
-            case 1 -> lowercase;
-            case 2 -> lowercase + uppercase + digits;
-            case 3 -> lowercase + uppercase + digits + specialChars;
-            default -> throw new IllegalArgumentException("Unexpected value: " + complexity);
-        };
+    private char getRandomCharacter(String characters) {
+        return characters.charAt(random.nextInt(characters.length()));
     }
 }

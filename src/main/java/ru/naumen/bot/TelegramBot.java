@@ -3,7 +3,7 @@ package ru.naumen.bot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -18,16 +18,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Сервис по принятию и отправки сообщений в бота
+ * Телеграм бот
  */
-@Service
+@Component
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final Logger log = LoggerFactory.getLogger(TelegramBot.class);
     private final CommandService commandService;
     private final String botName;
 
-    public TelegramBot(@Value("${bot.token}") String botToken, CommandService commandService, @Value("${bot.name}") String botName) {
+    public TelegramBot(@Value("${bot.token}") String botToken,
+                       CommandService commandService,
+                       @Value("${bot.name}") String botName) {
         super(botToken);
         this.commandService = commandService;
         this.botName = botName;
@@ -45,9 +47,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             String messageText = update.getMessage().getText();
             String chatId = update.getMessage().getChatId().toString();
             long userId = update.getMessage().getFrom().getId();
-            String username = update.getMessage().getFrom().getUserName();
 
-            Response response = commandService.performCommand(messageText, userId, username);
+            Response response = commandService.performCommand(messageText, userId);
             sendMessageToChat(response, chatId);
         }
     }
@@ -76,6 +77,12 @@ public class TelegramBot extends TelegramLongPollingBot {
                 || response.botState().equals(State.EDIT_STEP_3)) {
             List<KeyboardRow> keyboardRows = complexityKeyBoard();
             replyKeyboardMarkup.setKeyboard(keyboardRows);
+        } else if (response.botState().equals(State.SORT_STEP_1)) {
+            List<KeyboardRow> keyboardRows = sortKeyBoard();
+            replyKeyboardMarkup.setKeyboard(keyboardRows);
+        } else if (response.botState().equals(State.IN_LIST)) {
+            List<KeyboardRow> keyboardRows = listKeyBoard();
+            replyKeyboardMarkup.setKeyboard(keyboardRows);
         } else {
             replyKeyboardMarkup.setKeyboard(List.of());
         }
@@ -87,6 +94,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     * Клавиатура с выбором сложности
+     */
     private List<KeyboardRow> complexityKeyBoard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
@@ -100,6 +110,45 @@ public class TelegramBot extends TelegramLongPollingBot {
         return keyboardRows;
     }
 
+    /**
+     * Клавиатура с выбором типа сортировки
+     */
+    private List<KeyboardRow> sortKeyBoard() {
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow keyboardRowFirst = new KeyboardRow();
+        keyboardRowFirst.add(new KeyboardButton(Command.BY_DATE));
+        keyboardRowFirst.add(new KeyboardButton(Command.BY_DESCRIPTION));
+
+        keyboardRows.add(keyboardRowFirst);
+
+        return keyboardRows;
+    }
+
+    /**
+     * Клавиатура в менеджере паролей
+     */
+    private List<KeyboardRow> listKeyBoard() {
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow keyboardRowFirst = new KeyboardRow();
+        keyboardRowFirst.add(new KeyboardButton(Command.MENU_KEYBOARD));
+        keyboardRowFirst.add(new KeyboardButton(Command.DELETE_KEYBOARD));
+        keyboardRowFirst.add(new KeyboardButton(Command.EDIT_KEYBOARD));
+
+        KeyboardRow keyboardRowSecond = new KeyboardRow();
+        keyboardRowSecond.add(new KeyboardButton(Command.SORT_KEYBOARD));
+        keyboardRowSecond.add(new KeyboardButton(Command.FIND_KEYBOARD));
+
+        keyboardRows.add(keyboardRowFirst);
+        keyboardRows.add(keyboardRowSecond);
+
+        return keyboardRows;
+    }
+
+    /**
+     * Клавиатура основная
+     */
     private List<KeyboardRow> mainKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
@@ -107,14 +156,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         keyboardRowFirst.add(new KeyboardButton(Command.GENERATE_KEYBOARD));
         keyboardRowFirst.add(new KeyboardButton(Command.SAVE_KEYBOARD));
         keyboardRowFirst.add(new KeyboardButton(Command.LIST_KEYBOARD));
-
-        KeyboardRow keyboardRowSecond = new KeyboardRow();
-        keyboardRowSecond.add(new KeyboardButton(Command.DELETE_KEYBOARD));
-        keyboardRowSecond.add(new KeyboardButton(Command.EDIT_KEYBOARD));
-        keyboardRowSecond.add(new KeyboardButton(Command.HELP_KEYBOARD));
+        keyboardRowFirst.add(new KeyboardButton(Command.HELP_KEYBOARD));
 
         keyboardRows.add(keyboardRowFirst);
-        keyboardRows.add(keyboardRowSecond);
         return keyboardRows;
     }
 

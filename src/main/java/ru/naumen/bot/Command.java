@@ -16,13 +16,21 @@ public class Command {
     public static final String SAVE = "/save";
     public static final String SAVE_KEYBOARD = "Сохранить";
     public static final String LIST = "/list";
-    public static final String LIST_KEYBOARD = "Пароли";
+    public static final String LIST_KEYBOARD = "Менеджер";
     public static final String HELP = "/help";
     public static final String HELP_KEYBOARD = "Помощь";
     public static final String START = "/start";
+    public static final String SORT = "/sort";
+    public static final String SORT_KEYBOARD = "Сортировать";
+    public static final String FIND = "/find";
+    public static final String FIND_KEYBOARD = "Искать";
     public static final String COMPLEXITY_1 = "1";
     public static final String COMPLEXITY_2 = "2";
     public static final String COMPLEXITY_3 = "3";
+    public static final String BY_DATE = "Дате";
+    public static final String BY_DESCRIPTION = "Описанию";
+    public static final String MENU_KEYBOARD = "Меню";
+    public static final int COMMAND_WITHOUT_PARAMS_LENGTH = 1;
     /**
      * Отображение, в которой ключи - команды,
      * значения - список допустимых количеств параметров, передаваемых вместе с командой.
@@ -34,7 +42,9 @@ public class Command {
             LIST, List.of(0),
             EDIT, List.of(3, 4, 0),
             DELETE, List.of(1, 0),
-            HELP, List.of(0)
+            HELP, List.of(0),
+            SORT, List.of(0),
+            FIND, List.of(1, 0)
     );
     /**
      * Отображение, где кнопки соотносятся с командами
@@ -45,9 +55,15 @@ public class Command {
             DELETE_KEYBOARD, DELETE,
             SAVE_KEYBOARD, SAVE,
             LIST_KEYBOARD, LIST,
-            HELP_KEYBOARD, HELP
+            HELP_KEYBOARD, HELP,
+            SORT_KEYBOARD, SORT,
+            FIND_KEYBOARD, FIND,
+            MENU_KEYBOARD, START
     );
 
+    /**
+     * Приватный конструктор, чтобы нельзя было создавать объекты
+     */
     private Command() {
     }
 }

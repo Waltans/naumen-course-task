@@ -22,44 +22,36 @@ public class UserService {
     }
 
     /**
-     * Создаёт пользователя и сохраняет в БД или обновляет его
+     * Создаёт пользователя и сохраняет в БД, если его ещё нет
      *
-     * @param telegramId ID пользователя в telegram
-     * @param name       имя пользоваетля
+     * @param id ID пользователя
      */
     @Transactional
-    public void createUser(long telegramId, String name) {
-        User user = new User(name, telegramId);
-
-        userRepository.save(user);
-        log.info("Создан пользователь с telegram id {}", telegramId);
-    }
-
-    /**
-     * Возвращает пользователя по его Telegram ID.
-     *
-     * @param telegramId telegram ID пользователя
-     */
-    @Transactional(readOnly = true)
-    public User getUserByTelegramId(long telegramId) throws UserNotFoundException {
-        User user = userRepository.findByTelegramId(telegramId);
-
-        if (user == null) {
-            throw new UserNotFoundException(String.format("Пользователь с id %s не найден", telegramId));
+    public void createUserIfUserNotExists(long id) {
+        if (userRepository.existsById(id)) {
+            log.trace("Пользователь с Id {} уже существует", id);
         } else {
-            log.debug("Найден пользователь с id {}", telegramId);
-            return user;
+            User user = new User(id);
+
+            userRepository.save(user);
+            log.info("Создан пользователь с id {}", id);
         }
     }
 
     /**
-     * Проверяет существование пользователя по указанному telegramId
+     * Возвращает пользователя по его ID.
      *
-     * @param telegramId ID пользователя в telegram
-     * @return true, если пользователь существует, иначе - false
+     * @param id ID пользователя
      */
     @Transactional(readOnly = true)
-    public boolean isUserExists(long telegramId) {
-        return userRepository.existsByTelegramId(telegramId);
+    public User getUserById(long id) throws UserNotFoundException {
+        User user = userRepository.findById(id);
+
+        if (user == null) {
+            throw new UserNotFoundException(String.format("Пользователь с id %s не найден", id));
+        } else {
+            log.debug("Найден пользователь с id {}", id);
+            return user;
+        }
     }
 }

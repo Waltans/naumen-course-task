@@ -1,0 +1,96 @@
+package ru.naumen.bot;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import ru.naumen.model.State;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Класс модульных тестов UserStateCache
+ */
+class UserStateCacheTest {
+
+    private UserStateCache userStateCache;
+
+    /**
+     * Создаёт новый объект кэша перед каждым тестом
+     */
+    @BeforeEach
+    void setUp() {
+        userStateCache = new UserStateCache();
+    }
+
+    /**
+     * Тест метода возврата состояние пользователя, если его нет в кэше
+     */
+    @Test
+    void getUserStateNotInCache() {
+        State result = userStateCache.getUserState(12345L);
+
+        assertEquals(State.NONE, result);
+    }
+
+    /**
+     * Тест метода возврата состояние пользователя, если он есть в кэше
+     * Заодно тестирует метод установки состояния при отсутствии в кэше
+     */
+    @Test
+    void getUserStateUserInCache() {
+        userStateCache.setState(12345L, State.FIND_STEP_1);
+        State result = userStateCache.getUserState(12345L);
+
+        assertEquals(State.FIND_STEP_1, result);
+    }
+
+    /**
+     * Тест метода установки состояния при наличии в кэше
+     */
+    @Test
+    void setUserStateUserInCache() {
+        userStateCache.setState(12345L, State.NONE);
+        userStateCache.setState(12345L, State.GENERATION_STEP_1);
+        State result = userStateCache.getUserState(12345L);
+
+        assertEquals(State.GENERATION_STEP_1, result);
+    }
+
+    /**
+     * Тест метода получения параметров пользователя при отсутствии в кэше
+     */
+    @Test
+    void getUserParamsUserNotInCache() {
+        List<String> result = userStateCache.getUserParams(12345L);
+        assertTrue(result.isEmpty());
+    }
+
+    /**
+     * Тест метода получения параметров пользователя при наличии в кэше
+     * Заодно тестирует метод добавления параметров при отсутствии в кэше
+     */
+    @Test
+    void getUserParams_ShouldReturnExistingParams_WhenUserInCache() {
+        userStateCache.addParam(12345L, "param1");
+
+        List<String> result = userStateCache.getUserParams(12345L);
+
+        assertEquals(1, result.size());
+        assertTrue(result.contains("param1"));
+    }
+
+    /**
+     * Тест метода добавления параметров при наличии в кэше
+     */
+    @Test
+    void addParam_ShouldAddMultipleParamsToUser_WhenCalledMultipleTimes() {
+        userStateCache.addParam(12345L, "param1");
+        userStateCache.addParam(12345L, "param2");
+
+        List<String> result = userStateCache.getUserParams(12345L);
+
+        assertEquals(2, result.size());
+        assertTrue(result.contains("param2"));
+    }
+}

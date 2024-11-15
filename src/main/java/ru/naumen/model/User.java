@@ -13,24 +13,11 @@ import java.util.Objects;
 public class User {
 
     /**
-     * Уникальный идентификатор пользователя, UUID.
+     * Идентификатор пользователя
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "uuid", unique = true, nullable = false)
-    private String uuid;
-
-    /**
-     * Имя пользователя
-     */
-    @Column(name = "username", nullable = false)
-    private String username;
-
-    /**
-     * Идентификатор пользователя в Telegram
-     */
     @Column(name = "telegram_id", nullable = false)
-    private long telegramId;
+    private long id;
 
     /**
      * Список паролей пользователя
@@ -38,10 +25,8 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserPassword> userPasswords;
 
-    public User(String uuid, String username, long telegramId, List<UserPassword> userPasswords) {
-        this.uuid = uuid;
-        this.username = username;
-        this.telegramId = telegramId;
+    public User(long id, List<UserPassword> userPasswords) {
+        this.id = id;
         this.userPasswords = userPasswords;
     }
 
@@ -49,17 +34,8 @@ public class User {
 
     }
 
-    public User(String username, long telegramId) {
-        this.username = username;
-        this.telegramId = telegramId;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public String getUsername() {
-        return username;
+    public User(long id) {
+        this.id = id;
     }
 
     public List<UserPassword> getPasswords() {
@@ -70,16 +46,12 @@ public class User {
         this.userPasswords.add(userPassword);
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public long getId() {
+        return id;
     }
 
-    public long getTelegramId() {
-        return telegramId;
-    }
-
-    public void setTelegramId(long telegramId) {
-        this.telegramId = telegramId;
+    public void setId(long telegramId) {
+        this.id = telegramId;
     }
 
     @Override
@@ -87,11 +59,11 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return telegramId == user.telegramId && Objects.equals(uuid, user.uuid);
+        return id == user.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uuid, telegramId);
+        return Objects.hash(id);
     }
 }

@@ -42,10 +42,24 @@ public class Constants {
     public static final String ENTER_PASSWORD_DESCRIPTION = "Введите описание пароля";
 
     public static final String ENTER_PASSWORD = "Введите пароль";
+    public static final String CHOOSE_SORT_TYPE = "Отсортировать пароли по:";
 
     public static final String ENTER_PASSWORD_INDEX = "Введите индекс пароля";
 
     public static final String FAILURE = "Что-то пошло не так :( ";
+
+    public static final String NO_PASSWORDS_FOUND = "Не найдены пароли по вашему запросу";
+    public static final String ENTER_SEARCH_REQUEST = "Введите поисковый запрос";
+    public static final String USER_NOT_FOUND = "Пользователь не найден";
+
+    public static final String ENCRYPT_EXCEPTION = "Ошибка шифрования пароля";
+
+    public static final String DECRYPT_EXCEPTION = "Ошибка дешифрования пароля";
+    public static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
+    public static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
+    public static final int COMMAND_WITHOUT_PARAMS_LENGTH = 1;
+    public static int MINIMUM_PASSWORD_LENGTH = 8;
+    public static int MAXIMUM_PASSWORD_LENGTH = 128;
 
     /**
      * Приватный конструктор, чтобы нельзя было создавать объекты
