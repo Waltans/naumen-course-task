@@ -17,7 +17,7 @@ import static ru.naumen.model.State.*;
  * Хэндлер поиска паролей
  */
 @Component
-public class FindHandler {
+public class FindHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final EncodeService encodeService;
@@ -29,44 +29,29 @@ public class FindHandler {
     }
 
 
-    /**
-     * Ищет пароли
-     * @param splitCommand разделённая по пробелам команда
-     * @param userId id пользователя
-     * @return сообщение со списком паролей
-     */
-    public Response findPasswords(String[] splitCommand, Long userId) {
+    @Override
+    public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
-            userStateCache.getTotalUserState().put(userId, FIND_STEP_1);
-            userStateCache.getTotalUserParams().put(userId, new ArrayList<>());
+            userStateCache.setState(userId, FIND_STEP_1);
             return new Response(ENTER_SEARCH_REQUEST, FIND_STEP_1);
         }
 
         String searchRequest = splitCommand[1];
-        List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
+        List<UserPassword> foundPasswords = passwordService.getUserPasswordsWithPartialDescription(userId, searchRequest);
 
-        if (!userPasswords.isEmpty()) {
-            List<UserPassword> foundPasswords = userPasswords.stream()
-                        .filter(pass -> pass.getDescription().startsWith(searchRequest))
-                        .toList();
-
-            if (foundPasswords.isEmpty()) {
-                userStateCache.getTotalUserState().put(userId, NONE);
-                return new Response(NO_PASSWORDS_FOUND, NONE);
-            }
-
-            StringBuilder stringBuilder = new StringBuilder();
-            for (int i = 0; i < foundPasswords.size(); i++) {
-                String description = foundPasswords.get(i).getDescription();
-                String password = encodeService.decryptData(foundPasswords.get(i).getPassword());
-                stringBuilder.append(String.format(PASSWORD_LIST_FORMAT, i + 1, description, password));
-            }
-
-            userStateCache.getTotalUserState().put(userId, NONE);
-            return new Response(stringBuilder.toString(), NONE);
-        } else {
-            userStateCache.getTotalUserState().put(userId, NONE);
-            return new Response(NO_PASSWORDS_MESSAGE, NONE);
+        if (foundPasswords.isEmpty()) {
+            userStateCache.setState(userId, NONE);
+            return new Response(NO_PASSWORDS_FOUND, NONE);
         }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < foundPasswords.size(); i++) {
+            String description = foundPasswords.get(i).getDescription();
+            String password = encodeService.decryptData(foundPasswords.get(i).getPassword());
+            stringBuilder.append(String.format(PASSWORD_LIST_FORMAT, i + 1, description, password));
+        }
+
+        userStateCache.setState(userId, NONE);
+        return new Response(stringBuilder.toString(), NONE);
     }
 }

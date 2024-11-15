@@ -9,16 +9,14 @@ import ru.naumen.service.PasswordService;
 
 import java.util.List;
 
-import static ru.naumen.bot.Constants.NO_PASSWORDS_MESSAGE;
-import static ru.naumen.bot.Constants.PASSWORD_LIST_FORMAT;
-import static ru.naumen.model.State.IN_LIST;
-import static ru.naumen.model.State.NONE;
+import static ru.naumen.bot.Constants.*;
+import static ru.naumen.model.State.*;
 
 /**
  * Хэндлер получения списка паролей
  */
 @Component
-public class ListHandler {
+public class ListHandler implements CommandHandler {
     private final EncodeService encodeService;
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
@@ -29,13 +27,8 @@ public class ListHandler {
         this.userStateCache = userStateCache;
     }
 
-    /**
-     * Получает список паролей пользователя
-     *
-     * @param userId ID пользователя
-     * @return сообщение со списком
-     */
-    public Response getUserPasswords(long userId) {
+    @Override
+    public Response handle(String[] splitCommand, long userId) {
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
         if (userPasswords.isEmpty()) {
@@ -49,7 +42,7 @@ public class ListHandler {
             stringBuilder.append(String.format(PASSWORD_LIST_FORMAT, i + 1, description, password));
         }
 
-        userStateCache.getTotalUserState().put(userId, IN_LIST);
+        userStateCache.setState(userId, IN_LIST);
         return new Response(stringBuilder.toString(), IN_LIST);
     }
 }

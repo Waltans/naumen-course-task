@@ -9,9 +9,11 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.exception.IncorrectSortTypeException;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
+import ru.naumen.service.SortType;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -41,32 +43,31 @@ class SortHandlerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        Mockito.when(userStateCache.getTotalUserParams()).thenReturn(new ConcurrentHashMap<>());
-        Mockito.when(userStateCache.getTotalUserState()).thenReturn(new ConcurrentHashMap<>());
-        userStateCache.getTotalUserParams().put(12345L, new ArrayList<>());
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
     }
 
     /**
      * Тест сортировки по описанию
      */
     @Test
-    void testSortPasswords_ByDescription() {
+    void testSortPasswords_ByDescription() throws IncorrectSortTypeException {
         String[] command = {"Описанию"};
-        List<UserPassword> userPasswords = List.of(
-                new UserPassword("bdesc", "pass1", null),
-                new UserPassword("adesc", "pass2", null)
+        List<UserPassword> passwords = List.of(
+                new UserPassword("adesc", "pass2", null),
+                new UserPassword("bdesc", "pass1", null)
         );
 
         String expectedResponse = "\n" +
                 "1) Сайт: adesc, Пароль: dpass2\n" +
                 "2) Сайт: bdesc, Пароль: dpass1";
 
-        userStateCache.getTotalUserState().put(12345L, SORT_STEP_1);
-        Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(SORT_STEP_1);
+        Mockito.when(passwordService.getUserPasswordsSorted(12345L, SortType.BY_DESCRIPTION)).thenReturn(passwords);
         Mockito.when(encodeService.decryptData("pass1")).thenReturn("dpass1");
         Mockito.when(encodeService.decryptData("pass2")).thenReturn("dpass2");
 
-        Response response = sortHandler.sortPasswords(command, 12345L);
+        Response response = sortHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResponse, response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -76,12 +77,12 @@ class SortHandlerTest {
      * Тест сортировки по дате
      */
     @Test
-    void testSortPasswords_ByDate() {
+    void testSortPasswords_ByDate() throws IncorrectSortTypeException {
         String[] command = {"Дате"};
-        List<UserPassword> userPasswords = List.of(
+        List<UserPassword> passwords = List.of(
                 new UserPassword("uuid1", "desc1", "pass1", null, LocalDate.of(2010, 1 ,1)),
-                new UserPassword("uuid2", "desc2", "pass2", null, LocalDate.of(2013, 1,1)),
-                new UserPassword("uuid3", "desc3", "pass3", null, LocalDate.of(2012, 1,1))
+                new UserPassword("uuid3", "desc3", "pass3", null, LocalDate.of(2012, 1,1)),
+                new UserPassword("uuid2", "desc2", "pass2", null, LocalDate.of(2013, 1,1))
         );
 
         String expectedResponse = "\n" +
@@ -89,13 +90,13 @@ class SortHandlerTest {
                 "2) Сайт: desc3, Пароль: dpass3\n" +
                 "3) Сайт: desc2, Пароль: dpass2";
 
-        userStateCache.getTotalUserState().put(12345L, SORT_STEP_1);
-        Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(SORT_STEP_1);
+        Mockito.when(passwordService.getUserPasswordsSorted(12345L, SortType.BY_DATE)).thenReturn(passwords);
         Mockito.when(encodeService.decryptData("pass1")).thenReturn("dpass1");
         Mockito.when(encodeService.decryptData("pass2")).thenReturn("dpass2");
         Mockito.when(encodeService.decryptData("pass3")).thenReturn("dpass3");
 
-        Response response = sortHandler.sortPasswords(command, 12345L);
+        Response response = sortHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResponse, response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -105,14 +106,14 @@ class SortHandlerTest {
      * Тест сортировки, если нет паролей
      */
     @Test
-    void testSortPasswords_Empty() {
+    void testSortPasswords_Empty() throws IncorrectSortTypeException {
         String[] command = {"Дате"};
-        List<UserPassword> userPasswords = new ArrayList<>();
+        List<UserPassword> passwords = new ArrayList<>();
 
-        userStateCache.getTotalUserState().put(12345L, SORT_STEP_1);
-        Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(SORT_STEP_1);
+        Mockito.when(passwordService.getUserPasswordsSorted(12345L, SortType.BY_DATE)).thenReturn(passwords);
 
-        Response response = sortHandler.sortPasswords(command, 12345L);
+        Response response = sortHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Нет ни одного пароля. Справка: /help", response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -125,8 +126,8 @@ class SortHandlerTest {
     void testSortPasswords_WithoutParams() {
         String[] command = {"Сортировать"};
 
-        userStateCache.getTotalUserState().put(12345L, NONE);
-        Response response = sortHandler.sortPasswords(command, 12345L);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(NONE);
+        Response response = sortHandler.handle(command, 12345L);
 
         Assertions.assertEquals(CHOOSE_SORT_TYPE, response.message());
         Assertions.assertEquals(SORT_STEP_1, response.botState());

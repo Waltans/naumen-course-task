@@ -37,8 +37,7 @@ class StartHelpHandlerTest {
      */
     @Test
     void testStartCommand() {
-        String username = "testUser";
-
+        String[] command = {"/start"};
         String expectedResult = "Здравствуйте. Я бот, который поможет Вам генерировать и управлять паролями.\n\n" +
                 "Доступны следующие команды:\n" +
                 "- /generate [length] [complexity] – Генерировать пароль длиной [length] символов и сложностью [complexity] (1, 2 или 3, где 1 - простой, 3 - сложный);\n" +
@@ -48,8 +47,8 @@ class StartHelpHandlerTest {
                 "- /del [passwordID] – Удалить сохранённый пароль с ID [passwordID];\n" +
                 "- /help - Справка.";
 
-        Mockito.doNothing().when(userService).createUserIfUserNotExists(12345L, "testUser");
-        Response response = startHelpHandler.startCommand(12345L, username);
+        Mockito.doNothing().when(userService).createUserIfUserNotExists(12345L);
+        Response response = startHelpHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResult, response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -60,6 +59,7 @@ class StartHelpHandlerTest {
      */
     @Test
     void testHelpCommand() {
+        String[] command = {"/help"};
         String expectedResult = "Здравствуйте. Я бот, который поможет Вам генерировать и управлять паролями.\n\n" +
                 "Доступны следующие команды:\n" +
                 "- /generate [length] [complexity] – Генерировать пароль длиной [length] символов и сложностью [complexity] (1, 2 или 3, где 1 - простой, 3 - сложный);\n" +
@@ -69,7 +69,7 @@ class StartHelpHandlerTest {
                 "- /del [passwordID] – Удалить сохранённый пароль с ID [passwordID];\n" +
                 "- /help - Справка.";
 
-        Response response = startHelpHandler.helpCommand(12345L);
+        Response response = startHelpHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResult, response.message());
         Assertions.assertEquals(NONE, response.botState());

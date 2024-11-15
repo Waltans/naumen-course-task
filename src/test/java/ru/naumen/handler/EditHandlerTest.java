@@ -15,6 +15,7 @@ import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -61,7 +62,7 @@ class EditHandlerTest {
         Mockito.when(passwordService.generatePassword(12, 3)).thenReturn("npass");
         Mockito.when(passwordService.findPasswordByUuid("uuid")).thenReturn(password);
 
-        Response response = editHandler.updatePassword(command, 12345L);
+        Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Обновлён пароль для newd: npass", response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -84,7 +85,7 @@ class EditHandlerTest {
         Mockito.when(passwordService.generatePassword(12, 3)).thenReturn("npass");
         Mockito.when(passwordService.findPasswordByUuid("uuid")).thenReturn(password);
 
-        Response response = editHandler.updatePassword(command, 12345L);
+        Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Обновлён пароль для d: npass", response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -99,7 +100,7 @@ class EditHandlerTest {
         Mockito.when(validationService.areNumbersEditCommandParams(command)).thenReturn(true);
         Mockito.when(validationService.isValidPasswordIndex(12345L, 5)).thenReturn(false);
 
-        Response response = editHandler.updatePassword(command, 12345L);
+        Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Не найден пароль с id 5", response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -111,10 +112,10 @@ class EditHandlerTest {
     @Test
     void testUpdatePassword_WithoutParams() {
         String[] command = {"Изменить"};
-        Mockito.when(userStateCache.getTotalUserState()).thenReturn(new ConcurrentHashMap<>());
-        Mockito.when(userStateCache.getTotalUserParams()).thenReturn(new ConcurrentHashMap<>());
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
 
-        Response response = editHandler.updatePassword(command, 12345L);
+        Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals(ENTER_PASSWORD_INDEX, response.message());
         Assertions.assertEquals(EDIT_STEP_1, response.botState());
@@ -128,7 +129,7 @@ class EditHandlerTest {
         String[] command = {"/edit", "s"};
         Mockito.when(validationService.areNumbersEditCommandParams(command)).thenReturn(false);
 
-        Response response = editHandler.updatePassword(command, 12345L);
+        Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals(INCORRECT_COMMAND_RESPONSE, response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -147,7 +148,7 @@ class EditHandlerTest {
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
 
-        Response response = editHandler.updatePassword(command, 12345L);
+        Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
         Assertions.assertEquals(NONE, response.botState());

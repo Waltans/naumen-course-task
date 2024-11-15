@@ -2,6 +2,7 @@ package ru.naumen.service;
 
 import org.springframework.transaction.annotation.Transactional;
 import ru.naumen.exception.EncryptException;
+import ru.naumen.exception.IncorrectSortTypeException;
 import ru.naumen.exception.PasswordNotFoundException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
@@ -64,6 +65,41 @@ public class PasswordService {
     public List<UserPassword> getUserPasswords(long userId) {
         return userPasswordRepository.findByUserId(userId);
     }
+
+    /**
+     * Ищет пароли у конкретного пользователя
+     *
+     * @param userId ID пользователя
+     * @param searchRequest поисковый запрос пароля (частичное описание без учёта регистра)
+     */
+    @Transactional(readOnly = true)
+    public List<UserPassword> getUserPasswordsWithPartialDescription(long userId, String searchRequest) {
+        return userPasswordRepository.findByDescriptionContainsIgnoreCaseAndUserId(searchRequest, userId);
+        // TODO test
+    }
+
+    /**
+     * Ищет пароли у конкретного пользователя
+     *
+     * @param userId ID пользователя
+     * @return список с отсортированными паролями или пустой список, если паролей у пользователя нет
+     */
+    @Transactional(readOnly = true)
+    public List<UserPassword> getUserPasswordsSorted(long userId, SortType sortType) throws IncorrectSortTypeException {
+        switch (sortType) {
+            case BY_DATE -> {
+                return userPasswordRepository.findByUserIdOrderByLastModifyDate(userId);
+            }
+            case BY_DESCRIPTION -> {
+                return userPasswordRepository.findByUserIdOrderByDescriptionAsc(userId);
+            }
+            default -> {
+                throw new IncorrectSortTypeException("Некорректный тип сортировки!");
+            }
+        }
+        // TODO test
+    }
+
 
     /**
      * Удаляет пароль

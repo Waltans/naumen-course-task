@@ -4,13 +4,14 @@ import org.springframework.stereotype.Component;
 import ru.naumen.bot.Command;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.exception.IncorrectSortTypeException;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
+import ru.naumen.service.SortType;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import static ru.naumen.bot.Constants.*;
@@ -20,7 +21,7 @@ import static ru.naumen.model.State.*;
  * Хэндлер сортировки паролей
  */
 @Component
-public class SortHandler {
+public class SortHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final EncodeService encodeService;
@@ -32,28 +33,25 @@ public class SortHandler {
     }
 
 
-    /**
-     * Сортирует пароли по указанному в команде параметру
-     * @param splitCommand разделённая по пробелам команда
-     * @param userId id пользователя
-     * @return сообщение со списком паролей
-     */
-    public Response sortPasswords(String[] splitCommand, Long userId) {
-        State currentState = userStateCache.getTotalUserState().get(userId);
+    @Override
+    public Response handle(String[] splitCommand, long userId) {
+        State currentState = userStateCache.getUserState(userId);
 
         if (currentState.equals(SORT_STEP_1)) {
             String sortType = splitCommand[0];
-            List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-            if (!userPasswords.isEmpty()) {
+            try {
                 List<UserPassword> sortedPasswords = new ArrayList<>();
                 switch (sortType) {
-                    case Command.BY_DATE -> sortedPasswords = userPasswords.stream()
-                            .sorted(Comparator.comparing(UserPassword::getLastModifyDate))
-                            .toList();
-                    case Command.BY_DESCRIPTION -> sortedPasswords = userPasswords.stream()
-                                    .sorted((p1, p2) -> p1.getDescription().compareToIgnoreCase(p2.getDescription()))
-                                    .toList();
+                    case Command.BY_DATE ->
+                            sortedPasswords = passwordService.getUserPasswordsSorted(userId, SortType.BY_DATE);
+                    case Command.BY_DESCRIPTION ->
+                            sortedPasswords = passwordService.getUserPasswordsSorted(userId, SortType.BY_DESCRIPTION);
+                }
+
+                if (sortedPasswords.isEmpty()) {
+                    userStateCache.setState(userId, NONE);
+                    return new Response(NO_PASSWORDS_MESSAGE, NONE);
                 }
 
                 StringBuilder stringBuilder = new StringBuilder();
@@ -63,15 +61,15 @@ public class SortHandler {
                     stringBuilder.append(String.format(PASSWORD_LIST_FORMAT, i + 1, description, password));
                 }
 
-                userStateCache.getTotalUserState().put(userId, NONE);
+                userStateCache.setState(userId, NONE);
                 return new Response(stringBuilder.toString(), NONE);
-            } else {
-                userStateCache.getTotalUserState().put(userId, NONE);
-                return new Response(NO_PASSWORDS_MESSAGE, NONE);
+            } catch (IncorrectSortTypeException e) {
+                userStateCache.setState(userId, IN_LIST);
+                return new Response(INCORRECT_COMMAND_RESPONSE, IN_LIST);
             }
+
         } else {
-            userStateCache.getTotalUserState().put(userId, SORT_STEP_1);
-            userStateCache.getTotalUserParams().put(userId, new ArrayList<>());
+            userStateCache.setState(userId, SORT_STEP_1);
             return new Response(CHOOSE_SORT_TYPE, SORT_STEP_1);
         }
     }

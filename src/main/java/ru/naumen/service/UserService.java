@@ -25,14 +25,13 @@ public class UserService {
      * Создаёт пользователя и сохраняет в БД, если его ещё нет
      *
      * @param id ID пользователя
-     * @param name       имя пользоваетля
      */
     @Transactional
-    public void createUserIfUserNotExists(long id, String name) {
+    public void createUserIfUserNotExists(long id) {
         if (userRepository.existsById(id)) {
             log.trace("Пользователь с Id {} уже существует", id);
         } else {
-            User user = new User(name, id);
+            User user = new User(id);
 
             userRepository.save(user);
             log.info("Создан пользователь с id {}", id);

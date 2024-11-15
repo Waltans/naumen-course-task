@@ -55,7 +55,11 @@ public class Constants {
     public static final String ENCRYPT_EXCEPTION = "Ошибка шифрования пароля";
 
     public static final String DECRYPT_EXCEPTION = "Ошибка дешифрования пароля";
+    public static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
+    public static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
     public static final int COMMAND_WITHOUT_PARAMS_LENGTH = 1;
+    public static int MINIMUM_PASSWORD_LENGTH = 8;
+    public static int MAXIMUM_PASSWORD_LENGTH = 128;
 
     /**
      * Приватный конструктор, чтобы нельзя было создавать объекты

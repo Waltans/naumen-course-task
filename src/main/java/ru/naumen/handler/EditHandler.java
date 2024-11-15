@@ -14,20 +14,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static ru.naumen.bot.Constants.*;
-import static ru.naumen.model.State.EDIT_STEP_1;
-import static ru.naumen.model.State.NONE;
-
+import static ru.naumen.model.State.*;
 /**
  * Хэндлер изменения пароля
  */
 @Component
-public class EditHandler {
+public class EditHandler implements CommandHandler {
 
     private final Logger log = LoggerFactory.getLogger(EditHandler.class);
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final ValidationService validationService;
-    private static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
 
     public EditHandler(PasswordService passwordService, UserStateCache userStateCache, ValidationService validationService) {
         this.passwordService = passwordService;
@@ -35,22 +32,15 @@ public class EditHandler {
         this.validationService = validationService;
     }
 
-    /**
-     * Обновляет пароль, генерирует новый по заданным параметрам.
-     * Если описание не передано, туда подставляется null (т.е. не обновляется)
-     *
-     * @param splitCommand разделённая по пробелам команда
-     * @param userId       ID пользователя
-     * @return сообщение с паролем или с ошибкой
-     */
-    public Response updatePassword(String[] splitCommand, long userId) {
+    @Override
+    public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length != COMMAND_WITHOUT_PARAMS_LENGTH &&
                 !validationService.areNumbersEditCommandParams(splitCommand)) {
+            userStateCache.setState(userId, NONE);
             return new Response(INCORRECT_COMMAND_RESPONSE, NONE);
         }
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
-            userStateCache.getTotalUserState().put(userId, EDIT_STEP_1);
-            userStateCache.getTotalUserParams().put(userId, new ArrayList<>());
+            userStateCache.setState(userId, EDIT_STEP_1);
 
             return new Response(ENTER_PASSWORD_INDEX, EDIT_STEP_1);
         }
@@ -59,7 +49,7 @@ public class EditHandler {
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
         if (!validationService.isValidPasswordIndex(userId, passwordIndex)){
-            userStateCache.getTotalUserState().put(userId, NONE);
+            userStateCache.setState(userId, NONE);
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
         }
 
@@ -79,7 +69,7 @@ public class EditHandler {
             passwordByUuid = passwordService.findPasswordByUuid(uuid);
         } catch (PasswordNotFoundException e) {
             log.error(e.getMessage());
-            userStateCache.getTotalUserState().put(userId, NONE);
+            userStateCache.setState(userId, NONE);
 
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
         }
@@ -91,7 +81,7 @@ public class EditHandler {
         }
 
         passwordService.updatePassword(uuid, description, newPassword);
-        userStateCache.getTotalUserState().put(userId, NONE);
+        userStateCache.setState(userId, NONE);
 
         return new Response(String.format(PASSWORD_UPDATED_MESSAGE, description, newPassword), NONE);
     }

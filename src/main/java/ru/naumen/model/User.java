@@ -13,12 +13,6 @@ import java.util.Objects;
 public class User {
 
     /**
-     * Имя пользователя
-     */
-    @Column(name = "username", nullable = false)
-    private String username;
-
-    /**
      * Идентификатор пользователя
      */
     @Id
@@ -31,8 +25,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserPassword> userPasswords;
 
-    public User(String username, long id, List<UserPassword> userPasswords) {
-        this.username = username;
+    public User(long id, List<UserPassword> userPasswords) {
         this.id = id;
         this.userPasswords = userPasswords;
     }
@@ -41,13 +34,8 @@ public class User {
 
     }
 
-    public User(String username, long id) {
-        this.username = username;
+    public User(long id) {
         this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     public List<UserPassword> getPasswords() {
@@ -56,10 +44,6 @@ public class User {
 
     public void setPasswords(UserPassword userPassword) {
         this.userPasswords.add(userPassword);
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public long getId() {

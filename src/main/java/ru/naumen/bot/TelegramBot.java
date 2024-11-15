@@ -47,9 +47,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             String messageText = update.getMessage().getText();
             String chatId = update.getMessage().getChatId().toString();
             long userId = update.getMessage().getFrom().getId();
-            String username = update.getMessage().getFrom().getUserName();
 
-            Response response = commandService.performCommand(messageText, userId, username);
+            Response response = commandService.performCommand(messageText, userId);
             sendMessageToChat(response, chatId);
         }
     }

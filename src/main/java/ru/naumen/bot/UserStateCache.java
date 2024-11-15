@@ -3,6 +3,7 @@ package ru.naumen.bot;
 import org.springframework.stereotype.Component;
 import ru.naumen.model.State;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,12 +28,51 @@ public class UserStateCache {
      */
     private final Map<Long, List<String>> totalUserParams = new ConcurrentHashMap<>();
 
-    public Map<Long, State> getTotalUserState() {
-        return totalUserState;
+    /**
+     * Возвращает состояние пользователя. Добавляет его в кэш, если его нет
+     * @param userId Id пользователя
+     */
+    public State getUserState(long userId) {
+        if (totalUserState.containsKey(userId)) {
+            return totalUserState.get(userId);
+        } else {
+            totalUserState.put(userId, State.NONE);
+            return State.NONE;
+        }
     }
 
-    public Map<Long, List<String>> getTotalUserParams() {
-        return totalUserParams;
+    /**
+     * Возвращает параметры пользователя. Добавляет его в кэш, если его нет
+     * @param userId Id пользователя
+     */
+    public List<String> getUserParams(long userId) {
+        if (totalUserParams.containsKey(userId)) {
+            return totalUserParams.get(userId);
+        } else {
+            totalUserParams.put(userId, new ArrayList<>());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Добавляет параметр пользователю
+     * @param userId Id пользователя
+     * @param param параметр
+     */
+    public void addParam(long userId, String param) {
+        if (!totalUserParams.containsKey(userId)) {
+            totalUserParams.put(userId, new ArrayList<>());
+        }
+        totalUserParams.get(userId).add(param);
+    }
+
+    /**
+     * Устанавливает состояние пользователю
+     * @param userId Id пользователя
+     * @param state состояние
+     */
+    public void setState(long userId, State state) {
+        totalUserState.put(userId, state);
     }
 }
 

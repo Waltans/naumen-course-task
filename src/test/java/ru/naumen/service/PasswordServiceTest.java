@@ -1,5 +1,6 @@
 package ru.naumen.service;
 
+import ru.naumen.exception.IncorrectSortTypeException;
 import ru.naumen.exception.PasswordNotFoundException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
@@ -76,6 +77,62 @@ class PasswordServiceTest {
     }
 
     /**
+     * Тест поиска паролей по частичному описанию
+     */
+    @Test
+    void testGetUserPasswordsWithPartialDescription() {
+        long userId = 12345L;
+        String searchRequest = "mat";
+        List<UserPassword> passwords = List.of(
+                new UserPassword(UUID.randomUUID().toString(), "match", "pass1", new User(), LocalDate.now()),
+                new UserPassword(UUID.randomUUID().toString(), "mat123", "pass2", new User(), LocalDate.now())
+        );
+
+        Mockito.when(userPasswordRepository.findByDescriptionContainsIgnoreCaseAndUserId(searchRequest, userId))
+                .thenReturn(passwords);
+
+        List<UserPassword> result = passwordService.getUserPasswordsWithPartialDescription(userId, searchRequest);
+
+        Assertions.assertEquals(passwords, result);
+    }
+
+    /**
+     * Тест получения отсортированных паролей по дате
+     */
+    @Test
+    void testGetUserPasswordsSorted_ByDate() throws IncorrectSortTypeException {
+        long userId = 12345L;
+        List<UserPassword> passwords = List.of(
+                new UserPassword("uuid", "desc1", "pass1", new User(), LocalDate.of(2021, 1, 1)),
+                new UserPassword("uuid", "desc2", "pass2", new User(), LocalDate.of(2023, 1, 1))
+        );
+
+        Mockito.when(userPasswordRepository.findByUserIdOrderByLastModifyDate(userId)).thenReturn(passwords);
+
+        List<UserPassword> result = passwordService.getUserPasswordsSorted(userId, SortType.BY_DATE);
+
+        Assertions.assertEquals(passwords, result);
+    }
+
+    /**
+     * Тест получения отсортированных паролей по описанию
+     */
+    @Test
+    void testGetUserPasswordsSorted_ByDescription() throws IncorrectSortTypeException {
+        long userId = 12345L;
+        List<UserPassword> passwords = List.of(
+                new UserPassword(UUID.randomUUID().toString(), "A desc", "pass1", new User(), LocalDate.now()),
+                new UserPassword(UUID.randomUUID().toString(), "Z desc", "pass2", new User(), LocalDate.now())
+        );
+
+        Mockito.when(userPasswordRepository.findByUserIdOrderByDescriptionAsc(userId)).thenReturn(passwords);
+
+        List<UserPassword> result = passwordService.getUserPasswordsSorted(userId, SortType.BY_DESCRIPTION);
+
+        Assertions.assertEquals(passwords, result);
+    }
+
+    /**
      * Тест подсчёта паролей
      */
     @Test
@@ -97,7 +154,7 @@ class PasswordServiceTest {
     void testFindPasswordByUuid() throws PasswordNotFoundException {
         String passUuid = UUID.randomUUID().toString();
         
-        User user = new User("name", 12345L, new ArrayList<>());
+        User user = new User(12345L, new ArrayList<>());
         UserPassword password = new UserPassword(passUuid, "desc", "pass", user, LocalDate.of(2010, 1, 1));
 
         Mockito.when(userPasswordRepository.findByUuid(passUuid)).thenReturn(password);
@@ -128,7 +185,7 @@ class PasswordServiceTest {
     void testUpdatePassword() {
         
         String passUuid = UUID.randomUUID().toString();
-        User user = new User("name", 12345L, new ArrayList<>());
+        User user = new User(12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user, LocalDate.of(2010, 1, 1));
 
         String newPass = "newPass";

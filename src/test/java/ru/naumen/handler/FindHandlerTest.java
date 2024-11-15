@@ -13,6 +13,7 @@ import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,12 +48,12 @@ class FindHandlerTest {
     @Test
     void testFindPasswords() {
         String[] command = {"/find", "de"};
-        List<UserPassword> userPasswords = List.of(new UserPassword("desc", "pass", null));
+        List<UserPassword> passwords = List.of(new UserPassword("desc", "pass", null));
 
-        Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
+        Mockito.when(passwordService.getUserPasswordsWithPartialDescription(12345L, "de")).thenReturn(passwords);
         Mockito.when(encodeService.decryptData("pass")).thenReturn("dpass");
 
-        Response response = findHandler.findPasswords(command, 12345L);
+        Response response = findHandler.handle(command, 12345L);
 
         Assertions.assertEquals("\n1) Сайт: desc, Пароль: dpass", response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -64,11 +65,9 @@ class FindHandlerTest {
     @Test
     void testFindPasswords_WithNoResults() {
         String[] command = {"/find", "no"};
-        List<UserPassword> userPasswords = List.of(new UserPassword("desc", "pass", null));
+        Mockito.when(passwordService.getUserPasswordsWithPartialDescription(12345L, "no")).thenReturn(new ArrayList<>());
 
-        Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
-
-        Response response = findHandler.findPasswords(command, 12345L);
+        Response response = findHandler.handle(command, 12345L);
 
         Assertions.assertEquals(NO_PASSWORDS_FOUND, response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -80,10 +79,10 @@ class FindHandlerTest {
     @Test
     void testFindPasswords_WithoutParams() {
         String[] command = {"Искать"};
-        Mockito.when(userStateCache.getTotalUserState()).thenReturn(new ConcurrentHashMap<>());
-        Mockito.when(userStateCache.getTotalUserParams()).thenReturn(new ConcurrentHashMap<>());
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
 
-        Response response = findHandler.findPasswords(command, 12345L);
+        Response response = findHandler.handle(command, 12345L);
 
         Assertions.assertEquals(ENTER_SEARCH_REQUEST, response.message());
         Assertions.assertEquals(FIND_STEP_1, response.botState());

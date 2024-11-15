@@ -30,6 +30,7 @@ public class Command {
     public static final String BY_DATE = "Дате";
     public static final String BY_DESCRIPTION = "Описанию";
     public static final String MENU_KEYBOARD = "Меню";
+    public static final int COMMAND_WITHOUT_PARAMS_LENGTH = 1;
     /**
      * Отображение, в которой ключи - команды,
      * значения - список допустимых количеств параметров, передаваемых вместе с командой.

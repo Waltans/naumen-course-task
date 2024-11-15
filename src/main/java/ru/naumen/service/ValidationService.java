@@ -7,8 +7,8 @@ import ru.naumen.model.State;
 
 import java.util.List;
 
-import static ru.naumen.model.State.IN_LIST;
-import static ru.naumen.model.State.NONE;
+import static ru.naumen.bot.Constants.*;
+import static ru.naumen.model.State.*;
 
 
 /**
@@ -20,8 +20,6 @@ public class ValidationService {
     private final PasswordService passwordService;
 
     private final UserStateCache userStateCache;
-    private static int MINIMUM_PASSWORD_LENGTH = 8;
-    private static int MAXIMUM_PASSWORD_LENGTH = 128;
 
     public ValidationService(PasswordService passwordService, UserStateCache userStateCache) {
         this.passwordService = passwordService;
@@ -39,7 +37,7 @@ public class ValidationService {
         String command = splitCommand[0];
         int paramsCount = splitCommand.length - 1;
 
-        State state = userStateCache.getTotalUserState().get(userId);
+        State state = userStateCache.getUserState(userId);
         if (state != null && !state.equals(NONE) && !state.equals(IN_LIST)) {
             return switch (state) {
                 case SAVE_STEP_1, SAVE_STEP_2, EDIT_STEP_4, FIND_STEP_1 -> true;

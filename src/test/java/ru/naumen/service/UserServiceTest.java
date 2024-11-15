@@ -33,9 +33,8 @@ class UserServiceTest {
     @Test
     void testCreateUserIfUserNotExists() {
         long id = 12345L;
-        String name = "TestUser";
 
-        userService.createUserIfUserNotExists(id, name);
+        userService.createUserIfUserNotExists(id);
 
         Mockito.verify(userRepository, Mockito.times(1)).save(ArgumentMatchers.any(User.class));
     }
@@ -46,7 +45,7 @@ class UserServiceTest {
     @Test
     void testGetUserById_UserExists() throws UserNotFoundException {
         long id = 12345L;
-        User user = new User("TestUser", id);
+        User user = new User(id);
 
         Mockito.when(userRepository.findById(id)).thenReturn(user);
 

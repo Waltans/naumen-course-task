@@ -3,7 +3,6 @@ package ru.naumen.handler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -13,7 +12,6 @@ import ru.naumen.service.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static ru.naumen.bot.Constants.*;
 import static ru.naumen.model.State.*;
@@ -44,16 +42,40 @@ class NonCommandHandlerTest {
     @Mock
     private FindHandler findHandler;
 
-    @InjectMocks
+    @Mock
+    private GenerateHandler generateHandler;
+
+    @Mock
+    private ListHandler listHandler;
+
+    @Mock
+    private StartHelpHandler startHelpHandler;
+
     private NonCommandHandler nonCommandHandler;
 
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        Mockito.when(userStateCache.getTotalUserParams()).thenReturn(new ConcurrentHashMap<>());
-        Mockito.when(userStateCache.getTotalUserState()).thenReturn(new ConcurrentHashMap<>());
-        userStateCache.getTotalUserParams().put(12345L, new ArrayList<>());
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+
+        HandlerMapper handlerMapper = new HandlerMapper(
+                deleteHandler,
+                editHandler,
+                findHandler,
+                generateHandler,
+                listHandler,
+                saveHandler,
+                sortHandler,
+                startHelpHandler
+        );
+
+                nonCommandHandler = new NonCommandHandler(
+                userStateCache,
+                validationService,
+                handlerMapper
+        );
     }
 
     /**
@@ -63,7 +85,7 @@ class NonCommandHandlerTest {
     void testGetComplexity() {
         Response response = nonCommandHandler.getComplexity("3", 12345L, SAVE_STEP_2, "complexity entered");
 
-        List<String> params = userStateCache.getTotalUserParams().get(12345L);
+        List<String> params = userStateCache.getUserParams(12345L);
         Assertions.assertEquals("3", params.get(0));
         Assertions.assertEquals(SAVE_STEP_2, response.botState());
         Assertions.assertEquals("complexity entered", response.message());
@@ -78,7 +100,7 @@ class NonCommandHandlerTest {
 
         Assertions.assertEquals(ENTER_PASSWORD_COMPLEXITY, response.message());
         Assertions.assertEquals(SAVE_STEP_1, response.botState());
-        Assertions.assertEquals("8", userStateCache.getTotalUserParams().get(12345L).get(0));
+        Mockito.verify(userStateCache).addParam(12345L, "8");
     }
 
     /**
@@ -86,11 +108,10 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetDescriptionWhenSave() {
-        userStateCache.getTotalUserState().put(12345L, SAVE_STEP_2);
-        userStateCache.getTotalUserParams().get(12345L).add("pass");
-
         String[] splitCommand = {"/save", "pass", "desc"};
-        Mockito.when(saveHandler.savePassword(splitCommand, 12345L))
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(SAVE_STEP_2);
+        Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("pass"));
+        Mockito.when(saveHandler.handle(splitCommand, 12345L))
                 .thenReturn(new Response("pass saved", NONE));
 
         Response response = nonCommandHandler.getDescription("desc", 12345L, NONE, null);
@@ -104,13 +125,10 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetDescriptionWhenEdit() {
-        userStateCache.getTotalUserState().put(12345L, EDIT_STEP_4);
-        userStateCache.getTotalUserParams().get(12345L).add("1");
-        userStateCache.getTotalUserParams().get(12345L).add("12");
-        userStateCache.getTotalUserParams().get(12345L).add("3");
-
         String[] splitCommand = {"/edit", "1", "12", "3", "desc"};
-        Mockito.when(editHandler.updatePassword(splitCommand, 12345L))
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(EDIT_STEP_4);
+        Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("1", "12", "3"));
+        Mockito.when(editHandler.handle(splitCommand, 12345L))
                 .thenReturn(new Response("pass updated", NONE));
 
         Response response = nonCommandHandler.getDescription("desc", 12345L, NONE, null);
@@ -128,7 +146,7 @@ class NonCommandHandlerTest {
 
         Assertions.assertEquals("Введите описание пароля", response.message());
         Assertions.assertEquals(SAVE_STEP_2, response.botState());
-        Assertions.assertEquals("pass", userStateCache.getTotalUserParams().get(12345L).get(0));
+        Mockito.verify(userStateCache).addParam(12345L, "pass");
     }
 
     /**
@@ -136,7 +154,7 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetIndexPasswordWhenEdit() {
-        userStateCache.getTotalUserState().put(12345L, EDIT_STEP_1);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(EDIT_STEP_1);
         Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
 
         Response response = nonCommandHandler.getIndexPassword("1", 12345L);
@@ -150,11 +168,11 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetIndexPasswordWhenDelete() {
-        userStateCache.getTotalUserState().put(12345L, DELETE_STEP_1);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(DELETE_STEP_1);
         Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
 
         String[] splitCommand = {"/del", "1"};
-        Mockito.when(deleteHandler.deletePassword(splitCommand, 12345L))
+        Mockito.when(deleteHandler.handle(splitCommand, 12345L))
                 .thenReturn(new Response("pass deleted", NONE));
 
         Response response = nonCommandHandler.getIndexPassword("1", 12345L);
@@ -168,9 +186,9 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetSortType() {
-        userStateCache.getTotalUserState().put(12345L, SORT_STEP_1);
         String[] splitCommand = {"Дате"};
-        Mockito.when(sortHandler.sortPasswords(splitCommand, 12345L)).thenReturn(new Response("sorted", NONE));
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(SORT_STEP_1);
+        Mockito.when(sortHandler.handle(splitCommand, 12345L)).thenReturn(new Response("sorted", NONE));
 
         Response response = nonCommandHandler.getSortType("Дате", 12345L);
 
@@ -183,9 +201,9 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetSearchRequest() {
-        userStateCache.getTotalUserState().put(12345L, FIND_STEP_1);
         String[] splitCommand = {"/find", "query"};
-        Mockito.when(findHandler.findPasswords(splitCommand, 12345L)).thenReturn(new Response("found", NONE));
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(FIND_STEP_1);
+        Mockito.when(findHandler.handle(splitCommand, 12345L)).thenReturn(new Response("found", NONE));
 
         Response response = nonCommandHandler.getSearchRequest("query", 12345L);
 

@@ -9,21 +9,17 @@ import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.service.PasswordService;
 
-import java.util.ArrayList;
-
 import static ru.naumen.bot.Constants.*;
-import static ru.naumen.model.State.NONE;
-import static ru.naumen.model.State.SAVE_STEP_1;
+import static ru.naumen.model.State.*;
 
 /**
  * Хэндлер сохранения пароля
  */
 @Component
-public class SaveHandler {
+public class SaveHandler implements CommandHandler {
 
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
-    private static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
     private final Logger log = LoggerFactory.getLogger(SaveHandler.class);
 
     public SaveHandler(PasswordService passwordService, UserStateCache userStateCache) {
@@ -31,17 +27,10 @@ public class SaveHandler {
         this.userStateCache = userStateCache;
     }
 
-    /**
-     * Сохраняет пароль для пользователя. Если описание не передано, туда подставляется "Неизвестно"
-     *
-     * @param splitCommand разделённая по пробелам команда
-     * @param userId       ID пользователя
-     * @return сообщение о сохранении
-     */
-    public Response savePassword(String[] splitCommand, long userId) {
+    @Override
+    public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
-            userStateCache.getTotalUserState().put(userId, SAVE_STEP_1);
-            userStateCache.getTotalUserParams().put(userId, new ArrayList<>());
+            userStateCache.setState(userId, SAVE_STEP_1);
 
             return new Response(ENTER_PASSWORD, SAVE_STEP_1);
         }

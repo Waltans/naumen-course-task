@@ -17,27 +17,16 @@ public class CommandService {
     private final UserStateCache userStateCache;
     private final ValidationService validationService;
     private final NonCommandHandler nonCommandHandler;
-    private final GenerateHandler generateHandler;
-    private final EditHandler editHandler;
-    private final DeleteHandler deleteHandler;
-    private final SaveHandler saveHandler;
-    private final ListHandler listHandler;
-    private final StartHelpHandler startHelpHandler;
-    private final SortHandler sortHandler;
-    private final FindHandler findHandler;
+    private final HandlerMapper handlerMapper;
 
-    public CommandService(UserStateCache userStateCache, ValidationService validationService, NonCommandHandler nonCommandHandler, GenerateHandler generateHandler, EditHandler editHandler, DeleteHandler deleteHandler, SaveHandler saveHandler, ListHandler listHandler, StartHelpHandler startHelpHandler, SortHandler sortHandler, FindHandler findHandler) {
+    public CommandService(UserStateCache userStateCache,
+                          ValidationService validationService,
+                          NonCommandHandler nonCommandHandler,
+                          HandlerMapper handlerMapper) {
         this.userStateCache = userStateCache;
         this.validationService = validationService;
         this.nonCommandHandler = nonCommandHandler;
-        this.generateHandler = generateHandler;
-        this.editHandler = editHandler;
-        this.deleteHandler = deleteHandler;
-        this.saveHandler = saveHandler;
-        this.listHandler = listHandler;
-        this.startHelpHandler = startHelpHandler;
-        this.sortHandler = sortHandler;
-        this.findHandler = findHandler;
+        this.handlerMapper = handlerMapper;
     }
 
     /**
@@ -45,17 +34,16 @@ public class CommandService {
      *
      * @param message  текст команды
      * @param userId   ID пользователя
-     * @param username имя пользователя
      * @return ответ на команду и состояние пользователя
      */
-    public Response performCommand(String message, long userId, String username) {
+    public Response performCommand(String message, long userId) {
         String[] splitCommand = message.split(" ");
 
         if (!validationService.isValidCommand(splitCommand, userId)) {
-            return new Response(INCORRECT_COMMAND_RESPONSE, userStateCache.getTotalUserState().get(userId));
+            return new Response(INCORRECT_COMMAND_RESPONSE, userStateCache.getUserState(userId));
         }
 
-        return doCommand(userId, splitCommand, username);
+        return doCommand(userId, splitCommand);
     }
 
     /**
@@ -64,17 +52,24 @@ public class CommandService {
      * @param splitCommand - разделенная команда
      * @return - результат обработки команды
      */
-    private Response doCommand(long userId, String[] splitCommand, String username) {
+    private Response doCommand(long userId, String[] splitCommand) {
         return switch (splitCommand[0]) {
-            case Command.GENERATE, Command.GENERATE_KEYBOARD -> generateHandler.generatePassword(splitCommand, userId);
-            case Command.SAVE, Command.SAVE_KEYBOARD -> saveHandler.savePassword(splitCommand, userId);
-            case Command.LIST, Command.LIST_KEYBOARD -> listHandler.getUserPasswords(userId);
-            case Command.DELETE, Command.DELETE_KEYBOARD -> deleteHandler.deletePassword(splitCommand, userId);
-            case Command.EDIT, Command.EDIT_KEYBOARD -> editHandler.updatePassword(splitCommand, userId);
-            case Command.HELP, Command.HELP_KEYBOARD -> startHelpHandler.helpCommand(userId);
-            case Command.START, Command.MENU_KEYBOARD -> startHelpHandler.startCommand(userId, username);
-            case Command.SORT, Command.SORT_KEYBOARD -> sortHandler.sortPasswords(splitCommand, userId);
-            case Command.FIND, Command.FIND_KEYBOARD -> findHandler.findPasswords(splitCommand, userId);
+            case Command.GENERATE, Command.GENERATE_KEYBOARD ->
+                    handlerMapper.getHandler(Command.GENERATE).handle(splitCommand, userId);
+            case Command.SAVE, Command.SAVE_KEYBOARD ->
+                    handlerMapper.getHandler(Command.SAVE).handle(splitCommand, userId);
+            case Command.LIST, Command.LIST_KEYBOARD ->
+                    handlerMapper.getHandler(Command.LIST).handle(splitCommand, userId);
+            case Command.DELETE, Command.DELETE_KEYBOARD ->
+                    handlerMapper.getHandler(Command.DELETE).handle(splitCommand, userId);
+            case Command.EDIT, Command.EDIT_KEYBOARD ->
+                    handlerMapper.getHandler(Command.EDIT).handle(splitCommand, userId);
+            case Command.HELP, Command.HELP_KEYBOARD, Command.START, Command.MENU_KEYBOARD
+                    -> handlerMapper.getHandler(Command.HELP).handle(splitCommand, userId);
+            case Command.SORT, Command.SORT_KEYBOARD
+                    -> handlerMapper.getHandler(Command.SORT).handle(splitCommand, userId);
+            case Command.FIND, Command.FIND_KEYBOARD
+                    -> handlerMapper.getHandler(Command.FIND).handle(splitCommand, userId);
             default -> performNotCommandMessage(splitCommand, userId);
         };
     }
@@ -91,7 +86,7 @@ public class CommandService {
             return new Response(INCORRECT_COMMAND_RESPONSE, NONE);
         }
         final String command = splitCommand[0];
-        return switch (userStateCache.getTotalUserState().get(userId)) {
+        return switch (userStateCache.getUserState(userId)) {
             case GENERATION_STEP_1 -> nonCommandHandler.getPasswordLength(command, userId, GENERATION_STEP_2);
             case GENERATION_STEP_2 -> nonCommandHandler.getComplexity(command, userId, NONE, null);
             case SAVE_STEP_1 -> nonCommandHandler.getPassword(command, userId, SAVE_STEP_2);

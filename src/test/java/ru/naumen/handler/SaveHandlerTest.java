@@ -12,6 +12,7 @@ import ru.naumen.bot.UserStateCache;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.service.PasswordService;
 
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static ru.naumen.bot.Constants.*;
@@ -43,10 +44,10 @@ class SaveHandlerTest {
     @Test
     void testSavePassword_WithoutParams() {
         String[] command = {"Сохранить"};
-        Mockito.when(userStateCache.getTotalUserState()).thenReturn(new ConcurrentHashMap<>());
-        Mockito.when(userStateCache.getTotalUserParams()).thenReturn(new ConcurrentHashMap<>());
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
 
-        Response response = saveHandler.savePassword(command, 12345L);
+        Response response = saveHandler.handle(command, 12345L);
 
         Assertions.assertEquals(ENTER_PASSWORD, response.message());
         Assertions.assertEquals(SAVE_STEP_1, response.botState());
@@ -58,9 +59,9 @@ class SaveHandlerTest {
     @Test
     void testSavePassword_NoDescription() throws UserNotFoundException {
         String[] command = {"/save", "password"};
-        Mockito.when(userStateCache.getTotalUserParams()).thenReturn(new ConcurrentHashMap<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
 
-        Response response = saveHandler.savePassword(command, 12345L);
+        Response response = saveHandler.handle(command, 12345L);
 
         Mockito.verify(passwordService).createUserPassword("password", "Неизвестно", 12345L);
         Assertions.assertEquals(PASSWORD_SAVED_MESSAGE, response.message());
@@ -73,9 +74,9 @@ class SaveHandlerTest {
     @Test
     void testSavePassword_WithDescription() throws UserNotFoundException {
         String[] command = {"/save", "pass", "desc"};
-        Mockito.when(userStateCache.getTotalUserParams()).thenReturn(new ConcurrentHashMap<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
 
-        Response response = saveHandler.savePassword(command, 12345L);
+        Response response = saveHandler.handle(command, 12345L);
 
         Mockito.verify(passwordService).createUserPassword("pass", "desc", 12345L);
         Assertions.assertEquals(PASSWORD_SAVED_MESSAGE, response.message());

@@ -38,7 +38,7 @@ class ValidationServiceTest {
     @Test
     void testIsValidCommand_ValidCommand() {
         String[] splitCommand = {"/generate", "14", "3"};
-        when(userStateCache.getTotalUserState()).thenReturn(Map.of(12345L, State.NONE));
+        when(userStateCache.getUserState(12345L)).thenReturn(State.NONE);
 
         Assertions.assertTrue(validationService.isValidCommand(splitCommand, 12345L));
     }
@@ -49,7 +49,7 @@ class ValidationServiceTest {
     @Test
     void testIsValidCommand_ValidCommandFromButton() {
         String[] splitCommand = {"Генерировать"};
-        when(userStateCache.getTotalUserState()).thenReturn(Map.of(12345L, State.NONE));
+        when(userStateCache.getUserState(12345L)).thenReturn(State.NONE);
 
         Assertions.assertTrue(validationService.isValidCommand(splitCommand, 12345L));
     }
@@ -60,7 +60,7 @@ class ValidationServiceTest {
     @Test
     void testIsValidCommand_ValidCommandInState() {
         String[] splitCommand = {"20"};
-        when(userStateCache.getTotalUserState()).thenReturn(Map.of(12345L, State.GENERATION_STEP_1));
+        when(userStateCache.getUserState(12345L)).thenReturn(State.GENERATION_STEP_1);
 
         Assertions.assertTrue(validationService.isValidCommand(splitCommand, 12345L));
     }
@@ -71,7 +71,7 @@ class ValidationServiceTest {
     @Test
     void testIsValidCommand_InvalidCommand() {
         String[] splitCommand = {"/generate", "10", "abc"};
-        when(userStateCache.getTotalUserState()).thenReturn(Map.of(12345L, State.GENERATION_STEP_1));
+        when(userStateCache.getUserState(12345L)).thenReturn(State.GENERATION_STEP_1);
 
         Assertions.assertFalse(validationService.isValidCommand(splitCommand, 12345L));
     }
@@ -180,7 +180,7 @@ class ValidationServiceTest {
     @Test
     void testIsValidCommand_Sort() {
         String[] splitCommand = {"Дате"};
-        when(userStateCache.getTotalUserState()).thenReturn(Map.of(12345L, State.SORT_STEP_1));
+        when(userStateCache.getUserState(12345L)).thenReturn(State.SORT_STEP_1);
 
         Assertions.assertTrue(validationService.isValidCommand(splitCommand, 12345L));
     }
@@ -191,7 +191,7 @@ class ValidationServiceTest {
     @Test
     void testIsValidCommand_SortInvalid() {
         String[] splitCommand = {"smth"};
-        when(userStateCache.getTotalUserState()).thenReturn(Map.of(12345L, State.SORT_STEP_1));
+        when(userStateCache.getUserState(12345L)).thenReturn(State.SORT_STEP_1);
 
         Assertions.assertFalse(validationService.isValidCommand(splitCommand, 12345L));
     }

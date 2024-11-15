@@ -45,9 +45,10 @@ class ListHandlerTest {
      */
     @Test
     void testGetUserPasswords_NoPasswords() {
+        String[] command = {"/list"};
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(List.of());
 
-        Response response = listHandler.getUserPasswords(12345L);
+        Response response = listHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Нет ни одного пароля. Справка: /help", response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -58,6 +59,7 @@ class ListHandlerTest {
      */
     @Test
     void testGetUserPasswords_WithPasswords() {
+        String[] command = {"/list"};
         UserPassword userPassword1 = new UserPassword("d1", "pass1", null);
         UserPassword userPassword2 = new UserPassword("d2", "pass2", null);
         List<UserPassword> userPasswords = List.of(userPassword1, userPassword2);
@@ -66,7 +68,7 @@ class ListHandlerTest {
         Mockito.when(encodeService.decryptData("pass1")).thenReturn("dpass1");
         Mockito.when(encodeService.decryptData("pass2")).thenReturn("dpass2");
 
-        Response response = listHandler.getUserPasswords(12345L);
+        Response response = listHandler.handle(command, 12345L);
         String expectedMessage = String.format("\n%s) Сайт: %s, Пароль: %s", 1, "d1", "dpass1") +
                 String.format("\n%s) Сайт: %s, Пароль: %s", 2, "d2", "dpass2");
 

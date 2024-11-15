@@ -11,6 +11,8 @@ import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
+
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static ru.naumen.model.State.*;
@@ -49,7 +51,7 @@ class GenerateHandlerTest {
         Mockito.when(validationService.isValidComplexity(3)).thenReturn(true);
 
         String[] command = {"/generate", "12", "3"};
-        Response response = generateHandler.generatePassword(command, 12345L);
+        Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Сгенерирован пароль: generatedPassword", response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -66,7 +68,7 @@ class GenerateHandlerTest {
 
         String[] command = {"/generate", "4", "3"};
 
-        Response response = generateHandler.generatePassword(command, 12345L);
+        Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -83,7 +85,7 @@ class GenerateHandlerTest {
 
         String[] command = {"/generate", "129", "3"};
 
-        Response response = generateHandler.generatePassword(command, 12345L);
+        Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -103,7 +105,7 @@ class GenerateHandlerTest {
                 "3 - сложный пароль.";
 
 
-        Response response = generateHandler.generatePassword(command, 12345L);
+        Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResponse, response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -119,7 +121,7 @@ class GenerateHandlerTest {
         String[] command = {"/generate", "ab", "4"};
         String expectedResponse = "Введена некорректная команда! Справка: /help";
 
-        Response response = generateHandler.generatePassword(command, 12345L);
+        Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResponse, response.message());
         Assertions.assertEquals(NONE, response.botState());
@@ -133,11 +135,9 @@ class GenerateHandlerTest {
         String[] command = {"Генерировать"};
         String expectedResponse = "Введите длину пароля";
 
-        Mockito.when(userStateCache.getTotalUserState())
-                .thenReturn(new ConcurrentHashMap<>());
-        Mockito.when(userStateCache.getTotalUserParams())
-                .thenReturn(new ConcurrentHashMap<>());
-        Response response = generateHandler.generatePassword(command, 12345L);
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResponse, response.message());
         Assertions.assertEquals(GENERATION_STEP_1, response.botState());
