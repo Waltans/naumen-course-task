@@ -133,7 +133,7 @@ public class CommandService {
      * @param complexity - сложность пароля
      * @return корректна ли сложность
      */
-    private boolean checkComplexity(int complexity) {
+    private boolean isValidComplexity(int complexity) {
         return complexity == 1 || complexity == 2 || complexity == 3;
     }
 
@@ -143,7 +143,7 @@ public class CommandService {
      * @param length - длина пароля
      * @return корректна ли длина
      */
-    private boolean checkLength(int length) {
+    private boolean isValidLength(int length) {
         return length >= 8 && length <= 128;
     }
 
@@ -176,10 +176,10 @@ public class CommandService {
         int length = Integer.parseInt(splitCommand[1]);
         int complexity = Integer.parseInt(splitCommand[2]);
 
-        if (!checkComplexity(complexity)) {
+        if (!isValidComplexity(complexity)) {
             return COMPLEXITY_ERROR_MESSAGE;
         }
-        if (!checkLength(length)) {
+        if (!isValidLength(length)) {
             return LENGTH_ERROR_MESSAGE;
         }
         String password = passwordService.generatePassword(length, complexity);
@@ -291,10 +291,10 @@ public class CommandService {
         int length = Integer.parseInt(splitCommand[2]);
         int complexity = Integer.parseInt(splitCommand[3]);
 
-        if (!checkLength(length)){
+        if (!isValidLength(length)){
             return LENGTH_ERROR_MESSAGE;
         }
-        if (!checkComplexity(complexity)) {
+        if (!isValidComplexity(complexity)) {
             return COMPLEXITY_ERROR_MESSAGE;
         }
 
