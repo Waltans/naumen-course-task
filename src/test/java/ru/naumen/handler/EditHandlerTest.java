@@ -68,6 +68,7 @@ class EditHandlerTest {
         Assertions.assertEquals("Обновлён пароль для newd: npass", response.message());
         Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(passwordService).updatePassword("uuid", "newd", "npass");
+        Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
     /**

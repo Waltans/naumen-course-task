@@ -67,6 +67,7 @@ class SaveHandlerTest {
         Mockito.verify(passwordService).createUserPassword("password", "Неизвестно", 12345L);
         Assertions.assertEquals(PASSWORD_SAVED_MESSAGE, response.message());
         Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
     /**
@@ -82,5 +83,6 @@ class SaveHandlerTest {
         Mockito.verify(passwordService).createUserPassword("pass", "desc", 12345L);
         Assertions.assertEquals(PASSWORD_SAVED_MESSAGE, response.message());
         Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 }

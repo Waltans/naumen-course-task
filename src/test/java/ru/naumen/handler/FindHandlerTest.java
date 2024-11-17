@@ -58,6 +58,7 @@ class FindHandlerTest {
 
         Assertions.assertEquals("\n1) Сайт: desc, Пароль: dpass", response.message());
         Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
     /**

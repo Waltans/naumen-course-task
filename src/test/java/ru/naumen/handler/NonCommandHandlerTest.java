@@ -85,9 +85,10 @@ class NonCommandHandlerTest {
     void testGetComplexity() {
         Response response = nonCommandHandler.getComplexity("3", 12345L, SAVE_STEP_2, "complexity entered");
 
-        List<String> params = userStateCache.getUserParams(12345L);
-        Assertions.assertEquals("3", params.get(0));
+        Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("3"));
+
         Assertions.assertEquals(SAVE_STEP_2, response.botState());
+        Mockito.verify(userStateCache).addParam(12345L,"3");
         Assertions.assertEquals("complexity entered", response.message());
     }
 

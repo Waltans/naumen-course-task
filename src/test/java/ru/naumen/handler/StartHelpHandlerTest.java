@@ -52,6 +52,7 @@ class StartHelpHandlerTest {
 
         Assertions.assertEquals(expectedResult, response.message());
         Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
     /**
@@ -73,5 +74,6 @@ class StartHelpHandlerTest {
 
         Assertions.assertEquals(expectedResult, response.message());
         Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 }
