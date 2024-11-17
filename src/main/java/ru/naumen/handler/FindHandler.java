@@ -33,6 +33,7 @@ public class FindHandler implements CommandHandler {
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, FIND_STEP_1);
+
             return new Response(ENTER_SEARCH_REQUEST, FIND_STEP_1);
         }
 
@@ -41,6 +42,7 @@ public class FindHandler implements CommandHandler {
 
         if (foundPasswords.isEmpty()) {
             userStateCache.setState(userId, NONE);
+
             return new Response(NO_PASSWORDS_FOUND, NONE);
         }
 
@@ -52,6 +54,8 @@ public class FindHandler implements CommandHandler {
         }
 
         userStateCache.setState(userId, NONE);
+        userStateCache.clearParamsForUser(userId);
+
         return new Response(stringBuilder.toString(), NONE);
     }
 }

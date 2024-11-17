@@ -41,6 +41,8 @@ public class StartHelpHandler implements CommandHandler {
         }
 
         userStateCache.setState(userId, NONE);
+        userStateCache.clearParamsForUser(userId);
+
         return response;
     }
 }

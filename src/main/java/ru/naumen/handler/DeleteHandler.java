@@ -58,6 +58,7 @@ public class DeleteHandler implements CommandHandler {
         String description = userPasswords.get(passwordIndexInSystem).getDescription();
         passwordService.deletePassword(uuid);
         userStateCache.setState(userId, NONE);
+        userStateCache.clearParamsForUser(userId);
 
         return new Response(String.format(PASSWORD_DELETED_MESSAGE, description), NONE);
     }

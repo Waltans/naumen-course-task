@@ -40,11 +40,12 @@ public class NonCommandHandler {
         State currentState = userStateCache.getUserState(userId);
         try {
             validationService.isValidComplexity(Integer.parseInt(complexity));
+            userStateCache.addParam(userId, complexity);
             List<String> params = userStateCache.getUserParams(userId);
-            params.add(complexity);
+
             userStateCache.setState(userId, nextState);
             if (nextState == NONE) {
-                String[] splitCommand = {Command.EDIT, params.get(0), complexity};
+                String[] splitCommand = {Command.EDIT, params.getFirst(), complexity};
 
                 return handlerMapper.getHandler(Command.GENERATE).handle(splitCommand, userId);
             }
@@ -169,6 +170,7 @@ public class NonCommandHandler {
             return handlerMapper.getHandler(Command.SORT).handle(splitCommand, userId);
         }
 
+        userStateCache.clearParamsForUser(userId);
         return new Response(FAILURE, currentState);
     }
 
@@ -180,12 +182,14 @@ public class NonCommandHandler {
      */
     public Response getSearchRequest(String searchRequest, Long userId) {
         userStateCache.addParam(userId, searchRequest);
+
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(FIND_STEP_1)) {
             String[] splitCommand = {Command.FIND, searchRequest};
             return handlerMapper.getHandler(Command.FIND).handle(splitCommand, userId);
         }
 
+        userStateCache.clearParamsForUser(userId);
         return new Response(FAILURE, currentState);
     }
 }

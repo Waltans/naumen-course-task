@@ -55,6 +55,7 @@ class GenerateHandlerTest {
 
         Assertions.assertEquals("Сгенерирован пароль: generatedPassword", response.message());
         Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
     /**

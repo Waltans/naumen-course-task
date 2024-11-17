@@ -67,6 +67,7 @@ class DeleteHandlerTest {
         Assertions.assertEquals(NONE, response.botState());
 
         Mockito.verify(passwordService).deletePassword("uuid2");
+        Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
     /**

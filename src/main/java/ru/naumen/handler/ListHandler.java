@@ -43,6 +43,7 @@ public class ListHandler implements CommandHandler {
         }
 
         userStateCache.setState(userId, IN_LIST);
+
         return new Response(stringBuilder.toString(), IN_LIST);
     }
 }

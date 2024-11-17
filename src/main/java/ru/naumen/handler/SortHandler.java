@@ -62,6 +62,8 @@ public class SortHandler implements CommandHandler {
                 }
 
                 userStateCache.setState(userId, NONE);
+                userStateCache.clearParamsForUser(userId);
+
                 return new Response(stringBuilder.toString(), NONE);
             } catch (IncorrectSortTypeException e) {
                 userStateCache.setState(userId, IN_LIST);

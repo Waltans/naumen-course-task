@@ -10,11 +10,12 @@ import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static ru.naumen.bot.Constants.*;
-import static ru.naumen.model.State.*;
+import static ru.naumen.model.State.EDIT_STEP_1;
+import static ru.naumen.model.State.NONE;
+
 /**
  * Хэндлер изменения пароля
  */
@@ -48,7 +49,7 @@ public class EditHandler implements CommandHandler {
         int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        if (!validationService.isValidPasswordIndex(userId, passwordIndex)){
+        if (!validationService.isValidPasswordIndex(userId, passwordIndex)) {
             userStateCache.setState(userId, NONE);
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
         }
@@ -82,6 +83,7 @@ public class EditHandler implements CommandHandler {
 
         passwordService.updatePassword(uuid, description, newPassword);
         userStateCache.setState(userId, NONE);
+        userStateCache.clearParamsForUser(userId);
 
         return new Response(String.format(PASSWORD_UPDATED_MESSAGE, description, newPassword), NONE);
     }
