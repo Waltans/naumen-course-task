@@ -3,14 +3,18 @@ package ru.naumen.bot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import ru.naumen.model.State;
 import ru.naumen.service.CommandService;
 
@@ -21,7 +25,7 @@ import java.util.List;
  * Телеграм бот
  */
 @Component
-public class TelegramBot extends TelegramLongPollingBot {
+class TelegramBot extends TelegramLongPollingBot {
 
     private final Logger log = LoggerFactory.getLogger(TelegramBot.class);
     private final CommandService commandService;
@@ -33,6 +37,20 @@ public class TelegramBot extends TelegramLongPollingBot {
         super(botToken);
         this.commandService = commandService;
         this.botName = botName;
+    }
+
+    /**
+     * Метод инициализации бота, выполняется после поднятия контекста
+     */
+    @EventListener({ContextRefreshedEvent.class})
+    public void initialize() {
+        try{
+            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
+            telegramBotsApi.registerBot(this);
+        } catch (TelegramApiException e) {
+            log.error("Error initializing Bot", e);
+            System.exit(1);
+        }
     }
 
     /**
