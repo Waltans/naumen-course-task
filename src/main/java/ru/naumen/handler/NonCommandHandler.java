@@ -169,6 +169,7 @@ public class NonCommandHandler {
             return handlerMapper.getHandler(Command.SORT).handle(splitCommand, userId);
         }
 
+        userStateCache.clearParamsForUser(userId);
         return new Response(FAILURE, currentState);
     }
 
@@ -180,12 +181,14 @@ public class NonCommandHandler {
      */
     public Response getSearchRequest(String searchRequest, Long userId) {
         userStateCache.addParam(userId, searchRequest);
+
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(FIND_STEP_1)) {
             String[] splitCommand = {Command.FIND, searchRequest};
             return handlerMapper.getHandler(Command.FIND).handle(splitCommand, userId);
         }
 
+        userStateCache.clearParamsForUser(userId);
         return new Response(FAILURE, currentState);
     }
 }

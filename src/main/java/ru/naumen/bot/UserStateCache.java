@@ -30,6 +30,7 @@ public class UserStateCache {
 
     /**
      * Возвращает состояние пользователя. Добавляет его в кэш, если его нет
+     *
      * @param userId Id пользователя
      */
     public State getUserState(long userId) {
@@ -43,6 +44,7 @@ public class UserStateCache {
 
     /**
      * Возвращает параметры пользователя. Добавляет его в кэш, если его нет
+     *
      * @param userId Id пользователя
      */
     public List<String> getUserParams(long userId) {
@@ -56,8 +58,9 @@ public class UserStateCache {
 
     /**
      * Добавляет параметр пользователю
+     *
      * @param userId Id пользователя
-     * @param param параметр
+     * @param param  параметр
      */
     public void addParam(long userId, String param) {
         if (!totalUserParams.containsKey(userId)) {
@@ -68,11 +71,21 @@ public class UserStateCache {
 
     /**
      * Устанавливает состояние пользователю
+     *
      * @param userId Id пользователя
-     * @param state состояние
+     * @param state  состояние
      */
     public void setState(long userId, State state) {
         totalUserState.put(userId, state);
+    }
+
+    /**
+     * Метод очищает параметры для пользователя
+     *
+     * @param userId - id пользователя
+     */
+    public void clearParamsForUser(long userId) {
+        totalUserParams.remove(userId);
     }
 }
 

@@ -43,14 +43,19 @@ public class SaveHandler implements CommandHandler {
                 String description = splitCommand[2];
                 passwordService.createUserPassword(password, description, userId);
             }
+            userStateCache.clearParamsForUser(userId);
 
             return new Response(PASSWORD_SAVED_MESSAGE, NONE);
         } catch (UserNotFoundException e){
             log.error("Ошибка при сохранении пароля - не найден пользователь", e);
+            userStateCache.clearParamsForUser(userId);
+
             return new Response(USER_NOT_FOUND, NONE);
         }
         catch (EncryptException e){
             log.error("Ошибка шифрования при сохранении пароля", e);
+            userStateCache.clearParamsForUser(userId);
+
             return new Response(ENCRYPT_EXCEPTION, NONE);
         }
     }

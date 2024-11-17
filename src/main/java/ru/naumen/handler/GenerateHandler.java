@@ -44,6 +44,7 @@ public class GenerateHandler implements CommandHandler {
         }
         String password = passwordService.generatePassword(length, complexity);
         userStateCache.setState(userId, NONE);
+        userStateCache.clearParamsForUser(userId);
 
         return new Response(String.format(PASSWORD_GENERATED_MESSAGE, password), NONE);
     }
