@@ -45,7 +45,7 @@ public class NonCommandHandler {
 
             userStateCache.setState(userId, nextState);
             if (nextState == NONE) {
-                String[] splitCommand = {Command.EDIT, params.get(0), complexity};
+                String[] splitCommand = {Command.GENERATE, params.get(0), complexity};
 
                 return handlerMapper.getHandler(Command.GENERATE).handle(splitCommand, userId);
             }
