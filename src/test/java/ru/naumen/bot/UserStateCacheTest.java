@@ -9,14 +9,14 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Класс модульных тестов UserStateCache
+ * РљР»Р°СЃСЃ РјРѕРґСѓР»СЊРЅС‹С… С‚РµСЃС‚РѕРІ UserStateCache
  */
 class UserStateCacheTest {
 
     private UserStateCache userStateCache;
 
     /**
-     * Создаёт новый объект кэша перед каждым тестом
+     * РЎРѕР·РґР°С‘С‚ РЅРѕРІС‹Р№ РѕР±СЉРµРєС‚ РєСЌС€Р° РїРµСЂРµРґ РєР°Р¶РґС‹Рј С‚РµСЃС‚РѕРј
      */
     @BeforeEach
     void setUp() {
@@ -24,7 +24,7 @@ class UserStateCacheTest {
     }
 
     /**
-     * Тест метода возврата состояние пользователя, если его нет в кэше
+     * РўРµСЃС‚ РјРµС‚РѕРґР° РІРѕР·РІСЂР°С‚Р° СЃРѕСЃС‚РѕСЏРЅРёРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, РµСЃР»Рё РµРіРѕ РЅРµС‚ РІ РєСЌС€Рµ
      */
     @Test
     void getUserStateNotInCache() {
@@ -34,8 +34,8 @@ class UserStateCacheTest {
     }
 
     /**
-     * Тест метода возврата состояние пользователя, если он есть в кэше
-     * Заодно тестирует метод установки состояния при отсутствии в кэше
+     * РўРµСЃС‚ РјРµС‚РѕРґР° РІРѕР·РІСЂР°С‚Р° СЃРѕСЃС‚РѕСЏРЅРёРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, РµСЃР»Рё РѕРЅ РµСЃС‚СЊ РІ РєСЌС€Рµ
+     * Р—Р°РѕРґРЅРѕ С‚РµСЃС‚РёСЂСѓРµС‚ РјРµС‚РѕРґ СѓСЃС‚Р°РЅРѕРІРєРё СЃРѕСЃС‚РѕСЏРЅРёСЏ РїСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё РІ РєСЌС€Рµ
      */
     @Test
     void getUserStateUserInCache() {
@@ -46,7 +46,7 @@ class UserStateCacheTest {
     }
 
     /**
-     * Тест метода установки состояния при наличии в кэше
+     * РўРµСЃС‚ РјРµС‚РѕРґР° СѓСЃС‚Р°РЅРѕРІРєРё СЃРѕСЃС‚РѕСЏРЅРёСЏ РїСЂРё РЅР°Р»РёС‡РёРё РІ РєСЌС€Рµ
      */
     @Test
     void setUserStateUserInCache() {
@@ -58,7 +58,7 @@ class UserStateCacheTest {
     }
 
     /**
-     * Тест метода получения параметров пользователя при отсутствии в кэше
+     * РўРµСЃС‚ РјРµС‚РѕРґР° РїРѕР»СѓС‡РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РїСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё РІ РєСЌС€Рµ
      */
     @Test
     void getUserParamsUserNotInCache() {
@@ -67,11 +67,11 @@ class UserStateCacheTest {
     }
 
     /**
-     * Тест метода получения параметров пользователя при наличии в кэше
-     * Заодно тестирует метод добавления параметров при отсутствии в кэше
+     * РўРµСЃС‚ РјРµС‚РѕРґР° РїРѕР»СѓС‡РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РїСЂРё РЅР°Р»РёС‡РёРё РІ РєСЌС€Рµ
+     * Р—Р°РѕРґРЅРѕ С‚РµСЃС‚РёСЂСѓРµС‚ РјРµС‚РѕРґ РґРѕР±Р°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РїСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё РІ РєСЌС€Рµ
      */
     @Test
-    void getUserParams_ShouldReturnExistingParams_WhenUserInCache() {
+    void getUserParamsUserInCache() {
         userStateCache.addParam(12345L, "param1");
 
         List<String> result = userStateCache.getUserParams(12345L);
@@ -81,10 +81,10 @@ class UserStateCacheTest {
     }
 
     /**
-     * Тест метода добавления параметров при наличии в кэше
+     * РўРµСЃС‚ РјРµС‚РѕРґР° РґРѕР±Р°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РїСЂРё РЅР°Р»РёС‡РёРё РІ РєСЌС€Рµ
      */
     @Test
-    void addParam_ShouldAddMultipleParamsToUser_WhenCalledMultipleTimes() {
+    void addParamUserInCache() {
         userStateCache.addParam(12345L, "param1");
         userStateCache.addParam(12345L, "param2");
 
@@ -92,5 +92,17 @@ class UserStateCacheTest {
 
         assertEquals(2, result.size());
         assertTrue(result.contains("param2"));
+    }
+
+    /**
+     * РўРµСЃС‚ РјРµС‚РѕРґР° РѕС‡РёСЃС‚РєРё РїР°СЂР°РјРµС‚СЂРѕРІ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+     */
+    @Test
+    void clearParamsForUser() {
+        userStateCache.addParam(12345L, "param1");
+        userStateCache.addParam(12345L, "param2");
+
+        userStateCache.clearParamsForUser(12345L);
+        assertTrue(userStateCache.getUserParams(12345L).isEmpty());
     }
 }

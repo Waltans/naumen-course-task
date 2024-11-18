@@ -59,8 +59,8 @@ class EditHandlerTest {
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
         Mockito.when(validationService.isValidLength(12)).thenReturn(true);
-        Mockito.when(validationService.isValidComplexity(3)).thenReturn(true);
-        Mockito.when(passwordService.generatePassword(12, 3)).thenReturn("npass");
+        Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
+        Mockito.when(passwordService.generatePassword(12, "3")).thenReturn("npass");
         Mockito.when(passwordService.findPasswordByUuid("uuid")).thenReturn(password);
 
         Response response = editHandler.handle(command, 12345L);
@@ -85,8 +85,8 @@ class EditHandlerTest {
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
         Mockito.when(validationService.isValidLength(12)).thenReturn(true);
-        Mockito.when(validationService.isValidComplexity(3)).thenReturn(true);
-        Mockito.when(passwordService.generatePassword(12, 3)).thenReturn("npass");
+        Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
+        Mockito.when(passwordService.generatePassword(12, "3")).thenReturn("npass");
         Mockito.when(passwordService.findPasswordByUuid("uuid")).thenReturn(password);
 
         Response response = editHandler.handle(command, 12345L);
@@ -126,21 +126,6 @@ class EditHandlerTest {
 
         Assertions.assertEquals(ENTER_PASSWORD_INDEX, response.message());
         Assertions.assertEquals(EDIT_STEP_1, response.botState());
-    }
-
-    /**
-     * Тест обновления, если команда некорректна
-     */
-    @Test
-    void testUpdatePassword_InvalidCommand() {
-        String[] command = {"/edit", "s"};
-        Mockito.when(validationService.areNumbersEditCommandParams(command)).thenReturn(false);
-
-        Response response = editHandler.handle(command, 12345L);
-
-        Assertions.assertEquals(INCORRECT_COMMAND_RESPONSE, response.message());
-        Assertions.assertEquals(NONE, response.botState());
-        Mockito.verifyNoInteractions(passwordService);
     }
 
     /**

@@ -7,7 +7,6 @@ import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static ru.naumen.bot.Constants.*;
@@ -33,7 +32,6 @@ public class FindHandler implements CommandHandler {
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, FIND_STEP_1);
-
             return new Response(ENTER_SEARCH_REQUEST, FIND_STEP_1);
         }
 

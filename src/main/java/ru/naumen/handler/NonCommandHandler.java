@@ -39,13 +39,13 @@ public class NonCommandHandler {
     public Response getComplexity(String complexity, long userId, State nextState, String response) {
         State currentState = userStateCache.getUserState(userId);
         try {
-            validationService.isValidComplexity(Integer.parseInt(complexity));
+            validationService.isValidComplexity(complexity);
             userStateCache.addParam(userId, complexity);
             List<String> params = userStateCache.getUserParams(userId);
 
             userStateCache.setState(userId, nextState);
             if (nextState == NONE) {
-                String[] splitCommand = {Command.EDIT, params.getFirst(), complexity};
+                String[] splitCommand = {Command.EDIT, params.get(0), complexity};
 
                 return handlerMapper.getHandler(Command.GENERATE).handle(splitCommand, userId);
             }
@@ -140,6 +140,7 @@ public class NonCommandHandler {
 
         if (!validationService.isValidPasswordIndex(userId, Integer.parseInt(index))) {
             userStateCache.setState(userId, NONE);
+            userStateCache.clearParamsForUser(userId);
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index), NONE);
         }
 
@@ -163,7 +164,6 @@ public class NonCommandHandler {
      * @return ответ и состояние пользователя
      */
     public Response getSortType(String sortType, Long userId) {
-        userStateCache.addParam(userId, sortType);
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(SORT_STEP_1)) {
             String[] splitCommand = {sortType};
@@ -181,8 +181,6 @@ public class NonCommandHandler {
      * @return ответ и состояние пользователя
      */
     public Response getSearchRequest(String searchRequest, Long userId) {
-        userStateCache.addParam(userId, searchRequest);
-
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(FIND_STEP_1)) {
             String[] splitCommand = {Command.FIND, searchRequest};

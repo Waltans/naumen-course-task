@@ -208,7 +208,7 @@ class PasswordServiceTest {
     @RepeatedTest(20)
     void testGeneratePassword_WithComplexity_Level1() {
         int length = 10;
-        int complexity = 1;
+        String complexity = "1";
 
         String password = passwordService.generatePassword(length, complexity);
 
@@ -222,7 +222,7 @@ class PasswordServiceTest {
     @RepeatedTest(20)
     void testGeneratePassword_WithComplexity_Level2() {
         int length = 12;
-        int complexity = 2;
+        String complexity = "2";
 
         String password = passwordService.generatePassword(length, complexity);
 
@@ -236,7 +236,7 @@ class PasswordServiceTest {
     @RepeatedTest(20)
     void testGeneratePassword_WithComplexity_Level3() {
         int length = 15;
-        int complexity = 3;
+        String complexity = "3";
 
         String password = passwordService.generatePassword(length, complexity);
 
@@ -250,7 +250,7 @@ class PasswordServiceTest {
     @RepeatedTest(5)
     void testGenerateUniquePassword() {
         int length = 10;
-        int complexity = 2;
+        String complexity = "2";
 
         String password1 = passwordService.generatePassword(length, complexity);
         String password2 = passwordService.generatePassword(length, complexity);
