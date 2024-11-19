@@ -131,7 +131,7 @@ class SortHandlerTest {
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(NONE);
         Response response = sortHandler.handle(command, 12345L);
 
-        Assertions.assertEquals(CHOOSE_SORT_TYPE, response.message());
+        Assertions.assertEquals("Отсортировать пароли по:", response.message());
         Assertions.assertEquals(SORT_STEP_1, response.botState());
     }
 }
