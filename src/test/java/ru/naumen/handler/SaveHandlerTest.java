@@ -7,15 +7,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import ru.naumen.bot.RemindScheduler;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.service.PasswordService;
+import ru.naumen.service.ValidationService;
 
 import java.util.ArrayList;
 
 import static ru.naumen.bot.Constants.ENTER_PASSWORD;
-import static ru.naumen.bot.Constants.PASSWORD_SAVED_MESSAGE;
 import static ru.naumen.model.State.NONE;
 import static ru.naumen.model.State.SAVE_STEP_1;
 
@@ -29,6 +30,12 @@ class SaveHandlerTest {
 
     @Mock
     private UserStateCache userStateCache;
+
+    @Mock
+    private RemindScheduler remindScheduler;
+
+    @Mock
+    private ValidationService validationService;
 
     @InjectMocks
     private SaveHandler saveHandler;
@@ -65,7 +72,7 @@ class SaveHandlerTest {
         Response response = saveHandler.handle(command, 12345L);
 
         Mockito.verify(passwordService).createUserPassword("password", "Неизвестно", 12345L);
-        Assertions.assertEquals(PASSWORD_SAVED_MESSAGE, response.message());
+        Assertions.assertEquals("Пароль успешно сохранён", response.message());
         Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
@@ -81,7 +88,25 @@ class SaveHandlerTest {
         Response response = saveHandler.handle(command, 12345L);
 
         Mockito.verify(passwordService).createUserPassword("pass", "desc", 12345L);
-        Assertions.assertEquals(PASSWORD_SAVED_MESSAGE, response.message());
+        Assertions.assertEquals("Пароль успешно сохранён", response.message());
+        Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(userStateCache).clearParamsForUser(12345L);
+    }
+
+    /**
+     * Тест сохранения пароля с напоминанием
+     */
+    @Test
+    void testSavePassword_WithRemind() throws UserNotFoundException {
+        String[] command = {"/save", "pass", "desc", "1"};
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(validationService.isValidDays(1)).thenReturn(true);
+
+        Response response = saveHandler.handle(command, 12345L);
+
+        Mockito.verify(passwordService).createUserPassword("pass", "desc", 12345L);
+        Mockito.verify(remindScheduler).scheduleRemind("Напоминание: обновите пароль для desc", 12345L, 86_400_000L);
+        Assertions.assertEquals("Пароль успешно сохранён", response.message());
         Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }

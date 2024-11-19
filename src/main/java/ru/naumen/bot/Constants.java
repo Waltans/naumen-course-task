@@ -37,11 +37,20 @@ public class Constants {
     public static final String ENTER_SEARCH_REQUEST = "Введите поисковый запрос";
     public static final String USER_NOT_FOUND = "Пользователь не найден";
     public static final String ENCRYPT_ERROR = "Ошибка шифрования пароля";
+    public static final String ENTER_REMIND_DAYS_ON_SAVE = "Через сколько дней напомнить о смене пароля? (0 - не ставить напоминание)";
+    public static final String ENTER_REMIND_DAYS = "Через сколько дней напомнить о смене пароля?";
+    public static final String DAYS_ERROR_MESSAGE = "Напоминание можно установить на срок от 3 до 90 дней";
+    public static final String REMIND_MESSAGE = "Напоминание: обновите пароль для %s";
+    public static final String REMIND_SET_MESSAGE = "Напоминание для пароля %s установлено";
     public static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
     public static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
+    public static final int SAVE_COMMAND_LENGTH_WITH_REMIND = 4;
     public static final int COMMAND_WITHOUT_PARAMS_LENGTH = 1;
     public static int MINIMUM_PASSWORD_LENGTH = 8;
     public static int MAXIMUM_PASSWORD_LENGTH = 128;
+    public static int MAXIMUM_REMIND_DAYS = 90;
+    public static int MINIMUM_REMIND_DAYS = 3;
+    public static final long MILLIS_IN_A_DAY = 60 * 60 * 24 * 1000;
 
     /**
      * Приватный конструктор, чтобы нельзя было создавать объекты

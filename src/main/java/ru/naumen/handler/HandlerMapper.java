@@ -19,6 +19,7 @@ public class HandlerMapper {
     private final SaveHandler saveHandler;
     private final SortHandler sortHandler;
     private final StartHelpHandler startHelpHandler;
+    private final RemindHandler remindHandler;
 
     public HandlerMapper(DeleteHandler deleteHandler,
                          EditHandler editHandler,
@@ -27,7 +28,8 @@ public class HandlerMapper {
                          ListHandler listHandler,
                          SaveHandler saveHandler,
                          SortHandler sortHandler,
-                         StartHelpHandler startHelpHandler) {
+                         StartHelpHandler startHelpHandler,
+                         RemindHandler remindHandler) {
         this.deleteHandler = deleteHandler;
         this.editHandler = editHandler;
         this.findHandler = findHandler;
@@ -36,6 +38,7 @@ public class HandlerMapper {
         this.saveHandler = saveHandler;
         this.sortHandler = sortHandler;
         this.startHelpHandler = startHelpHandler;
+        this.remindHandler = remindHandler;
     }
 
     /**
@@ -52,7 +55,8 @@ public class HandlerMapper {
                 Command.SORT, sortHandler,
                 Command.FIND, findHandler,
                 Command.START, startHelpHandler,
-                Command.HELP, startHelpHandler
+                Command.HELP, startHelpHandler,
+                Command.REMIND, remindHandler
         );
 
         return commandsAndHandlers.get(command);

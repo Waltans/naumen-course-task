@@ -92,9 +92,10 @@ public class NonCommandHandler {
         userStateCache.setState(userId, nextState);
 
         if (currentState.equals(SAVE_STEP_2)) {
-            String[] splitCommand = {Command.SAVE, userStateCache.getUserParams(userId).get(0), description};
+            userStateCache.addParam(userId, description);
+            userStateCache.setState(userId, nextState);
 
-            return handlerMapper.getHandler(Command.SAVE).handle(splitCommand, userId);
+            return new Response(ENTER_REMIND_DAYS_ON_SAVE, nextState);
         } else if (currentState.equals(EDIT_STEP_4)) {
             String[] splitCommand = {Command.EDIT,
                     userStateCache.getUserParams(userId).get(0),
@@ -140,7 +141,11 @@ public class NonCommandHandler {
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index), NONE);
         }
 
-        if (currentState.equals(EDIT_STEP_1)) {
+        if (currentState.equals(REMIND_STEP_1)) {
+            userStateCache.setState(userId, REMIND_STEP_2);
+
+            return new Response(ENTER_REMIND_DAYS, REMIND_STEP_2);
+        } else if (currentState.equals(EDIT_STEP_1)) {
             userStateCache.setState(userId, EDIT_STEP_2);
 
             return new Response(ENTER_PASSWORD_LENGTH, EDIT_STEP_2);
@@ -152,6 +157,48 @@ public class NonCommandHandler {
 
         return new Response(ENTER_PASSWORD_LENGTH, currentState);
     }
+
+    /**
+     * Получение дней до напоминания
+     *
+     * @param daysToRemind    - число дней до напоминания
+     * @param userId          - ID пользователя
+     * @param nextState       - следующее состояние
+     * @return ответ и состояние пользователя
+     */
+    public Response getRemindDays(String daysToRemind, long userId, State nextState) {
+        State currentState = userStateCache.getUserState(userId);
+        if (daysToRemind.equals("0") &&
+                currentState.equals(SAVE_STEP_3)) {
+            userStateCache.setState(userId, nextState);
+            String[] splitCommand = new String[]{Command.SAVE,
+                    userStateCache.getUserParams(userId).get(0),
+                    userStateCache.getUserParams(userId).get(1)};
+
+            return handlerMapper.getHandler(Command.SAVE).handle(splitCommand, userId);
+        }
+
+        if (!validationService.isValidDays(Integer.parseInt(daysToRemind))) {
+            userStateCache.setState(userId, currentState);
+            return new Response(DAYS_ERROR_MESSAGE, currentState);
+        }
+
+        userStateCache.setState(userId, nextState);
+        userStateCache.addParam(userId, daysToRemind);
+        if (currentState.equals(SAVE_STEP_3)) {
+            String[] splitCommand = new String[]{Command.SAVE,
+                    userStateCache.getUserParams(userId).get(0),
+                    userStateCache.getUserParams(userId).get(1),
+                    daysToRemind};
+
+            return handlerMapper.getHandler(Command.SAVE).handle(splitCommand, userId);
+        }
+        String[] splitCommand = new String[]{Command.REMIND,
+                userStateCache.getUserParams(userId).get(0), daysToRemind};
+
+        return handlerMapper.getHandler(Command.REMIND).handle(splitCommand, userId);
+    }
+
 
     /**
      * Получение типа сортировки из команды

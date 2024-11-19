@@ -42,8 +42,8 @@ public class ValidationService {
         if (state != null && !state.equals(NONE) && !state.equals(IN_LIST)) {
             return switch (state) {
                 case SAVE_STEP_1, SAVE_STEP_2, EDIT_STEP_4, FIND_STEP_1, GENERATION_STEP_2, EDIT_STEP_3 -> true;
-                case GENERATION_STEP_1, EDIT_STEP_1, EDIT_STEP_2, DELETE_STEP_1 ->
-                        isNumber(command);
+                case GENERATION_STEP_1, EDIT_STEP_1, EDIT_STEP_2, DELETE_STEP_1,
+                        REMIND_STEP_1, REMIND_STEP_2, SAVE_STEP_3 -> isNumber(command);
                 case SORT_STEP_1 -> isValidSortType(command);
                 default -> false;
             };
@@ -96,6 +96,16 @@ public class ValidationService {
      */
     public boolean isValidLength(int length) {
         return length >= MINIMUM_PASSWORD_LENGTH && length <= MAXIMUM_PASSWORD_LENGTH;
+    }
+
+    /**
+     * Проверяем корректность введённых дней до напоминания
+     *
+     * @param days - дни до напоминания
+     * @return корректно ли значение
+     */
+    public boolean isValidDays(int days) {
+        return days >= MINIMUM_REMIND_DAYS && days <= MAXIMUM_REMIND_DAYS;
     }
 
     /**

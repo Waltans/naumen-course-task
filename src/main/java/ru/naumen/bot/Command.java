@@ -30,6 +30,8 @@ public class Command {
     public static final String BY_DATE = "Дате";
     public static final String BY_DESCRIPTION = "Описанию";
     public static final String MENU_KEYBOARD = "Меню";
+    public static final String REMIND = "/remind";
+    public static final String REMIND_KEYBOARD = "Напомнить";
     /**
      * Отображение, в которой ключи - команды,
      * значения - список допустимых количеств параметров, передаваемых вместе с командой.
@@ -37,13 +39,14 @@ public class Command {
     public static final Map<String, List<Integer>> commandsAndNumberOfParams = Map.of(
             START, List.of(0),
             GENERATE, List.of(2, 0),
-            SAVE, List.of(1, 2, 0),
+            SAVE, List.of(1, 2, 3, 0),
             LIST, List.of(0),
             EDIT, List.of(3, 4, 0),
             DELETE, List.of(1, 0),
             HELP, List.of(0),
             SORT, List.of(0),
-            FIND, List.of(1, 0)
+            FIND, List.of(1, 0),
+            REMIND, List.of(2, 0)
     );
     /**
      * Отображение, где кнопки соотносятся с командами
@@ -57,6 +60,7 @@ public class Command {
             HELP_KEYBOARD, HELP,
             SORT_KEYBOARD, SORT,
             FIND_KEYBOARD, FIND,
+            REMIND_KEYBOARD, REMIND,
             MENU_KEYBOARD, START
     );
 
