@@ -38,8 +38,7 @@ public class NonCommandHandler {
      */
     public Response getComplexity(String complexity, long userId, State nextState, String response) {
         State currentState = userStateCache.getUserState(userId);
-        try {
-            validationService.isValidComplexity(complexity);
+        if (validationService.isValidComplexity(complexity)) {
             userStateCache.addParam(userId, complexity);
             List<String> params = userStateCache.getUserParams(userId);
 
@@ -51,10 +50,9 @@ public class NonCommandHandler {
             }
 
             return new Response(response, nextState);
-        } catch (IllegalArgumentException e) {
+        } else {
             userStateCache.setState(userId, currentState);
-
-            return new Response(e.getMessage(), currentState);
+            return new Response(COMPLEXITY_ERROR_MESSAGE, currentState);
         }
     }
 
@@ -68,16 +66,14 @@ public class NonCommandHandler {
      */
     public Response getPasswordLength(String length, long userId, State nextState) {
         State currentState = userStateCache.getUserState(userId);
-        try {
-            validationService.isValidLength(Integer.parseInt(length));
+        if (validationService.isValidLength(Integer.parseInt(length))) {
             userStateCache.setState(userId, nextState);
             userStateCache.addParam(userId, length);
 
             return new Response(ENTER_PASSWORD_COMPLEXITY, nextState);
-        } catch (IllegalArgumentException e) {
+        } else {
             userStateCache.setState(userId, currentState);
-
-            return new Response(e.getMessage(), currentState);
+            return new Response(LENGTH_ERROR_MESSAGE, currentState);
         }
     }
 
