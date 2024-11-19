@@ -27,9 +27,6 @@ class CommandServiceTest {
     private EncodeService encodeService;
 
     @Mock
-    private UserService userService;
-
-    @Mock
     private UserStateCache userStateCache;
 
     @Mock

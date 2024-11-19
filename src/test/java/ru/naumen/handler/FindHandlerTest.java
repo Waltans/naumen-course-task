@@ -71,7 +71,7 @@ class FindHandlerTest {
 
         Response response = findHandler.handle(command, 12345L);
 
-        Assertions.assertEquals(NO_PASSWORDS_FOUND, response.message());
+        Assertions.assertEquals("Не найдены пароли по вашему запросу", response.message());
         Assertions.assertEquals(NONE, response.botState());
     }
 
@@ -86,7 +86,7 @@ class FindHandlerTest {
 
         Response response = findHandler.handle(command, 12345L);
 
-        Assertions.assertEquals(ENTER_SEARCH_REQUEST, response.message());
+        Assertions.assertEquals("Введите поисковый запрос", response.message());
         Assertions.assertEquals(FIND_STEP_1, response.botState());
     }
 }

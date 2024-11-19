@@ -102,7 +102,7 @@ class DeleteHandlerTest {
 
         Response response = deleteHandler.handle(command, 12345L);
 
-        Assertions.assertEquals(ENTER_PASSWORD_INDEX, response.message());
+        Assertions.assertEquals("Введите индекс пароля", response.message());
         Assertions.assertEquals(DELETE_STEP_1, response.botState());
     }
 }

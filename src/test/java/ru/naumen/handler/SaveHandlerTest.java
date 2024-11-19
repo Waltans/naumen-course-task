@@ -50,7 +50,7 @@ class SaveHandlerTest {
 
         Response response = saveHandler.handle(command, 12345L);
 
-        Assertions.assertEquals(ENTER_PASSWORD, response.message());
+        Assertions.assertEquals("Введите пароль", response.message());
         Assertions.assertEquals(SAVE_STEP_1, response.botState());
     }
 
@@ -65,7 +65,7 @@ class SaveHandlerTest {
         Response response = saveHandler.handle(command, 12345L);
 
         Mockito.verify(passwordService).createUserPassword("password", "Неизвестно", 12345L);
-        Assertions.assertEquals(PASSWORD_SAVED_MESSAGE, response.message());
+        Assertions.assertEquals("Пароль успешно сохранён", response.message());
         Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
@@ -81,7 +81,7 @@ class SaveHandlerTest {
         Response response = saveHandler.handle(command, 12345L);
 
         Mockito.verify(passwordService).createUserPassword("pass", "desc", 12345L);
-        Assertions.assertEquals(PASSWORD_SAVED_MESSAGE, response.message());
+        Assertions.assertEquals("Пароль успешно сохранён", response.message());
         Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
