@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.util.List;
 
+import static ru.naumen.bot.Command.*;
+
 /**
  * Класс для работы с паролями
  */
@@ -75,7 +77,6 @@ public class PasswordService {
     @Transactional(readOnly = true)
     public List<UserPassword> getUserPasswordsWithPartialDescription(long userId, String searchRequest) {
         return userPasswordRepository.findByDescriptionContainsIgnoreCaseAndUserId(searchRequest, userId);
-        // TODO test
     }
 
     /**
@@ -97,7 +98,6 @@ public class PasswordService {
                 throw new IncorrectSortTypeException("Некорректный тип сортировки!");
             }
         }
-        // TODO test
     }
 
 
@@ -162,23 +162,31 @@ public class PasswordService {
      * @param length длина
      * @return пароль
      */
-    public String generatePassword(int length, int complexity) {
+    public String generatePassword(int length, String complexity) {
+        int complexityValue;
+        switch (complexity) {
+            case "1", COMPLEXITY_EASY -> complexityValue = 1;
+            case "2", COMPLEXITY_MEDIUM -> complexityValue = 2;
+            case "3", COMPLEXITY_HARD -> complexityValue = 3;
+            default -> throw new IllegalArgumentException("Некорректно задана сложность!");
+        }
+
         StringBuilder password = new StringBuilder(length);
         String characterSet = LOWERCASE;
 
-        if (complexity >= 2) {
+        if (complexityValue >= 2) {
             characterSet += DIGITS + UPPERCASE;
         }
-        if (complexity == 3) {
+        if (complexityValue == 3) {
             characterSet += SPECIAL_CHARACTERS;
         }
 
-        if (complexity >= 2) {
+        if (complexityValue >= 2) {
             password.append(getRandomCharacter(DIGITS));
             password.append(getRandomCharacter(UPPERCASE));
             password.append(getRandomCharacter(LOWERCASE));
         }
-        if (complexity == 3) {
+        if (complexityValue == 3) {
             password.append(getRandomCharacter(DIGITS));
             password.append(getRandomCharacter(SPECIAL_CHARACTERS));
             password.append(getRandomCharacter(UPPERCASE));

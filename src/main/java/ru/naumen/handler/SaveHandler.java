@@ -56,7 +56,7 @@ public class SaveHandler implements CommandHandler {
             log.error("Ошибка шифрования при сохранении пароля", e);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(ENCRYPT_EXCEPTION, NONE);
+            return new Response(ENCRYPT_ERROR, NONE);
         }
     }
 }

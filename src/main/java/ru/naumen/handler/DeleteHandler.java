@@ -31,12 +31,6 @@ public class DeleteHandler implements CommandHandler {
 
     @Override
     public Response handle(String[] splitCommand, long userId) {
-        if (splitCommand.length != COMMAND_WITHOUT_PARAMS_LENGTH &&
-                !validationService.areNumbersDeleteCommandParams(splitCommand)) {
-            userStateCache.setState(userId, NONE);
-            return new Response(INCORRECT_COMMAND_RESPONSE, NONE);
-        }
-
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, DELETE_STEP_1);
 

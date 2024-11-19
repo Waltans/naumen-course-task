@@ -24,13 +24,12 @@ public class Command {
     public static final String SORT_KEYBOARD = "Сортировать";
     public static final String FIND = "/find";
     public static final String FIND_KEYBOARD = "Искать";
-    public static final String COMPLEXITY_1 = "1";
-    public static final String COMPLEXITY_2 = "2";
-    public static final String COMPLEXITY_3 = "3";
+    public static final String COMPLEXITY_EASY = "Простой";
+    public static final String COMPLEXITY_MEDIUM = "Средний";
+    public static final String COMPLEXITY_HARD = "Сложный";
     public static final String BY_DATE = "Дате";
     public static final String BY_DESCRIPTION = "Описанию";
     public static final String MENU_KEYBOARD = "Меню";
-    public static final int COMMAND_WITHOUT_PARAMS_LENGTH = 1;
     /**
      * Отображение, в которой ключи - команды,
      * значения - список допустимых количеств параметров, передаваемых вместе с командой.

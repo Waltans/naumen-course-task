@@ -46,9 +46,9 @@ class GenerateHandlerTest {
     @Test
     void testGeneratePassword_CorrectParameters() {
         Mockito.when(validationService.areNumbersGenerationCommandParams(Mockito.any(String[].class))).thenReturn(true);
-        Mockito.when(passwordService.generatePassword(12, 3)).thenReturn("generatedPassword");
+        Mockito.when(passwordService.generatePassword(12, "3")).thenReturn("generatedPassword");
         Mockito.when(validationService.isValidLength(12)).thenReturn(true);
-        Mockito.when(validationService.isValidComplexity(3)).thenReturn(true);
+        Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
 
         String[] command = {"/generate", "12", "3"};
         Response response = generateHandler.handle(command, 12345L);
@@ -64,7 +64,7 @@ class GenerateHandlerTest {
     @Test
     void testGeneratePassword_LowLength() {
         Mockito.when(validationService.areNumbersGenerationCommandParams(Mockito.any(String[].class))).thenReturn(true);
-        Mockito.when(validationService.isValidComplexity(3)).thenReturn(true);
+        Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
         Mockito.when(validationService.isValidLength(4)).thenReturn(false);
 
         String[] command = {"/generate", "4", "3"};
@@ -81,7 +81,7 @@ class GenerateHandlerTest {
     @Test
     void testGeneratePassword_HighLength() {
         Mockito.when(validationService.areNumbersGenerationCommandParams(Mockito.any(String[].class))).thenReturn(true);
-        Mockito.when(validationService.isValidComplexity(3)).thenReturn(true);
+        Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
         Mockito.when(validationService.isValidLength(129)).thenReturn(false);
 
         String[] command = {"/generate", "129", "3"};
@@ -105,22 +105,6 @@ class GenerateHandlerTest {
                 "2 - пароль средней сложности;\n" +
                 "3 - сложный пароль.";
 
-
-        Response response = generateHandler.handle(command, 12345L);
-
-        Assertions.assertEquals(expectedResponse, response.message());
-        Assertions.assertEquals(NONE, response.botState());
-    }
-
-    /**
-     * Тест генерации, если передана некорректная команда
-     */
-    @Test
-    void testGeneratePassword_InvalidCommand() {
-        Mockito.when(validationService.areNumbersGenerationCommandParams(Mockito.any(String[].class))).thenReturn(false);
-
-        String[] command = {"/generate", "ab", "4"};
-        String expectedResponse = "Введена некорректная команда! Справка: /help";
 
         Response response = generateHandler.handle(command, 12345L);
 

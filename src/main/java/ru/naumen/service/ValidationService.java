@@ -8,6 +8,7 @@ import ru.naumen.model.State;
 import java.util.List;
 
 import static ru.naumen.bot.Constants.*;
+import static ru.naumen.bot.Command.*;
 import static ru.naumen.model.State.*;
 
 
@@ -40,8 +41,8 @@ public class ValidationService {
         State state = userStateCache.getUserState(userId);
         if (state != null && !state.equals(NONE) && !state.equals(IN_LIST)) {
             return switch (state) {
-                case SAVE_STEP_1, SAVE_STEP_2, EDIT_STEP_4, FIND_STEP_1 -> true;
-                case GENERATION_STEP_1, GENERATION_STEP_2, EDIT_STEP_1, EDIT_STEP_2, EDIT_STEP_3, DELETE_STEP_1 ->
+                case SAVE_STEP_1, SAVE_STEP_2, EDIT_STEP_4, FIND_STEP_1, GENERATION_STEP_2, EDIT_STEP_3 -> true;
+                case GENERATION_STEP_1, EDIT_STEP_1, EDIT_STEP_2, DELETE_STEP_1 ->
                         isNumber(command);
                 case SORT_STEP_1 -> isValidSortType(command);
                 default -> false;
@@ -78,8 +79,13 @@ public class ValidationService {
      * @param complexity - сложность пароля
      * @return корректна ли сложность
      */
-    public boolean isValidComplexity(int complexity) {
-        return complexity == 1 || complexity == 2 || complexity == 3;
+    public boolean isValidComplexity(String complexity) {
+        return complexity.equals("1") ||
+               complexity.equals("2") ||
+               complexity.equals("3") ||
+               complexity.equals(COMPLEXITY_EASY) ||
+               complexity.equals(COMPLEXITY_MEDIUM) ||
+               complexity.equals(COMPLEXITY_HARD);
     }
 
     /**

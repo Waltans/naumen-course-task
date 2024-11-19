@@ -24,22 +24,22 @@ public class GenerateHandler implements CommandHandler {
     }
     @Override
     public Response handle(String[] splitCommand, long userId) {
-        if (splitCommand.length != COMMAND_WITHOUT_PARAMS_LENGTH &&
-                !validationService.areNumbersGenerationCommandParams(splitCommand)) {
-            return new Response(INCORRECT_COMMAND_RESPONSE, NONE);
-        }
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, GENERATION_STEP_1);
             return new Response(ENTER_PASSWORD_LENGTH, GENERATION_STEP_1);
         }
 
         int length = Integer.parseInt(splitCommand[1]);
-        int complexity = Integer.parseInt(splitCommand[2]);
+        String complexity = splitCommand[2];
 
         if (!validationService.isValidComplexity(complexity)) {
+            userStateCache.setState(userId, NONE);
+            userStateCache.clearParamsForUser(userId);
             return new Response(COMPLEXITY_ERROR_MESSAGE, NONE);
         }
         if (!validationService.isValidLength(length)) {
+            userStateCache.setState(userId, NONE);
+            userStateCache.clearParamsForUser(userId);
             return new Response(LENGTH_ERROR_MESSAGE, NONE);
         }
         String password = passwordService.generatePassword(length, complexity);

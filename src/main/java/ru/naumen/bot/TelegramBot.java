@@ -114,14 +114,18 @@ class TelegramBot extends TelegramLongPollingBot {
 
     /**
      * Клавиатура с выбором сложности
+     * Варианты:
+     * Простой (COMPLEXITY_EASY)
+     * Средний (COMPLEXITY_MEDIUM),
+     * Сложный (COMPLEXITY_HARD)
      */
     private List<KeyboardRow> complexityKeyBoard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
-        keyboardRowFirst.add(new KeyboardButton(Command.COMPLEXITY_1));
-        keyboardRowFirst.add(new KeyboardButton(Command.COMPLEXITY_2));
-        keyboardRowFirst.add(new KeyboardButton(Command.COMPLEXITY_3));
+        keyboardRowFirst.add(new KeyboardButton(Command.COMPLEXITY_EASY));
+        keyboardRowFirst.add(new KeyboardButton(Command.COMPLEXITY_MEDIUM));
+        keyboardRowFirst.add(new KeyboardButton(Command.COMPLEXITY_HARD));
 
         keyboardRows.add(keyboardRowFirst);
 
@@ -130,6 +134,7 @@ class TelegramBot extends TelegramLongPollingBot {
 
     /**
      * Клавиатура с выбором типа сортировки
+     * Можно выбрать по дате (BY_DATE) и описанию (BY_DESCRIPTION)
      */
     private List<KeyboardRow> sortKeyBoard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
@@ -145,6 +150,12 @@ class TelegramBot extends TelegramLongPollingBot {
 
     /**
      * Клавиатура в менеджере паролей
+     * Кнопки:
+     * MENU_KEYBOARD - возврат в главное меню
+     * DELETE_KEYBOARD - начать процедуру удаления пароля
+     * EDIT_KEYBOARD - начать процедуру изменения пароля
+     * SORT_KEYBOARD - отсортировать пароли
+     * FIND_KEYBOARD - поиск паролей по описанию
      */
     private List<KeyboardRow> listKeyBoard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
@@ -166,6 +177,11 @@ class TelegramBot extends TelegramLongPollingBot {
 
     /**
      * Клавиатура основная
+     * Кнопки:
+     * GENERATE_KEYBOARD - начать процедуру генерации пароля
+     * SAVE_KEYBOARD - начать процедуру сохранения пароля
+     * LIST_KEYBOARD - список паролей и переход к менеджеру (управление сохранёнными паролями)
+     * HELP_KEYBOARD - справка по работе бота
      */
     private List<KeyboardRow> mainKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();

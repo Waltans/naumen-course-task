@@ -105,19 +105,4 @@ class DeleteHandlerTest {
         Assertions.assertEquals(ENTER_PASSWORD_INDEX, response.message());
         Assertions.assertEquals(DELETE_STEP_1, response.botState());
     }
-
-    /**
-     * Тест удаления, если команда некорректна
-     */
-    @Test
-    void testDeletePassword_InvalidCommand() {
-        String[] command = {"/del", "s"};
-        Mockito.when(validationService.areNumbersDeleteCommandParams(command)).thenReturn(false);
-
-        Response response = deleteHandler.handle(command, 12345L);
-
-        Assertions.assertEquals(INCORRECT_COMMAND_RESPONSE, response.message());
-        Assertions.assertEquals(NONE, response.botState());
-        Mockito.verifyNoInteractions(passwordService);
-    }
 }

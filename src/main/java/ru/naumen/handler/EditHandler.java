@@ -35,14 +35,8 @@ public class EditHandler implements CommandHandler {
 
     @Override
     public Response handle(String[] splitCommand, long userId) {
-        if (splitCommand.length != COMMAND_WITHOUT_PARAMS_LENGTH &&
-                !validationService.areNumbersEditCommandParams(splitCommand)) {
-            userStateCache.setState(userId, NONE);
-            return new Response(INCORRECT_COMMAND_RESPONSE, NONE);
-        }
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, EDIT_STEP_1);
-
             return new Response(ENTER_PASSWORD_INDEX, EDIT_STEP_1);
         }
 
@@ -55,12 +49,16 @@ public class EditHandler implements CommandHandler {
         }
 
         int length = Integer.parseInt(splitCommand[2]);
-        int complexity = Integer.parseInt(splitCommand[3]);
+        String complexity = splitCommand[3];
 
         if (!validationService.isValidLength(length)) {
+            userStateCache.setState(userId, NONE);
+            userStateCache.clearParamsForUser(userId);
             return new Response(LENGTH_ERROR_MESSAGE, NONE);
         }
         if (!validationService.isValidComplexity(complexity)) {
+            userStateCache.setState(userId, NONE);
+            userStateCache.clearParamsForUser(userId);
             return new Response(COMPLEXITY_ERROR_MESSAGE, NONE);
         }
 
