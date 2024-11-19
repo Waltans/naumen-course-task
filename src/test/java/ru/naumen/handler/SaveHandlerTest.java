@@ -57,7 +57,7 @@ class SaveHandlerTest {
 
         Response response = saveHandler.handle(command, 12345L);
 
-        Assertions.assertEquals(ENTER_PASSWORD, response.message());
+        Assertions.assertEquals("Введите пароль", response.message());
         Assertions.assertEquals(SAVE_STEP_1, response.botState());
     }
 
