@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 public class RemindScheduler {
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(7);
     private final ApplicationEventPublisher eventPublisher;
 
     public RemindScheduler(ApplicationEventPublisher eventPublisher) {

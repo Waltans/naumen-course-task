@@ -49,7 +49,7 @@ class RemindSchedulerTest {
         remindScheduler.scheduleRemind("first", 12345L, 500);
         remindScheduler.scheduleRemind("second", 12345L, 1500);
 
-        Mockito.verify(eventPublisher, Mockito.times(0)).publishEvent(eventCaptor.capture());
+        Mockito.verify(eventPublisher, Mockito.never()).publishEvent(eventCaptor.capture());
         Thread.sleep(500 + 20);
         Mockito.verify(eventPublisher, Mockito.times(1)).publishEvent(eventCaptor.capture());
         ReminderEvent capturedEvent1 = eventCaptor.getValue();
