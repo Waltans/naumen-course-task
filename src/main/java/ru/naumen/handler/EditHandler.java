@@ -52,17 +52,16 @@ public class EditHandler implements CommandHandler {
         String complexity = splitCommand[3];
 
         if (!validationService.isValidLength(length)) {
-            userStateCache.setState(userId, NONE);
-            userStateCache.clearParamsForUser(userId);
             return new Response(LENGTH_ERROR_MESSAGE, NONE);
         }
         if (!validationService.isValidComplexity(complexity)) {
-            userStateCache.setState(userId, NONE);
-            userStateCache.clearParamsForUser(userId);
             return new Response(COMPLEXITY_ERROR_MESSAGE, NONE);
         }
 
-        String uuid = userPasswords.get(passwordIndex - 1).getUuid();
+        // Пользователь получает список начиная с 1
+        int passwordIndexInSystem = passwordIndex - 1;
+
+        String uuid = userPasswords.get(passwordIndexInSystem).getUuid();
         UserPassword passwordByUuid;
         try {
             passwordByUuid = passwordService.findPasswordByUuid(uuid);

@@ -33,15 +33,12 @@ public class GenerateHandler implements CommandHandler {
         String complexity = splitCommand[2];
 
         if (!validationService.isValidComplexity(complexity)) {
-            userStateCache.setState(userId, NONE);
-            userStateCache.clearParamsForUser(userId);
             return new Response(COMPLEXITY_ERROR_MESSAGE, NONE);
         }
         if (!validationService.isValidLength(length)) {
-            userStateCache.setState(userId, NONE);
-            userStateCache.clearParamsForUser(userId);
             return new Response(LENGTH_ERROR_MESSAGE, NONE);
         }
+
         String password = passwordService.generatePassword(length, complexity);
         userStateCache.setState(userId, NONE);
         userStateCache.clearParamsForUser(userId);

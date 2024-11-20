@@ -124,7 +124,7 @@ class EditHandlerTest {
 
         Response response = editHandler.handle(command, 12345L);
 
-        Assertions.assertEquals(ENTER_PASSWORD_INDEX, response.message());
+        Assertions.assertEquals("Введите индекс пароля", response.message());
         Assertions.assertEquals(EDIT_STEP_1, response.botState());
     }
 

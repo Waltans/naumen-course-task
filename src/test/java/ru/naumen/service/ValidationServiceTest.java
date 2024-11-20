@@ -119,6 +119,30 @@ class ValidationServiceTest {
     }
 
     /**
+     * Тест проверки валидности дней до напоминания при корректном вводе
+     */
+    @Test
+    void testValidateRemindDays_ValidParameter() {
+        Assertions.assertTrue(validationService.isValidDays(12));
+    }
+
+    /**
+     * Тест проверки валидности дней до напоминания пароля при некорректном вводе (ниже)
+     */
+    @Test
+    void testValidateRemindDays_LowParameter() {
+        Assertions.assertFalse(validationService.isValidDays(2));
+    }
+
+    /**
+     * Тест проверки валидности дней до напоминания при некорректном вводе (выше)
+     */
+    @Test
+    void testValidateRemindDays_ValidParameters() {
+        Assertions.assertFalse(validationService.isValidDays(91));
+    }
+
+    /**
      * Тест проверки, что параметры редактирования пароля явл. числами при корректном вводе
      */
     @Test

@@ -70,6 +70,8 @@ public class CommandService {
                     -> handlerMapper.getHandler(Command.SORT).handle(splitCommand, userId);
             case Command.FIND, Command.FIND_KEYBOARD
                     -> handlerMapper.getHandler(Command.FIND).handle(splitCommand, userId);
+            case Command.REMIND, Command.REMIND_KEYBOARD
+                    -> handlerMapper.getHandler(Command.REMIND).handle(splitCommand, userId);
             default -> performNotCommandMessage(splitCommand, userId);
         };
     }
@@ -90,12 +92,14 @@ public class CommandService {
             case GENERATION_STEP_1 -> nonCommandHandler.getPasswordLength(command, userId, GENERATION_STEP_2);
             case GENERATION_STEP_2 -> nonCommandHandler.getComplexity(command, userId, NONE, null);
             case SAVE_STEP_1 -> nonCommandHandler.getPassword(command, userId, SAVE_STEP_2);
-            case SAVE_STEP_2, EDIT_STEP_4 -> nonCommandHandler.getDescription(command, userId, NONE, null);
-            case EDIT_STEP_1, DELETE_STEP_1 -> nonCommandHandler.getIndexPassword(command, userId);
+            case SAVE_STEP_2 -> nonCommandHandler.getDescription(command, userId, SAVE_STEP_3, null);
+            case EDIT_STEP_4 -> nonCommandHandler.getDescription(command, userId, NONE, null);
+            case EDIT_STEP_1, DELETE_STEP_1, REMIND_STEP_1 -> nonCommandHandler.getIndexPassword(command, userId);
             case EDIT_STEP_2 -> nonCommandHandler.getPasswordLength(command, userId, EDIT_STEP_3);
             case EDIT_STEP_3 -> nonCommandHandler.getComplexity(command, userId, EDIT_STEP_4, ENTER_PASSWORD_DESCRIPTION);
             case SORT_STEP_1 -> nonCommandHandler.getSortType(command, userId);
             case FIND_STEP_1 -> nonCommandHandler.getSearchRequest(command, userId);
+            case REMIND_STEP_2, SAVE_STEP_3 -> nonCommandHandler.getRemindDays(command, userId, NONE);
             default -> new Response(INCORRECT_COMMAND_RESPONSE, NONE);
         };
     }

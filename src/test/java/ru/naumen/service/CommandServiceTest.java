@@ -27,9 +27,6 @@ class CommandServiceTest {
     private EncodeService encodeService;
 
     @Mock
-    private UserService userService;
-
-    @Mock
     private UserStateCache userStateCache;
 
     @Mock
@@ -62,6 +59,9 @@ class CommandServiceTest {
     @Mock
     private FindHandler findHandler;
 
+    @Mock
+    private RemindHandler remindHandler;
+
     private CommandService commandService;
 
     @BeforeEach
@@ -76,7 +76,8 @@ class CommandServiceTest {
                 listHandler,
                 saveHandler,
                 sortHandler,
-                startHelpHandler
+                startHelpHandler,
+                remindHandler
         );
 
         commandService = new CommandService(
@@ -162,6 +163,20 @@ class CommandServiceTest {
     }
 
     /**
+     * Тест команды /save с установкой напоминания
+     */
+    @Test
+    void testPerformCommandSaveWithRemind() {
+        Mockito.when(validationService.isValidCommand(new String[]{"/save", "pass", "desc", "3"}, 12345L)).thenReturn(true);
+        Mockito.when(saveHandler.handle(new String[]{"/save", "pass", "desc", "3"}, 12345L))
+                .thenReturn(new Response("Пароль успешно сохранён", State.NONE));
+
+        Response response = commandService.performCommand("/save pass desc 3", 12345L);
+        Assertions.assertEquals("Пароль успешно сохранён", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
+    }
+
+    /**
      * Тест команды /save без описания
      */
     @Test
@@ -238,6 +253,48 @@ class CommandServiceTest {
 
         Response response = commandService.performCommand("/del -2", 12345L);
         Assertions.assertEquals("Не найден пароль с id -2", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
+    }
+
+    /**
+     * Тест команды /remind, при валидных значениях
+     */
+    @Test
+    void testPerformCommandRemind() {
+        Mockito.when(validationService.isValidCommand(new String[]{"/remind", "1", "10"}, 12345L)).thenReturn(true);
+        Mockito.when(remindHandler.handle(new String[]{"/remind", "1", "10"}, 12345L))
+                .thenReturn(new Response("Установлено напоминание", State.NONE));
+
+        Response response = commandService.performCommand("/remind 1 10", 12345L);
+        Assertions.assertEquals("Установлено напоминание", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
+    }
+
+    /**
+     * Тест команды /remind, если задан отрицательный id
+     */
+    @Test
+    void testPerformCommandRemindMinusId() {
+        Mockito.when(validationService.isValidCommand(new String[]{"/remind", "2", "10"}, 12345L)).thenReturn(true);
+        Mockito.when(remindHandler.handle(new String[]{"/remind", "2", "10"}, 12345L))
+                .thenReturn(new Response("Не найден пароль с id 2", State.NONE));
+
+        Response response = commandService.performCommand("/remind 2 10", 12345L);
+        Assertions.assertEquals("Не найден пароль с id 2", response.message());
+        Assertions.assertEquals(State.NONE, response.botState());
+    }
+
+    /**
+     * Тест команды /remind, если задано некорректное кол-во дней
+     */
+    @Test
+    void testPerformCommandRemindInvalidDays() {
+        Mockito.when(validationService.isValidCommand(new String[]{"/remind", "1", "1"}, 12345L)).thenReturn(true);
+        Mockito.when(remindHandler.handle(new String[]{"/remind", "1", "1"}, 12345L))
+                .thenReturn(new Response("Напоминание можно установить на срок от 3 до 90 дней", State.NONE));
+
+        Response response = commandService.performCommand("/remind 1 1", 12345L);
+        Assertions.assertEquals("Напоминание можно установить на срок от 3 до 90 дней", response.message());
         Assertions.assertEquals(State.NONE, response.botState());
     }
 
@@ -466,17 +523,25 @@ class CommandServiceTest {
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SAVE_STEP_1);
         Response secondStep = commandService.performCommand("password", 12345L);
 
-        Mockito.when(nonCommandHandler.getDescription("description", 12345L, State.NONE, null))
-                .thenReturn(new Response("Пароль успешно сохранён", State.NONE));
+        Mockito.when(nonCommandHandler.getDescription("description", 12345L, State.SAVE_STEP_3, null))
+                .thenReturn(new Response("Через сколько дней напомнить о смене пароля? (0 - не ставить напоминание)", State.SAVE_STEP_3));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SAVE_STEP_2);
         Response thirdStep = commandService.performCommand("description", 12345L);
+
+        Mockito.when(nonCommandHandler.getRemindDays("3", 12345L, State.NONE))
+                .thenReturn(new Response("Пароль успешно сохранён", State.NONE));
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SAVE_STEP_3);
+        Response fourthStep = commandService.performCommand("3", 12345L);
+
 
         Assertions.assertEquals("Введите пароль", firstStep.message());
         Assertions.assertEquals(State.SAVE_STEP_1, firstStep.botState());
         Assertions.assertEquals("Введите описание пароля", secondStep.message());
         Assertions.assertEquals(State.SAVE_STEP_2, secondStep.botState());
-        Assertions.assertEquals("Пароль успешно сохранён", thirdStep.message());
-        Assertions.assertEquals(State.NONE, thirdStep.botState());
+        Assertions.assertEquals("Через сколько дней напомнить о смене пароля? (0 - не ставить напоминание)", thirdStep.message());
+        Assertions.assertEquals(State.SAVE_STEP_3, thirdStep.botState());
+        Assertions.assertEquals("Пароль успешно сохранён", fourthStep.message());
+        Assertions.assertEquals(State.NONE, fourthStep.botState());
     }
 
     /**
@@ -586,5 +651,34 @@ class CommandServiceTest {
         Assertions.assertEquals(State.FIND_STEP_1, firstStep.botState());
         Assertions.assertEquals("Найденные пароли", secondStep.message());
         Assertions.assertEquals(State.NONE, secondStep.botState());
+    }
+
+    /**
+     * Тест команды установки напоминания
+     */
+    @Test
+    void testPerformCommandRemindKeyboard() {
+        Mockito.when(validationService.isValidCommand(Mockito.any(String[].class), Mockito.eq(12345L))).thenReturn(true);
+
+        Mockito.when(remindHandler.handle(new String[]{"Напомнить"}, 12345L))
+                .thenReturn(new Response("Введите индекс пароля", State.REMIND_STEP_1));
+        Response firstStep = commandService.performCommand("Напомнить", 12345L);
+
+        Mockito.when(nonCommandHandler.getIndexPassword("1", 12345L))
+                .thenReturn(new Response("Через сколько дней напомнить о смене пароля?", State.REMIND_STEP_2));
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.REMIND_STEP_1);
+        Response secondStep = commandService.performCommand("1", 12345L);
+
+        Mockito.when(nonCommandHandler.getRemindDays("3", 12345L, State.NONE))
+                .thenReturn(new Response("Напоминание установлено", State.NONE));
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.REMIND_STEP_2);
+        Response thirdStep = commandService.performCommand("3", 12345L);
+
+        Assertions.assertEquals("Введите индекс пароля", firstStep.message());
+        Assertions.assertEquals(State.REMIND_STEP_1, firstStep.botState());
+        Assertions.assertEquals("Через сколько дней напомнить о смене пароля?", secondStep.message());
+        Assertions.assertEquals(State.REMIND_STEP_2, secondStep.botState());
+        Assertions.assertEquals("Напоминание установлено", thirdStep.message());
+        Assertions.assertEquals(State.NONE, thirdStep.botState());
     }
 }

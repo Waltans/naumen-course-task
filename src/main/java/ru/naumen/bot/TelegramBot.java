@@ -54,6 +54,16 @@ class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
+     * Отправляет сообщение с напоминанием при публикации события
+     * @param event событие
+     */
+    @EventListener
+    public void onReminderEvent(ReminderEvent event) {
+        sendMessageToChat(new Response(event.getMessage(), State.NONE), event.getUserId());
+    }
+
+
+    /**
      * Обрабатывает полученное сообщение, создаёт нового пользователя,
      * если он впервые взаимодействует с ботом
      *
@@ -156,6 +166,7 @@ class TelegramBot extends TelegramLongPollingBot {
      * EDIT_KEYBOARD - начать процедуру изменения пароля
      * SORT_KEYBOARD - отсортировать пароли
      * FIND_KEYBOARD - поиск паролей по описанию
+     * REMIND_KEYBOARD - начать процедуру установки напоминания о смене пароля
      */
     private List<KeyboardRow> listKeyBoard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
@@ -168,6 +179,7 @@ class TelegramBot extends TelegramLongPollingBot {
         KeyboardRow keyboardRowSecond = new KeyboardRow();
         keyboardRowSecond.add(new KeyboardButton(Command.SORT_KEYBOARD));
         keyboardRowSecond.add(new KeyboardButton(Command.FIND_KEYBOARD));
+        keyboardRowSecond.add(new KeyboardButton(Command.REMIND_KEYBOARD));
 
         keyboardRows.add(keyboardRowFirst);
         keyboardRows.add(keyboardRowSecond);

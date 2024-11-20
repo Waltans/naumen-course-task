@@ -51,6 +51,9 @@ class NonCommandHandlerTest {
     @Mock
     private StartHelpHandler startHelpHandler;
 
+    @Mock
+    private RemindHandler remindHandler;
+
     private NonCommandHandler nonCommandHandler;
 
 
@@ -68,7 +71,8 @@ class NonCommandHandlerTest {
                 listHandler,
                 saveHandler,
                 sortHandler,
-                startHelpHandler
+                startHelpHandler,
+                remindHandler
         );
 
         nonCommandHandler = new NonCommandHandler(
@@ -83,11 +87,13 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetComplexity() {
-        Response response = nonCommandHandler.getComplexity("3", 12345L, SAVE_STEP_2, "complexity entered");
+        Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
+
+        Response response = nonCommandHandler.getComplexity("3", 12345L, SAVE_STEP_3, "complexity entered");
 
         Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("3"));
 
-        Assertions.assertEquals(SAVE_STEP_2, response.botState());
+        Assertions.assertEquals(SAVE_STEP_3, response.botState());
         Mockito.verify(userStateCache).addParam(12345L,"3");
         Assertions.assertEquals("complexity entered", response.message());
     }
@@ -97,9 +103,11 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetPasswordLength() {
+        Mockito.when(validationService.isValidLength(8)).thenReturn(true);
+
         Response response = nonCommandHandler.getPasswordLength("8", 12345L, SAVE_STEP_1);
 
-        Assertions.assertEquals(ENTER_PASSWORD_COMPLEXITY, response.message());
+        Assertions.assertEquals("Выберите сложность пароля", response.message());
         Assertions.assertEquals(SAVE_STEP_1, response.botState());
         Mockito.verify(userStateCache).addParam(12345L, "8");
     }
@@ -109,15 +117,12 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetDescriptionWhenSave() {
-        String[] splitCommand = {"/save", "pass", "desc"};
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(SAVE_STEP_2);
         Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("pass"));
-        Mockito.when(saveHandler.handle(splitCommand, 12345L))
-                .thenReturn(new Response("pass saved", NONE));
 
         Response response = nonCommandHandler.getDescription("desc", 12345L, NONE, null);
 
-        Assertions.assertEquals("pass saved", response.message());
+        Assertions.assertEquals("Через сколько дней напомнить о смене пароля? (0 - не ставить напоминание)", response.message());
         Assertions.assertEquals(NONE, response.botState());
     }
 
@@ -162,6 +167,20 @@ class NonCommandHandlerTest {
 
         Assertions.assertEquals("Введите длину пароля", response.message());
         Assertions.assertEquals(EDIT_STEP_2, response.botState());
+    }
+
+    /**
+     * Тест метода получения индекса пароля при установке напоминания
+     */
+    @Test
+    void testGetIndexPasswordWhenRemind() {
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(REMIND_STEP_1);
+        Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
+
+        Response response = nonCommandHandler.getIndexPassword("1", 12345L);
+
+        Assertions.assertEquals("Через сколько дней напомнить о смене пароля?", response.message());
+        Assertions.assertEquals(REMIND_STEP_2, response.botState());
     }
 
     /**
@@ -211,4 +230,46 @@ class NonCommandHandlerTest {
         Assertions.assertEquals("found", response.message());
         Assertions.assertEquals(NONE, response.botState());
     }
+
+    /**
+     * Тест метода получения дней до напоминания при установке напоминания
+     */
+    @Test
+    void testGetRemindDaysWhenRemind() {
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(REMIND_STEP_1);
+        Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("1"));
+        Mockito.when(validationService.isValidDays(5)).thenReturn(true);
+
+        String[] splitCommand = {"/remind", "1", "5"};
+        Mockito.when(remindHandler.handle(splitCommand, 12345L))
+                .thenReturn(new Response("reminder set", NONE));
+
+        Response response = nonCommandHandler.getRemindDays("5", 12345L, REMIND_STEP_2);
+
+        Assertions.assertEquals("reminder set", response.message());
+        Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(userStateCache).addParam(12345L, "5");
+        Mockito.verify(userStateCache).setState(12345L, REMIND_STEP_2);
+    }
+
+    /**
+     * Тест метода получения дней до напоминания при сохранении
+     */
+    @Test
+    void testGetRemindDaysWhenSave() {
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(SAVE_STEP_3);
+        Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("111", "desc"));
+        Mockito.when(validationService.isValidDays(10)).thenReturn(true);
+
+        String[] splitCommand = {"/save", "111", "desc", "10"};
+        Mockito.when(saveHandler.handle(splitCommand, 12345L))
+                .thenReturn(new Response("password saved", NONE));
+
+        Response response = nonCommandHandler.getRemindDays("10", 12345L, NONE);
+
+        Assertions.assertEquals("password saved", response.message());
+        Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(userStateCache).setState(12345L, NONE);
+    }
+
 }
