@@ -30,7 +30,7 @@ class RemindSchedulerTest {
         ArgumentCaptor<ReminderEvent> eventCaptor = ArgumentCaptor.forClass(ReminderEvent.class);
         remindScheduler.scheduleRemind("test", 12345L, 500);
 
-        Mockito.verify(eventPublisher, Mockito.times(0)).publishEvent(eventCaptor.capture());
+        Mockito.verify(eventPublisher, Mockito.never()).publishEvent(eventCaptor.capture());
         Thread.sleep(500 + 20);
 
         Mockito.verify(eventPublisher, Mockito.times(1)).publishEvent(eventCaptor.capture());
