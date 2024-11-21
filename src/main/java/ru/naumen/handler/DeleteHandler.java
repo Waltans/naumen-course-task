@@ -1,13 +1,13 @@
 package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
+import ru.naumen.bot.RemindScheduler;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static ru.naumen.bot.Constants.*;
@@ -22,11 +22,13 @@ public class DeleteHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final ValidationService validationService;
+    private final RemindScheduler remindScheduler;
 
-    public DeleteHandler(PasswordService passwordService, UserStateCache userStateCache, ValidationService validationService) {
+    public DeleteHandler(PasswordService passwordService, UserStateCache userStateCache, ValidationService validationService, RemindScheduler remindScheduler) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
         this.validationService = validationService;
+        this.remindScheduler = remindScheduler;
     }
 
     @Override
@@ -51,6 +53,7 @@ public class DeleteHandler implements CommandHandler {
         String uuid = userPasswords.get(passwordIndexInSystem).getUuid();
         String description = userPasswords.get(passwordIndexInSystem).getDescription();
         passwordService.deletePassword(uuid);
+        remindScheduler.cancelReminderIfExists(uuid);
         userStateCache.setState(userId, NONE);
         userStateCache.clearParamsForUser(userId);
 

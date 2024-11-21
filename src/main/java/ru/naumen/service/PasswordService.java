@@ -43,12 +43,13 @@ public class PasswordService {
     /**
      * Создаёт пароль и сохраняет в БД
      *
-     * @param password пароль
+     * @param password    пароль
      * @param description описание пароля
-     * @param userId ID пользователя
+     * @param userId      ID пользователя
+     * @return uuid сгенерированного пароля
      */
     @Transactional
-    public void createUserPassword(String password, String description, long userId)
+    public String createUserPassword(String password, String description, long userId)
             throws UserNotFoundException, EncryptException {
         String encodedPassword = encodeService.encryptData(password);
         User user = userService.getUserById(userId);
@@ -56,6 +57,7 @@ public class PasswordService {
 
         userPasswordRepository.save(userPassword);
         log.info("Создан новый пароль {}", userPassword.getUuid());
+        return userPassword.getUuid();
     }
 
     /**

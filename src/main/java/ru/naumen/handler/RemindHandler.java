@@ -1,7 +1,5 @@
 package ru.naumen.handler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.RemindScheduler;
 import ru.naumen.bot.Response;
@@ -20,8 +18,6 @@ import static ru.naumen.model.State.*;
  */
 @Component
 public class RemindHandler implements CommandHandler {
-
-    private final Logger log = LoggerFactory.getLogger(RemindHandler.class);
     private final RemindScheduler remindScheduler;
     private final UserStateCache userStateCache;
     private final ValidationService validationService;
@@ -62,11 +58,11 @@ public class RemindHandler implements CommandHandler {
 
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
         String description = userPasswords.get(passwordIndexInSystem).getDescription();
+        String passwordUuid = userPasswords.get(passwordIndexInSystem).getUuid();
 
-        remindScheduler.scheduleRemind(String.format(REMIND_MESSAGE, description), userId, millisToRemind);
+        remindScheduler.scheduleRemind(String.format(REMIND_MESSAGE, description), userId, passwordUuid, millisToRemind);
         userStateCache.setState(userId, NONE);
         userStateCache.clearParamsForUser(userId);
-        log.info("Запланировано новое напоминание для пользователя {}", userId);
 
         return new Response(String.format(REMIND_SET_MESSAGE, description), NONE);
     }

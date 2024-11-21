@@ -61,7 +61,7 @@ class RemindHandlerTest {
 
         Assertions.assertEquals("Напоминание для пароля desc установлено", response.message());
         Assertions.assertEquals(NONE, response.botState());
-        Mockito.verify(remindScheduler).scheduleRemind("Напоминание: обновите пароль для desc", 12345L, 86_400_000L);
+        Mockito.verify(remindScheduler).scheduleRemind("Напоминание: обновите пароль для desc", 12345L, "uuid", 86_400_000L);
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 

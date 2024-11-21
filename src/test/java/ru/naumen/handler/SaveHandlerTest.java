@@ -101,11 +101,12 @@ class SaveHandlerTest {
         String[] command = {"/save", "pass", "desc", "1"};
         Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
         Mockito.when(validationService.isValidDays(1)).thenReturn(true);
+        Mockito.when(passwordService.createUserPassword("pass", "desc", 12345L)).thenReturn("uuid");
 
         Response response = saveHandler.handle(command, 12345L);
 
         Mockito.verify(passwordService).createUserPassword("pass", "desc", 12345L);
-        Mockito.verify(remindScheduler).scheduleRemind("Напоминание: обновите пароль для desc", 12345L, 86_400_000L);
+        Mockito.verify(remindScheduler).scheduleRemind("Напоминание: обновите пароль для desc", 12345L, "uuid", 86_400_000L);
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
         Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
