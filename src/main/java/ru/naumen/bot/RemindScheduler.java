@@ -21,6 +21,7 @@ public class RemindScheduler {
 
     /**
      * Карта для хранения запланированных напоминаний
+     * UUID сущности -> задача с напоминанием
      */
     private final Map<String, ScheduledFuture<?>> scheduledReminders = new ConcurrentHashMap<>();
 
