@@ -37,7 +37,7 @@ public class RemindScheduler {
      * @param delayInMillis количество миллисекунд до напоминания
      */
     public void scheduleRemind(String message, long userId, String uuid, long delayInMillis) {
-        cancelReminderIfScheduled(uuid);
+        cancelRemindIfScheduled(uuid);
         ScheduledFuture<?> future = scheduler.schedule(() -> {
             eventPublisher.publishEvent(new ReminderEvent(this, String.valueOf(userId), message));
             scheduledReminders.remove(uuid);
@@ -52,7 +52,7 @@ public class RemindScheduler {
      *
      * @param uuid идентификатор сущности для напоминания
      */
-    public void cancelReminderIfScheduled(String uuid) {
+    public void cancelRemindIfScheduled(String uuid) {
         ScheduledFuture<?> future = scheduledReminders.remove(uuid);
         if (future != null) {
             future.cancel(false);

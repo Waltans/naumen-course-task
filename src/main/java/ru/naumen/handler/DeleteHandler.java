@@ -53,7 +53,7 @@ public class DeleteHandler implements CommandHandler {
         String uuid = userPasswords.get(passwordIndexInSystem).getUuid();
         String description = userPasswords.get(passwordIndexInSystem).getDescription();
         passwordService.deletePassword(uuid);
-        remindScheduler.cancelReminderIfScheduled(uuid);
+        remindScheduler.cancelRemindIfScheduled(uuid);
         userStateCache.setState(userId, NONE);
         userStateCache.clearParamsForUser(userId);
 

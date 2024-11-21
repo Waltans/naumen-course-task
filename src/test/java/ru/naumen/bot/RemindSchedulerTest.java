@@ -65,10 +65,10 @@ class RemindSchedulerTest {
      * Тест отмены напоминания
      */
     @Test
-    void testCancelReminder() throws InterruptedException {
+    void testCancelRemind() throws InterruptedException {
         remindScheduler.scheduleRemind("test", 12345L, "uuid", 500);
 
-        remindScheduler.cancelReminderIfScheduled("uuid");
+        remindScheduler.cancelRemindIfScheduled("uuid");
 
         Thread.sleep(500 + 20);
 
@@ -80,14 +80,14 @@ class RemindSchedulerTest {
      * Тест отмены напоминания после его выполнения
      */
     @Test
-    void testCancelReminderAfterExecution() throws InterruptedException {
+    void testCancelRemindAfterExecution() throws InterruptedException {
         remindScheduler.scheduleRemind("test", 12345L, "uuid", 500);
 
         Thread.sleep(500 + 20);
         ArgumentCaptor<ReminderEvent> eventCaptor = ArgumentCaptor.forClass(ReminderEvent.class);
         Mockito.verify(eventPublisher, Mockito.times(1)).publishEvent(eventCaptor.capture());
 
-        remindScheduler.cancelReminderIfScheduled("uuid");
+        remindScheduler.cancelRemindIfScheduled("uuid");
         Mockito.verify(eventPublisher, Mockito.times(1)).publishEvent(eventCaptor.capture());
     }
 }
