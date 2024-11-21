@@ -68,7 +68,7 @@ class RemindSchedulerTest {
     void testCancelReminder() throws InterruptedException {
         remindScheduler.scheduleRemind("test", 12345L, "uuid", 500);
 
-        remindScheduler.cancelReminderIfExists("uuid");
+        remindScheduler.cancelReminderIfScheduled("uuid");
 
         Thread.sleep(500 + 20);
 
@@ -87,7 +87,7 @@ class RemindSchedulerTest {
         ArgumentCaptor<ReminderEvent> eventCaptor = ArgumentCaptor.forClass(ReminderEvent.class);
         Mockito.verify(eventPublisher, Mockito.times(1)).publishEvent(eventCaptor.capture());
 
-        remindScheduler.cancelReminderIfExists("uuid");
+        remindScheduler.cancelReminderIfScheduled("uuid");
         Mockito.verify(eventPublisher, Mockito.times(1)).publishEvent(eventCaptor.capture());
     }
 }

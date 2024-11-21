@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import ru.naumen.handler.EditHandler;
 
 import java.util.Map;
 import java.util.concurrent.*;
@@ -38,7 +37,7 @@ public class RemindScheduler {
      * @param delayInMillis количество миллисекунд до напоминания
      */
     public void scheduleRemind(String message, long userId, String uuid, long delayInMillis) {
-        cancelReminderIfExists(uuid);
+        cancelReminderIfScheduled(uuid);
         ScheduledFuture<?> future = scheduler.schedule(() -> {
             eventPublisher.publishEvent(new ReminderEvent(this, String.valueOf(userId), message));
             scheduledReminders.remove(uuid);
@@ -53,7 +52,7 @@ public class RemindScheduler {
      *
      * @param uuid идентификатор сущности для напоминания
      */
-    public void cancelReminderIfExists(String uuid) {
+    public void cancelReminderIfScheduled(String uuid) {
         ScheduledFuture<?> future = scheduledReminders.remove(uuid);
         if (future != null) {
             future.cancel(false);
