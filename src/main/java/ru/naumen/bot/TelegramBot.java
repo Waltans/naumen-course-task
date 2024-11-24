@@ -62,10 +62,8 @@ class TelegramBot extends TelegramLongPollingBot {
         sendMessageToChat(new Response(event.getMessage(), State.NONE), event.getUserId());
     }
 
-
     /**
-     * Обрабатывает полученное сообщение, создаёт нового пользователя,
-     * если он впервые взаимодействует с ботом
+     * Обрабатывает полученное сообщение
      *
      * @param update обновление
      */
