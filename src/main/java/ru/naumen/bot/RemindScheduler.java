@@ -20,7 +20,7 @@ public class RemindScheduler {
 
     /**
      * Карта для хранения запланированных напоминаний
-     * UUID сущности -> задача с напоминанием
+     * entityId сущности -> задача с напоминанием
      */
     private final Map<String, ScheduledFuture<?>> scheduledReminders = new ConcurrentHashMap<>();
 
@@ -33,30 +33,30 @@ public class RemindScheduler {
      *
      * @param message       сообщение с напоминанием
      * @param userId        идентификатор пользователя
-     * @param uuid          идентификатор сущности для напоминания
+     * @param entityId          идентификатор сущности для напоминания
      * @param delayInMillis количество миллисекунд до напоминания
      */
-    public void scheduleRemind(String message, long userId, String uuid, long delayInMillis) {
-        cancelRemindIfScheduled(uuid);
+    public void scheduleRemind(String message, long userId, String entityId, long delayInMillis) {
+        cancelRemindIfScheduled(entityId);
         ScheduledFuture<?> future = scheduler.schedule(() -> {
             eventPublisher.publishEvent(new ReminderEvent(this, String.valueOf(userId), message));
-            scheduledReminders.remove(uuid);
+            scheduledReminders.remove(entityId);
         }, delayInMillis, TimeUnit.MILLISECONDS);
 
-        scheduledReminders.put(uuid, future);
-        log.info("Запланировано напоминание, uuid: {}", uuid);
+        scheduledReminders.put(entityId, future);
+        log.info("Запланировано напоминание, entityId: {}", entityId);
     }
 
     /**
-     * Отменяет напоминание по uuid
+     * Отменяет напоминание по Id сущности
      *
-     * @param uuid идентификатор сущности для напоминания
+     * @param entityId идентификатор сущности для напоминания
      */
-    public void cancelRemindIfScheduled(String uuid) {
-        ScheduledFuture<?> future = scheduledReminders.remove(uuid);
+    public void cancelRemindIfScheduled(String entityId) {
+        ScheduledFuture<?> future = scheduledReminders.remove(entityId);
         if (future != null) {
             future.cancel(false);
-            log.info("Отменено напоминание, uuid: {}", uuid);
+            log.info("Отменено напоминание, entityId: {}", entityId);
         }
     }
 }
