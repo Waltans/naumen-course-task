@@ -60,7 +60,7 @@ public class RemindHandler implements CommandHandler {
         String description = userPasswords.get(passwordIndexInSystem).getDescription();
         String passwordUuid = userPasswords.get(passwordIndexInSystem).getUuid();
 
-        remindScheduler.scheduleRemind(String.format(REMIND_MESSAGE, description), userId, passwordUuid, millisToRemind);
+        remindScheduler.scheduleRemind(String.format(REMIND_MESSAGE_PASSWORD, description), userId, passwordUuid, millisToRemind);
         userStateCache.setState(userId, NONE);
         userStateCache.clearParamsForUser(userId);
 

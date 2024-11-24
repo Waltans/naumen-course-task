@@ -5,7 +5,7 @@ import ru.naumen.bot.Command;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
-import ru.naumen.service.*;
+import ru.naumen.service.ValidationService;
 
 import java.util.List;
 
@@ -161,9 +161,9 @@ public class NonCommandHandler {
     /**
      * Получение дней до напоминания
      *
-     * @param daysToRemind    - число дней до напоминания
-     * @param userId          - ID пользователя
-     * @param nextState       - следующее состояние
+     * @param daysToRemind - число дней до напоминания
+     * @param userId       - ID пользователя
+     * @param nextState    - следующее состояние
      * @return ответ и состояние пользователя
      */
     public Response getRemindDays(String daysToRemind, long userId, State nextState) {
@@ -200,10 +200,23 @@ public class NonCommandHandler {
     }
 
 
+    public Response getCodeWord(String codeWord, long userId) {
+        State currentState = userStateCache.getUserState(userId);
+        if (currentState.equals(CODE_PHRASE_1)) {
+            return handlerMapper.getHandler(Command.ADD_CODE)
+                    .handle(new String[]{Command.ADD_CODE, codeWord}, userId);
+        }
+
+        userStateCache.clearParamsForUser(userId);
+        return new Response(FAILURE, currentState);
+    }
+
+
     /**
      * Получение типа сортировки из команды
+     *
      * @param sortType тип сортировки
-     * @param userId id пользователя
+     * @param userId   id пользователя
      * @return ответ и состояние пользователя
      */
     public Response getSortType(String sortType, Long userId) {
@@ -219,8 +232,9 @@ public class NonCommandHandler {
 
     /**
      * Получение поискового запроса из команды
+     *
      * @param searchRequest поисковый запрос
-     * @param userId id пользователя
+     * @param userId        id пользователя
      * @return ответ и состояние пользователя
      */
     public Response getSearchRequest(String searchRequest, Long userId) {

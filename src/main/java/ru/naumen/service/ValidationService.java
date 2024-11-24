@@ -45,6 +45,7 @@ public class ValidationService {
                 case GENERATION_STEP_1, EDIT_STEP_1, EDIT_STEP_2, DELETE_STEP_1,
                         REMIND_STEP_1, REMIND_STEP_2, SAVE_STEP_3 -> isNumber(command);
                 case SORT_STEP_1 -> isValidSortType(command);
+                case CODE_PHRASE_1 -> isValidCodeWordLength(command);
                 default -> false;
             };
         }
@@ -60,6 +61,15 @@ public class ValidationService {
 
         return params != null &&
                 params.contains(paramsCount);
+    }
+
+    /**
+     * Корректная ли длина пароля
+     * @param command - длина
+     * @return - true, если длина больше 0 и меньше 50 и не состоит из пробелов, false - в других случаях
+     */
+    private boolean isValidCodeWordLength(String command) {
+        return !command.isEmpty() && command.length() <= 50 && !command.isBlank();
     }
 
     /**

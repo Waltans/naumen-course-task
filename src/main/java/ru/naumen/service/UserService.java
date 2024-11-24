@@ -1,9 +1,11 @@
 package ru.naumen.service;
 
+import ch.qos.logback.core.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.naumen.exception.UserCodePhraseException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.repository.UserRepository;
@@ -15,10 +17,12 @@ import ru.naumen.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final EncodeService encodeService;
     private final Logger log = LoggerFactory.getLogger(UserService.class);
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, EncodeService encodeService) {
         this.userRepository = userRepository;
+        this.encodeService = encodeService;
     }
 
     /**
@@ -53,5 +57,22 @@ public class UserService {
             log.debug("Найден пользователь с id {}", id);
             return user;
         }
+    }
+
+    /**
+     * Добавление кодового слова для пользователя
+     *
+     * @param userId   - ID пользователя
+     * @param codeWord - кодовое слово
+     * @throws UserNotFoundException - ошибка, в случае, если кодовое слово уже задано
+     */
+    public void addCodeWordForUser(long userId, String codeWord) throws UserNotFoundException, UserCodePhraseException {
+        User user = getUserById(userId);
+
+        if (!StringUtil.isNullOrEmpty(user.getCodePhrase())) {
+            throw new UserCodePhraseException(String.format("У пользователя с id %s уже задано кодовое слово", userId));
+        }
+        user.setCodePhrase(encodeService.encryptData(codeWord));
+        userRepository.save(user);
     }
 }

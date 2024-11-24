@@ -55,7 +55,7 @@ public class SaveHandler implements CommandHandler {
 
                 long millisToRemind = daysToRemind * MILLIS_IN_A_DAY;
                 String passwordUuid = passwordService.createUserPassword(password, description, userId);
-                remindScheduler.scheduleRemind(String.format(REMIND_MESSAGE, description), userId, passwordUuid, millisToRemind);
+                remindScheduler.scheduleRemind(String.format(REMIND_MESSAGE_PASSWORD, description), userId, passwordUuid, millisToRemind);
             } else {
                 String description = splitCommand[2];
                 passwordService.createUserPassword(password, description, userId);

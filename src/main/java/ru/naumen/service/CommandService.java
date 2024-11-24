@@ -4,9 +4,11 @@ import org.springframework.stereotype.Service;
 import ru.naumen.bot.Command;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
-import ru.naumen.handler.*;
+import ru.naumen.handler.HandlerMapper;
+import ru.naumen.handler.NonCommandHandler;
 
-import static ru.naumen.bot.Constants.*;
+import static ru.naumen.bot.Constants.ENTER_PASSWORD_DESCRIPTION;
+import static ru.naumen.bot.Constants.INCORRECT_COMMAND_RESPONSE;
 import static ru.naumen.model.State.*;
 
 /**
@@ -32,8 +34,8 @@ public class CommandService {
     /**
      * Обрабатывает команду, введённую пользователем
      *
-     * @param message  текст команды
-     * @param userId   ID пользователя
+     * @param message текст команды
+     * @param userId  ID пользователя
      * @return ответ на команду и состояние пользователя
      */
     public Response performCommand(String message, long userId) {
@@ -48,7 +50,8 @@ public class CommandService {
 
     /**
      * Метод принимает команду и исполняет её
-     * @param userId - ID пользователя
+     *
+     * @param userId       - ID пользователя
      * @param splitCommand - разделенная команда
      * @return - результат обработки команды
      */
@@ -64,14 +67,16 @@ public class CommandService {
                     handlerMapper.getHandler(Command.DELETE).handle(splitCommand, userId);
             case Command.EDIT, Command.EDIT_KEYBOARD ->
                     handlerMapper.getHandler(Command.EDIT).handle(splitCommand, userId);
-            case Command.HELP, Command.HELP_KEYBOARD, Command.START, Command.MENU_KEYBOARD
-                    -> handlerMapper.getHandler(Command.HELP).handle(splitCommand, userId);
-            case Command.SORT, Command.SORT_KEYBOARD
-                    -> handlerMapper.getHandler(Command.SORT).handle(splitCommand, userId);
-            case Command.FIND, Command.FIND_KEYBOARD
-                    -> handlerMapper.getHandler(Command.FIND).handle(splitCommand, userId);
-            case Command.REMIND, Command.REMIND_KEYBOARD
-                    -> handlerMapper.getHandler(Command.REMIND).handle(splitCommand, userId);
+            case Command.HELP, Command.HELP_KEYBOARD, Command.START, Command.MENU_KEYBOARD ->
+                    handlerMapper.getHandler(Command.HELP).handle(splitCommand, userId);
+            case Command.SORT, Command.SORT_KEYBOARD ->
+                    handlerMapper.getHandler(Command.SORT).handle(splitCommand, userId);
+            case Command.FIND, Command.FIND_KEYBOARD ->
+                    handlerMapper.getHandler(Command.FIND).handle(splitCommand, userId);
+            case Command.REMIND, Command.REMIND_KEYBOARD ->
+                    handlerMapper.getHandler(Command.REMIND).handle(splitCommand, userId);
+            case Command.ADD_CODE ->
+                    handlerMapper.getHandler(Command.ADD_CODE).handle(splitCommand, userId);
             default -> performNotCommandMessage(splitCommand, userId);
         };
     }
@@ -96,10 +101,12 @@ public class CommandService {
             case EDIT_STEP_4 -> nonCommandHandler.getDescription(command, userId, NONE, null);
             case EDIT_STEP_1, DELETE_STEP_1, REMIND_STEP_1 -> nonCommandHandler.getIndexPassword(command, userId);
             case EDIT_STEP_2 -> nonCommandHandler.getPasswordLength(command, userId, EDIT_STEP_3);
-            case EDIT_STEP_3 -> nonCommandHandler.getComplexity(command, userId, EDIT_STEP_4, ENTER_PASSWORD_DESCRIPTION);
+            case EDIT_STEP_3 ->
+                    nonCommandHandler.getComplexity(command, userId, EDIT_STEP_4, ENTER_PASSWORD_DESCRIPTION);
             case SORT_STEP_1 -> nonCommandHandler.getSortType(command, userId);
             case FIND_STEP_1 -> nonCommandHandler.getSearchRequest(command, userId);
             case REMIND_STEP_2, SAVE_STEP_3 -> nonCommandHandler.getRemindDays(command, userId, NONE);
+            case CODE_PHRASE_1 -> nonCommandHandler.getCodeWord(command, userId);
             default -> new Response(INCORRECT_COMMAND_RESPONSE, NONE);
         };
     }

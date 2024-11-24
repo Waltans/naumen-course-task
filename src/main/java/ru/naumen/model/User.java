@@ -25,6 +25,19 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserPassword> userPasswords;
 
+    /**
+     * Кодовое слово пользователя
+     */
+    private String codePhrase = null;
+
+    public String getCodePhrase() {
+        return codePhrase;
+    }
+
+    public void setCodePhrase(String codePhrase) {
+        this.codePhrase = codePhrase;
+    }
+
     public User(long id, List<UserPassword> userPasswords) {
         this.id = id;
         this.userPasswords = userPasswords;
