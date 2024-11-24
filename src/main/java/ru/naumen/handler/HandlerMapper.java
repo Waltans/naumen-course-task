@@ -22,6 +22,7 @@ public class HandlerMapper {
     private final StartHelpHandler startHelpHandler;
     private final RemindHandler remindHandler;
     private final AddCodePhraseHandler addCodePhraseHandler;
+    private final ClearPasswordHandler clearPasswordHandler;
 
     public HandlerMapper(DeleteHandler deleteHandler,
                          EditHandler editHandler,
@@ -32,7 +33,8 @@ public class HandlerMapper {
                          SortHandler sortHandler,
                          StartHelpHandler startHelpHandler,
                          RemindHandler remindHandler,
-                         AddCodePhraseHandler addCodePhraseHandler) {
+                         AddCodePhraseHandler addCodePhraseHandler,
+                         ClearPasswordHandler clearPasswordHandler) {
         this.deleteHandler = deleteHandler;
         this.editHandler = editHandler;
         this.findHandler = findHandler;
@@ -43,6 +45,7 @@ public class HandlerMapper {
         this.startHelpHandler = startHelpHandler;
         this.remindHandler = remindHandler;
         this.addCodePhraseHandler = addCodePhraseHandler;
+        this.clearPasswordHandler = clearPasswordHandler;
     }
 
     /**
@@ -63,6 +66,7 @@ public class HandlerMapper {
         commandsAndHandlers.put(Command.HELP, startHelpHandler);
         commandsAndHandlers.put(Command.REMIND, remindHandler);
         commandsAndHandlers.put(Command.ADD_CODE, addCodePhraseHandler);
+        commandsAndHandlers.put(Command.CLEAR, clearPasswordHandler);
 
         return commandsAndHandlers.get(command);
     }

@@ -77,6 +77,9 @@ public class CommandService {
                     handlerMapper.getHandler(Command.REMIND).handle(splitCommand, userId);
             case Command.ADD_CODE ->
                     handlerMapper.getHandler(Command.ADD_CODE).handle(splitCommand, userId);
+            case Command.CLEAR ->
+                handlerMapper.getHandler(Command.CLEAR).handle(splitCommand, userId);
+
             default -> performNotCommandMessage(splitCommand, userId);
         };
     }
@@ -106,7 +109,8 @@ public class CommandService {
             case SORT_STEP_1 -> nonCommandHandler.getSortType(command, userId);
             case FIND_STEP_1 -> nonCommandHandler.getSearchRequest(command, userId);
             case REMIND_STEP_2, SAVE_STEP_3 -> nonCommandHandler.getRemindDays(command, userId, NONE);
-            case CODE_PHRASE_1 -> nonCommandHandler.getCodeWord(command, userId);
+            case CODE_PHRASE_1, CLEAR_1 -> nonCommandHandler.getCodeWord(command, userId);
+            case CLEAR_2 -> nonCommandHandler.getPhraseForClear(command, userId);
             default -> new Response(INCORRECT_COMMAND_RESPONSE, NONE);
         };
     }

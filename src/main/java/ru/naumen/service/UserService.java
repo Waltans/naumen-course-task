@@ -75,4 +75,10 @@ public class UserService {
         user.setCodePhrase(encodeService.encryptData(codeWord));
         userRepository.save(user);
     }
+
+    public boolean isExistCodeWord(Long userId) throws UserNotFoundException {
+        User user = getUserById(userId);
+
+        return user.getCodePhrase() != null;
+    }
 }

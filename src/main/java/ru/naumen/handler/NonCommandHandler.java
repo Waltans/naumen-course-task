@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.naumen.bot.Command;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.State;
 import ru.naumen.service.ValidationService;
 
@@ -199,12 +200,25 @@ public class NonCommandHandler {
         return handlerMapper.getHandler(Command.REMIND).handle(splitCommand, userId);
     }
 
-
-    public Response getCodeWord(String codeWord, long userId) {
+    /**
+     * Метод для получения кодового слова
+     *
+     * @param codeWord - кодовое слово
+     * @param userId   - ID пользователя
+     * @return - сообщение и состояние пользователя
+     */
+    public Response getCodeWord(String codeWord, long userId){
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(CODE_PHRASE_1)) {
             return handlerMapper.getHandler(Command.ADD_CODE)
                     .handle(new String[]{Command.ADD_CODE, codeWord}, userId);
+        }
+
+        if (currentState.equals(CLEAR_1)) {
+            userStateCache.addParam(userId, codeWord);
+            userStateCache.setState(userId, CLEAR_2);
+
+            return new Response(ENTER_CLEAR_PASSWORD, CLEAR_2);
         }
 
         userStateCache.clearParamsForUser(userId);
@@ -242,6 +256,19 @@ public class NonCommandHandler {
         if (currentState.equals(FIND_STEP_1)) {
             String[] splitCommand = {Command.FIND, searchRequest};
             return handlerMapper.getHandler(Command.FIND).handle(splitCommand, userId);
+        }
+
+        userStateCache.clearParamsForUser(userId);
+        return new Response(FAILURE, currentState);
+    }
+
+    public Response getPhraseForClear(String phrase, long userId) {
+        State currentState = userStateCache.getUserState(userId);
+        if (currentState.equals(CLEAR_2)) {
+            List<String> userParams = userStateCache.getUserParams(userId);
+            return handlerMapper.getHandler(Command.CLEAR)
+                    .handle(new String[]{Command.CLEAR, userParams.getFirst(), phrase},
+                            userId);
         }
 
         userStateCache.clearParamsForUser(userId);

@@ -52,6 +52,8 @@ class NonCommandHandlerTest {
     private StartHelpHandler startHelpHandler;
     @Mock
     private AddCodePhraseHandler addCodePhraseHandler;
+    @Mock
+    private ClearPasswordHandler clearPasswordHandler;
 
     @Mock
     private RemindHandler remindHandler;
@@ -75,7 +77,8 @@ class NonCommandHandlerTest {
                 sortHandler,
                 startHelpHandler,
                 remindHandler,
-                addCodePhraseHandler
+                addCodePhraseHandler,
+                clearPasswordHandler
         );
 
         nonCommandHandler = new NonCommandHandler(

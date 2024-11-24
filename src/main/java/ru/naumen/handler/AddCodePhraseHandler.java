@@ -3,10 +3,7 @@ package ru.naumen.handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ru.naumen.bot.Command;
-import ru.naumen.bot.RemindScheduler;
-import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.bot.*;
 import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.UserCodePhraseException;
 import ru.naumen.exception.UserNotFoundException;
@@ -37,7 +34,7 @@ public class AddCodePhraseHandler implements CommandHandler {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.CODE_PHRASE_1);
 
-            return new Response(Command.ADD_CODE_PHRASE, State.CODE_PHRASE_1);
+            return new Response(Constants.ADD_CODE_PHRASE, State.CODE_PHRASE_1);
         }
 
         try {

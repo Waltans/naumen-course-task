@@ -59,4 +59,6 @@ public interface UserPasswordRepository extends JpaRepository<UserPassword, Long
      * @param userId Id пользователя
      */
     List<UserPassword> findByUserIdOrderByLastModifyDate(long userId);
+
+    void deleteAllByUserIdAndDescriptionStartingWithIgnoreCase(long userId, String searchRequest);
 }

@@ -35,15 +35,15 @@ public class Command {
     public static final String REMIND_KEYBOARD = "Напомнить";
     public static final String ADD_CODE = "/code";
     public static final String ADD_CODE_KEYBOAD = "Добавить кодовое слово";
-    public static final String ADD_CODE_PHRASE = "Введите кодовое слово";
+    public static final String CLEAR = "/clear";
+    public static final String CLEAR_KEYBOARD = "Очистить пароли";
     /**
      * Отображение, в которой ключи - команды,
      * значения - список допустимых количеств параметров, передаваемых вместе с командой.
      */
-    public static final Map<String, List<Integer>> commandsAndNumberOfParams;
+    public static final Map<String, List<Integer>> commandsAndNumberOfParams = new HashMap<>();
 
     static {
-        commandsAndNumberOfParams = new HashMap<>();
         commandsAndNumberOfParams.put(START, List.of(0));
         commandsAndNumberOfParams.put(GENERATE, List.of(2, 0));
         commandsAndNumberOfParams.put(SAVE, List.of(1, 2, 3, 0));
@@ -55,15 +55,15 @@ public class Command {
         commandsAndNumberOfParams.put(FIND, List.of(1, 0));
         commandsAndNumberOfParams.put(REMIND, List.of(2, 0));
         commandsAndNumberOfParams.put(ADD_CODE, List.of(1, 0));
+        commandsAndNumberOfParams.put(CLEAR, List.of(2, 0));
     }
 
     /**
      * Отображение, где кнопки соотносятся с командами
      */
-    public static final Map<String, String> commandKeyMapping;
+    public static final Map<String, String> commandKeyMapping = new HashMap<>();
 
     static {
-        commandKeyMapping = new HashMap<>();
         commandKeyMapping.put(GENERATE_KEYBOARD, GENERATE);
         commandKeyMapping.put(EDIT_KEYBOARD, EDIT);
         commandKeyMapping.put(DELETE_KEYBOARD, DELETE);
@@ -75,6 +75,7 @@ public class Command {
         commandKeyMapping.put(REMIND_KEYBOARD, REMIND);
         commandKeyMapping.put(MENU_KEYBOARD, START);
         commandKeyMapping.put(ADD_CODE_KEYBOAD, ADD_CODE);
+        commandKeyMapping.put(CLEAR_KEYBOARD, CLEAR);
     }
 
     /**

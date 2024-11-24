@@ -1,5 +1,8 @@
 package ru.naumen.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.IncorrectSortTypeException;
@@ -8,9 +11,6 @@ import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
 import ru.naumen.repository.UserPasswordRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -73,7 +73,7 @@ public class PasswordService {
     /**
      * Ищет пароли у конкретного пользователя
      *
-     * @param userId ID пользователя
+     * @param userId        ID пользователя
      * @param searchRequest поисковый запрос пароля (частичное описание без учёта регистра)
      */
     @Transactional(readOnly = true)
@@ -118,9 +118,10 @@ public class PasswordService {
 
     /**
      * Обновляет данные для пароля
-     * @param uuid uuid
+     *
+     * @param uuid        uuid
      * @param description описание (если передаётся null, то не обновляется)
-     * @param password пароль
+     * @param password    пароль
      */
     public void updatePassword(String uuid, String description, String password) {
         if (userPasswordRepository.existsByUuid(uuid)) {
@@ -139,6 +140,7 @@ public class PasswordService {
 
     /**
      * Ищет пароль по UUID
+     *
      * @param uuid uuid
      * @return найденный пароль
      */
@@ -152,6 +154,7 @@ public class PasswordService {
 
     /**
      * Подсчитывает количество паролей пользователя
+     *
      * @param userId id пользователя
      */
     public int countPasswordsByUserId(long userId) {
@@ -160,8 +163,9 @@ public class PasswordService {
 
     /**
      * Генерирует пароль по заданным параметрам
+     *
      * @param complexity сложность
-     * @param length длина
+     * @param length     длина
      * @return пароль
      */
     public String generatePassword(int length, String complexity) {
@@ -204,9 +208,15 @@ public class PasswordService {
 
     /**
      * Получает случайный символ из набора
+     *
      * @param characters набор символов
      */
     private char getRandomCharacter(String characters) {
         return characters.charAt(random.nextInt(characters.length()));
+    }
+
+    @Transactional
+    public void deletePasswordByStartWord(long userId, String word) {
+        userPasswordRepository.deleteAllByUserIdAndDescriptionStartingWithIgnoreCase(userId, word);
     }
 }
