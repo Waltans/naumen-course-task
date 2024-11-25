@@ -18,6 +18,9 @@ import ru.naumen.service.UserService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+/**
+ * Тестовый класс для хэндлера по очистке паролей
+ */
 @ExtendWith(MockitoExtension.class)
 class ClearPasswordHandlerTest {
 
