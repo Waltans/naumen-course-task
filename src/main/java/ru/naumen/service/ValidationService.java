@@ -1,6 +1,5 @@
 package ru.naumen.service;
 
-import ch.qos.logback.core.util.StringUtil;
 import org.springframework.stereotype.Service;
 import ru.naumen.bot.Command;
 import ru.naumen.bot.UserStateCache;

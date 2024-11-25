@@ -110,7 +110,7 @@ class ClearPasswordHandlerTest {
      * @throws UserNotFoundException - ошибка, пользователь не найден
      */
     @Test
-    void handle_whenUserNotFound_shouldReturnUserNotFoundError() throws Exception {
+    void handle_whenUserNotFound() throws Exception {
         String[] splitCommand = {"/clear", "code", "de"};
 
         when(userService.isExistCodeWord(userId)).thenThrow(new UserNotFoundException("User not found"));

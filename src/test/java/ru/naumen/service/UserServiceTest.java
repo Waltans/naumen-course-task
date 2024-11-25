@@ -112,7 +112,7 @@ class UserServiceTest {
      * @throws UserCodePhraseException - ошибка, если не удалось поменять кодовое слово
      */
     @Test
-    void setCodePhrase_recentlyModified_shouldThrowException() throws UserCodePhraseException {
+    void setCodePhrase_recentlyModified() throws UserCodePhraseException {
         User user = new User(12345L);
         user.setCodePhrase("initialCodePhrase");
 

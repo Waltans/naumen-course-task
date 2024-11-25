@@ -222,7 +222,7 @@ class ValidationServiceTest {
      * Тест, что команда введена корректно
      */
     @Test
-    void testIsValidCommand_CODE_PHRASE_VALID() {
+    void testIsValidCommand_codeValid() {
         String[] splitCommand = {"smth"};
         when(userStateCache.getUserState(12345L)).thenReturn(State.CODE_PHRASE_1);
 
@@ -233,7 +233,7 @@ class ValidationServiceTest {
      * Тест, что у слова некорректная длина
      */
     @Test
-    void testIsValidCommand_CODE_PHRASE_INVALID_LENGTH() {
+    void testIsValidCommand_codeInvalidLength() {
         String[] splitCommand = {"a".repeat(51)};
         when(userStateCache.getUserState(12345L)).thenReturn(State.CODE_PHRASE_1);
 
@@ -244,7 +244,7 @@ class ValidationServiceTest {
      * Тест, что слово не состоит из пробелов
      */
     @Test
-    void testIsValidCommand_CODE_PHRASE_INVALID() {
+    void testIsValidCommand_codeInvalid() {
         String[] splitCommand = {"   "};
         when(userStateCache.getUserState(12345L)).thenReturn(State.CODE_PHRASE_1);
 

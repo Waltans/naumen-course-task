@@ -117,7 +117,7 @@ class AddCodePhraseHandlerTest {
      * @throws EncryptException - ошибка шифрования
      */
     @Test
-    void handle_encryptException_shouldReturnError() throws Exception {
+    void handle_encryptException() throws Exception {
         long userId = 1L;
         String[] splitCommand = {"/code", "phrase"};
 

@@ -15,7 +15,6 @@ import ru.naumen.service.ValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.naumen.bot.Constants.FAILURE;
 import static ru.naumen.model.State.*;
 
 /**
@@ -344,7 +343,7 @@ class NonCommandHandlerTest {
      * Тест, что команда работает корректно при состоянии CLEAR_1
      */
     @Test
-    void getCodeWord_whenStateIsClear1_shouldUpdateStateAndReturnResponse() {
+    void getCodeWord_clearState() {
         long userId = 12345L;
         String codeWord = "newCode";
 
@@ -363,7 +362,7 @@ class NonCommandHandlerTest {
      * Тест, что команда работает корректно, если пришли у пользователя неподходящий статус
      */
     @Test
-    void getCodeWord_whenStateIsOther_shouldClearParamsAndReturnFailure() {
+    void getCodeWord_IncorrectState() {
         long userId = 12345L;
         String codeWord = "somethingWrong";
 
@@ -371,7 +370,8 @@ class NonCommandHandlerTest {
 
         Response actualResponse = nonCommandHandler.getCodeWord(codeWord, userId);
 
-        Assertions.assertEquals(new Response(FAILURE, SAVE_STEP_1), actualResponse);
+        Assertions.assertEquals("Что-то пошло не так :( ", actualResponse.message());
+        Assertions.assertEquals(SAVE_STEP_1, actualResponse.botState());
         Mockito.verify(userStateCache).clearParamsForUser(userId);
     }
 }
