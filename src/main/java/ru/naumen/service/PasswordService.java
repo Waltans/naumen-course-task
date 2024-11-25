@@ -215,6 +215,12 @@ public class PasswordService {
         return characters.charAt(random.nextInt(characters.length()));
     }
 
+    /**
+     * Удаляем пароли пользователя начинающиеся с word
+     *
+     * @param userId - ID пользователя
+     * @param word   - слово для удаления
+     */
     @Transactional
     public void deletePasswordByStartWord(long userId, String word) {
         userPasswordRepository.deleteAllByUserIdAndDescriptionStartingWithIgnoreCase(userId, word);

@@ -56,7 +56,8 @@ public class User {
      * @throws UserCodePhraseException - ошибка, в случае, если невозможно поменять кодовое слово
      */
     public void setCodePhrase(String codePhrase) throws UserCodePhraseException {
-        if (getCodePhrase() == null || getCodeModifyDate().isBefore(LocalDate.now().minusDays(30))) {
+        if (getCodePhrase() == null ||
+                getCodeModifyDate().isBefore(LocalDate.now().minusDays(30))) {
             setCodeModifyDate();
             this.codePhrase = codePhrase;
         }

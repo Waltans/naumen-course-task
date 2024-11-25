@@ -72,11 +72,17 @@ public class UserService {
             user.setCodePhrase(encodeService.encryptData(codeWord));
             userRepository.save(user);
         } catch (UserCodePhraseException e) {
-            log.error("Ошибка при установке кодового слова");
+
             throw new UserCodePhraseException("Невозможно установить кодовое слово для пользователя");
         }
     }
 
+    /**
+     * Получаем пользователя и проверяем, есть ли у него кодовое слово
+     * @param userId - ID пользователя
+     * @return - true, если есть кодовое слово, false - если его нет
+     * @throws UserNotFoundException
+     */
     public boolean isExistCodeWord(Long userId) throws UserNotFoundException {
         User user = getUserById(userId);
 
