@@ -217,4 +217,37 @@ class ValidationServiceTest {
 
         Assertions.assertFalse(validationService.isValidCommand(splitCommand, 12345L));
     }
+
+    /**
+     * Тест, что команда введена корректно
+     */
+    @Test
+    void testIsValidCommand_CODE_PHRASE_VALID() {
+        String[] splitCommand = {"smth"};
+        when(userStateCache.getUserState(12345L)).thenReturn(State.CODE_PHRASE_1);
+
+        Assertions.assertTrue(validationService.isValidCommand(splitCommand, 12345L));
+    }
+
+    /**
+     * Тест, что у слова некорректная длина
+     */
+    @Test
+    void testIsValidCommand_CODE_PHRASE_INVALID_LENGTH() {
+        String[] splitCommand = {"a".repeat(51)};
+        when(userStateCache.getUserState(12345L)).thenReturn(State.CODE_PHRASE_1);
+
+        Assertions.assertFalse(validationService.isValidCommand(splitCommand, 12345L));
+    }
+
+    /**
+     * Тест, что слово не состоит из пробелов
+     */
+    @Test
+    void testIsValidCommand_CODE_PHRASE_INVALID() {
+        String[] splitCommand = {"   "};
+        when(userStateCache.getUserState(12345L)).thenReturn(State.CODE_PHRASE_1);
+
+        Assertions.assertFalse(validationService.isValidCommand(splitCommand, 12345L));
+    }
 }

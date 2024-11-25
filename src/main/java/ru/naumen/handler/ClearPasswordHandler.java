@@ -14,7 +14,6 @@ import ru.naumen.service.PasswordService;
 import ru.naumen.service.UserService;
 
 import static ru.naumen.bot.Constants.*;
-import static ru.naumen.model.State.CLEAR_2;
 import static ru.naumen.model.State.NONE;
 
 /**

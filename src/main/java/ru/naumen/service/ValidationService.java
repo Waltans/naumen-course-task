@@ -1,5 +1,6 @@
 package ru.naumen.service;
 
+import ch.qos.logback.core.util.StringUtil;
 import org.springframework.stereotype.Service;
 import ru.naumen.bot.Command;
 import ru.naumen.bot.UserStateCache;
@@ -72,7 +73,7 @@ public class ValidationService {
      * @return - true, если длина больше 0 и меньше 50 и не состоит из пробелов, false - в других случаях
      */
     private boolean isValidCodeWordLength(String command) {
-        return !command.isEmpty() && command.length() <= 50 && !command.isBlank();
+        return !(command.isEmpty() && command.isBlank()) && command.length() <= 50 && !command.isBlank();
     }
 
     /**

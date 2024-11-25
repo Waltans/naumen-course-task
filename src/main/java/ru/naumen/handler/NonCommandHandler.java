@@ -262,6 +262,13 @@ public class NonCommandHandler {
         return new Response(FAILURE, currentState);
     }
 
+    /**
+     * Получить слово для очистки паролей
+     *
+     * @param phrase - слово, которое является началом описаний паролей и мы хотим удалить
+     * @param userId - ID пользователя
+     * @return - результат очистки паролей
+     */
     public Response getPhraseForClear(String phrase, long userId) {
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(CLEAR_2)) {

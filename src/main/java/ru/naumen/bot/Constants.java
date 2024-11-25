@@ -37,7 +37,7 @@ public class Constants {
     public static final String ENTER_SEARCH_REQUEST = "Введите поисковый запрос";
     public static final String USER_NOT_FOUND = "Пользователь не найден";
     public static final String ENCRYPT_ERROR = "Ошибка шифрования пароля";
-    public static final String DECRYPT_ERROR = "Ошибка дешифрования пароля";
+    public static final String DECRYPT_ERROR = "Ошибка при дешифровании кодового слова";
     public static final String ENTER_REMIND_DAYS_ON_SAVE = "Через сколько дней напомнить о смене пароля? (0 - не ставить напоминание)";
     public static final String ENTER_REMIND_DAYS = "Через сколько дней напомнить о смене пароля?";
     public static final String DAYS_ERROR_MESSAGE = "Напоминание можно установить на срок от 3 до 90 дней";
