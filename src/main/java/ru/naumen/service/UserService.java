@@ -64,16 +64,17 @@ public class UserService {
      *
      * @param userId   - ID пользователя
      * @param codeWord - кодовое слово
-     * @throws UserNotFoundException - ошибка, в случае, если кодовое слово уже задано
+     * @throws UserNotFoundException - ошибка, в случае, если не удалось засеттить кодовое слово пользователю
      */
     public void addCodeWordForUser(long userId, String codeWord) throws UserNotFoundException, UserCodePhraseException {
         User user = getUserById(userId);
-
-        if (!StringUtil.isNullOrEmpty(user.getCodePhrase())) {
-            throw new UserCodePhraseException(String.format("У пользователя с id %s уже задано кодовое слово", userId));
+        try {
+            user.setCodePhrase(encodeService.encryptData(codeWord));
+            userRepository.save(user);
+        } catch (UserCodePhraseException e) {
+            log.error("Ошибка при установке кодового слова");
+            throw new UserCodePhraseException("Невозможно установить кодовое слово для пользователя");
         }
-        user.setCodePhrase(encodeService.encryptData(codeWord));
-        userRepository.save(user);
     }
 
     public boolean isExistCodeWord(Long userId) throws UserNotFoundException {
