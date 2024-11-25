@@ -7,9 +7,10 @@ import ru.naumen.model.State;
 
 import java.util.List;
 
-import static ru.naumen.bot.Constants.*;
 import static ru.naumen.bot.Command.*;
-import static ru.naumen.model.State.*;
+import static ru.naumen.bot.Constants.*;
+import static ru.naumen.model.State.IN_LIST;
+import static ru.naumen.model.State.NONE;
 
 
 /**
@@ -31,7 +32,7 @@ public class ValidationService {
      * Проверяет корректность команды
      *
      * @param splitCommand разделённая по пробелам команда
-     * @param userId - ID пользователя
+     * @param userId       - ID пользователя
      * @return true, если команда и её параметры корректны, иначе false
      */
     boolean isValidCommand(String[] splitCommand, long userId) {
@@ -41,10 +42,12 @@ public class ValidationService {
         State state = userStateCache.getUserState(userId);
         if (state != null && !state.equals(NONE) && !state.equals(IN_LIST)) {
             return switch (state) {
-                case SAVE_STEP_1, SAVE_STEP_2, EDIT_STEP_4, FIND_STEP_1, GENERATION_STEP_2, EDIT_STEP_3 -> true;
+                case SAVE_STEP_1, SAVE_STEP_2, EDIT_STEP_4, FIND_STEP_1, GENERATION_STEP_2, EDIT_STEP_3, CLEAR_2 ->
+                        true;
                 case GENERATION_STEP_1, EDIT_STEP_1, EDIT_STEP_2, DELETE_STEP_1,
-                        REMIND_STEP_1, REMIND_STEP_2, SAVE_STEP_3 -> isNumber(command);
+                     REMIND_STEP_1, REMIND_STEP_2, SAVE_STEP_3 -> isNumber(command);
                 case SORT_STEP_1 -> isValidSortType(command);
+                case CODE_PHRASE_1, CLEAR_1 -> isValidCodeWordLength(command);
                 default -> false;
             };
         }
@@ -63,8 +66,19 @@ public class ValidationService {
     }
 
     /**
+     * Корректная ли длина кодового слова
+     *
+     * @param command - длина
+     * @return - true, если длина больше 0 и меньше 50 и не состоит из пробелов, false - в других случаях
+     */
+    private boolean isValidCodeWordLength(String command) {
+        return !(command.isEmpty() && command.isBlank()) && command.length() <= 50 && !command.isBlank();
+    }
+
+    /**
      * Проверяет валидность индекса пароля
-     * @param userId id пользователя
+     *
+     * @param userId        id пользователя
      * @param passwordIndex индекс
      * @return true, если индекс валиден
      */
@@ -81,11 +95,11 @@ public class ValidationService {
      */
     public boolean isValidComplexity(String complexity) {
         return complexity.equals("1") ||
-               complexity.equals("2") ||
-               complexity.equals("3") ||
-               complexity.equals(COMPLEXITY_EASY) ||
-               complexity.equals(COMPLEXITY_MEDIUM) ||
-               complexity.equals(COMPLEXITY_HARD);
+                complexity.equals("2") ||
+                complexity.equals("3") ||
+                complexity.equals(COMPLEXITY_EASY) ||
+                complexity.equals(COMPLEXITY_MEDIUM) ||
+                complexity.equals(COMPLEXITY_HARD);
     }
 
     /**
@@ -140,6 +154,7 @@ public class ValidationService {
 
     /**
      * Проверяет, является ли валидным тип сортировки
+     *
      * @param sortType тип сортировки
      * @return true, если тип введен корректно
      */

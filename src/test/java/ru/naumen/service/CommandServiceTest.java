@@ -61,6 +61,10 @@ class CommandServiceTest {
 
     @Mock
     private RemindHandler remindHandler;
+    @Mock
+    private ClearPasswordHandler clearPasswordHandler;
+    @Mock
+    private AddCodePhraseHandler addCodePhraseHandler;
 
     private CommandService commandService;
 
@@ -77,7 +81,9 @@ class CommandServiceTest {
                 saveHandler,
                 sortHandler,
                 startHelpHandler,
-                remindHandler
+                remindHandler,
+                addCodePhraseHandler,
+                clearPasswordHandler
         );
 
         commandService = new CommandService(
