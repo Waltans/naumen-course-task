@@ -79,14 +79,24 @@ public enum Command {
         this.validParamCounts = validParamCounts;
     }
 
+    /**
+     * Получить команду
+     */
     public String getCommand() {
         return command;
     }
 
+
+    /**
+     * Получить подпись команды на клавиатуре
+     */
     public String getKeyboardLabel() {
         return keyboardLabel;
     }
 
+    /**
+     * Получить список с допустимыми количествами параметров команды
+     */
     public List<Integer> getValidParamCounts() {
         return validParamCounts;
     }
