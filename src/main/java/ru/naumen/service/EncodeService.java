@@ -19,9 +19,9 @@ public class EncodeService {
 
     private final String secretKey;
 
-   public EncodeService(@Value("${password.encrypt-key}") String secretKey) {
-       this.secretKey = secretKey;
-   }
+    public EncodeService(@Value("${password.encrypt-key}") String secretKey) {
+        this.secretKey = secretKey;
+    }
 
     /**
      * Шифрует строку алгоритмом AES по заданному ключу
@@ -55,6 +55,7 @@ public class EncodeService {
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
             byte[] encryptedBytes = Base64.getDecoder().decode(encryptedString);
             byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
+
             return new String(decryptedBytes);
         } catch (Exception e) {
             throw new DecryptException("При расшифровании пароля произошла ошибка", e);

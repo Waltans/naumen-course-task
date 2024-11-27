@@ -1,5 +1,8 @@
 package ru.naumen.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.IncorrectSortTypeException;
@@ -8,9 +11,6 @@ import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
 import ru.naumen.repository.UserPasswordRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -43,9 +43,9 @@ public class PasswordService {
     /**
      * Создаёт пароль и сохраняет в БД
      *
-     * @param password пароль
+     * @param password    пароль
      * @param description описание пароля
-     * @param userId ID пользователя
+     * @param userId      ID пользователя
      */
     @Transactional
     public void createUserPassword(String password, String description, long userId)
@@ -116,9 +116,10 @@ public class PasswordService {
 
     /**
      * Обновляет данные для пароля
-     * @param uuid uuid
+     *
+     * @param uuid        uuid
      * @param description описание (если передаётся null, то не обновляется)
-     * @param password пароль
+     * @param password    пароль
      */
     public void updatePassword(String uuid, String description, String password) {
         if (userPasswordRepository.existsByUuid(uuid)) {
@@ -137,6 +138,7 @@ public class PasswordService {
 
     /**
      * Ищет пароль по UUID
+     *
      * @param uuid uuid
      * @return найденный пароль
      */

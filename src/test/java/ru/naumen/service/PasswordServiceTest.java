@@ -183,7 +183,6 @@ class PasswordServiceTest {
      */
     @Test
     void testUpdatePassword() {
-
         String passUuid = UUID.randomUUID().toString();
         User user = new User(12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user, LocalDate.of(2010, 1, 1));
