@@ -43,6 +43,10 @@ public class Constants {
     public static int MINIMUM_PASSWORD_LENGTH = 8;
     public static int MAXIMUM_PASSWORD_LENGTH = 128;
 
+    public static final String ENCRYPT_EXCEPTION = "Ошибка шифрования пароля";
+
+    public static final String DECRYPT_EXCEPTION = "Ошибка дешифрования пароля";
+
     /**
      * Приватный конструктор, чтобы нельзя было создавать объекты
      */

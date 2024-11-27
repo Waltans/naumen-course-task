@@ -77,6 +77,7 @@ class PasswordServiceTest {
     }
 
     /**
+<<<<<<< HEAD:src/test/java/ru/naumen/service/PasswordServiceTest.java
      * Тест поиска паролей по частичному описанию
      */
     @Test
@@ -133,6 +134,8 @@ class PasswordServiceTest {
     }
 
     /**
+=======
+>>>>>>> task1:src/test/java/ru/naumen/PasswordServiceTest.java
      * Тест подсчёта паролей
      */
     @Test
@@ -183,7 +186,6 @@ class PasswordServiceTest {
      */
     @Test
     void testUpdatePassword() {
-
         String passUuid = UUID.randomUUID().toString();
         User user = new User(12345L, new ArrayList<>());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user, LocalDate.of(2010, 1, 1));
