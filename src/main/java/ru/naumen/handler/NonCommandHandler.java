@@ -47,7 +47,8 @@ public class NonCommandHandler {
             if (nextState == NONE) {
                 String[] splitCommand = {Command.GENERATE.getCommand(), params.get(0), complexity};
 
-                return handlerMapper.getHandler(Command.GENERATE.getCommand()).handle(splitCommand, userId);
+                return handlerMapper.getHandler(Command.GENERATE.getCommand())
+                        .handle(splitCommand, userId);
             }
 
             return new Response(response, nextState);
@@ -95,7 +96,8 @@ public class NonCommandHandler {
         if (currentState.equals(SAVE_STEP_2)) {
             String[] splitCommand = {Command.SAVE.getCommand(), userStateCache.getUserParams(userId).get(0), description};
 
-            return handlerMapper.getHandler(Command.SAVE.getCommand()).handle(splitCommand, userId);
+            return handlerMapper.getHandler(Command.SAVE.getCommand())
+                    .handle(splitCommand, userId);
         } else if (currentState.equals(EDIT_STEP_4)) {
             String[] splitCommand = {Command.EDIT.getCommand(),
                     userStateCache.getUserParams(userId).get(0),
@@ -103,7 +105,8 @@ public class NonCommandHandler {
                     userStateCache.getUserParams(userId).get(2),
                     description};
 
-            return handlerMapper.getHandler(Command.EDIT.getCommand()).handle(splitCommand, userId);
+            return handlerMapper.getHandler(Command.EDIT.getCommand())
+                    .handle(splitCommand, userId);
         }
 
         return new Response(response, currentState);
@@ -148,7 +151,8 @@ public class NonCommandHandler {
         } else if (currentState.equals(DELETE_STEP_1)) {
             String[] splitCommand = new String[]{Command.DELETE.getCommand(), index};
 
-            return handlerMapper.getHandler(Command.DELETE.getCommand()).handle(splitCommand, userId);
+            return handlerMapper.getHandler(Command.DELETE.getCommand())
+                    .handle(splitCommand, userId);
         }
 
         return new Response(ENTER_PASSWORD_LENGTH, currentState);
@@ -164,7 +168,8 @@ public class NonCommandHandler {
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(SORT_STEP_1)) {
             String[] splitCommand = {sortType};
-            return handlerMapper.getHandler(Command.SORT.getCommand()).handle(splitCommand, userId);
+            return handlerMapper.getHandler(Command.SORT.getCommand())
+                    .handle(splitCommand, userId);
         }
 
         userStateCache.clearParamsForUser(userId);
@@ -181,7 +186,8 @@ public class NonCommandHandler {
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(FIND_STEP_1)) {
             String[] splitCommand = {Command.FIND.getCommand(), searchRequest};
-            return handlerMapper.getHandler(Command.FIND.getCommand()).handle(splitCommand, userId);
+            return handlerMapper.getHandler(Command.FIND.getCommand())
+                    .handle(splitCommand, userId);
         }
 
         userStateCache.clearParamsForUser(userId);

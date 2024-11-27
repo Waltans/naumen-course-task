@@ -64,7 +64,8 @@ public class CommandService {
 
         try {
             Command command = commandFinder.findCommand(splitCommand[0]);
-            return handlerMapper.getHandler(command.getCommand()).handle(splitCommand, userId);
+            return handlerMapper.getHandler(command.getCommand())
+                    .handle(splitCommand, userId);
         } catch (CommandNotFoundException e) {
             return performNotCommandMessage(splitCommand, userId);
         }
