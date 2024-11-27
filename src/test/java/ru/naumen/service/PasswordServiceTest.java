@@ -77,7 +77,6 @@ class PasswordServiceTest {
     }
 
     /**
-<<<<<<< HEAD:src/test/java/ru/naumen/service/PasswordServiceTest.java
      * Тест поиска паролей по частичному описанию
      */
     @Test
@@ -134,8 +133,6 @@ class PasswordServiceTest {
     }
 
     /**
-=======
->>>>>>> task1:src/test/java/ru/naumen/PasswordServiceTest.java
      * Тест подсчёта паролей
      */
     @Test

@@ -121,7 +121,7 @@ public class PasswordService {
      * @param description описание (если передаётся null, то не обновляется)
      * @param password    пароль
      */
-    public void updatePassword(String uuid, String description, String password) throws EncryptException {
+    public void updatePassword(String uuid, String description, String password) {
         if (userPasswordRepository.existsByUuid(uuid)) {
             UserPassword userPassword = userPasswordRepository.findByUuid(uuid);
 
@@ -152,10 +152,6 @@ public class PasswordService {
 
     /**
      * Подсчитывает количество паролей пользователя
-<<<<<<< HEAD
-=======
-     *
->>>>>>> task1
      * @param userId id пользователя
      */
     public int countPasswordsByUserId(long userId) {
@@ -164,7 +160,6 @@ public class PasswordService {
 
     /**
      * Генерирует пароль по заданным параметрам
-<<<<<<< HEAD
      * @param complexity сложность
      * @param length длина
      * @return пароль
