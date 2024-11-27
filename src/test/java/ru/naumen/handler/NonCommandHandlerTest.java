@@ -13,7 +13,6 @@ import ru.naumen.service.ValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.naumen.bot.Constants.ENTER_PASSWORD_COMPLEXITY;
 import static ru.naumen.model.State.*;
 
 /**

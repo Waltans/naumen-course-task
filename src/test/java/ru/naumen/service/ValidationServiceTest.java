@@ -3,13 +3,12 @@ package ru.naumen.service;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import ru.naumen.bot.command.CommandFinder;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
-
-import static org.mockito.Mockito.when;
 
 /**
  * Класс модульных тестов для ValidationService
@@ -22,12 +21,16 @@ class ValidationServiceTest {
     @Mock
     private UserStateCache userStateCache;
 
-    @InjectMocks
     private ValidationService validationService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        CommandFinder commandFinder = new CommandFinder();
+        validationService = new ValidationService(
+                passwordService,
+                userStateCache,
+                commandFinder);
     }
 
     /**
@@ -36,7 +39,7 @@ class ValidationServiceTest {
     @Test
     void testIsValidCommand_ValidCommand() {
         String[] splitCommand = {"/generate", "14", "3"};
-        when(userStateCache.getUserState(12345L)).thenReturn(State.NONE);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.NONE);
 
         Assertions.assertTrue(validationService.isValidCommand(splitCommand, 12345L));
     }
@@ -47,7 +50,7 @@ class ValidationServiceTest {
     @Test
     void testIsValidCommand_ValidCommandFromButton() {
         String[] splitCommand = {"Генерировать"};
-        when(userStateCache.getUserState(12345L)).thenReturn(State.NONE);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.NONE);
 
         Assertions.assertTrue(validationService.isValidCommand(splitCommand, 12345L));
     }
@@ -58,7 +61,7 @@ class ValidationServiceTest {
     @Test
     void testIsValidCommand_ValidCommandInState() {
         String[] splitCommand = {"20"};
-        when(userStateCache.getUserState(12345L)).thenReturn(State.GENERATION_STEP_1);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.GENERATION_STEP_1);
 
         Assertions.assertTrue(validationService.isValidCommand(splitCommand, 12345L));
     }
@@ -69,7 +72,7 @@ class ValidationServiceTest {
     @Test
     void testIsValidCommand_InvalidCommand() {
         String[] splitCommand = {"/generate", "10", "abc"};
-        when(userStateCache.getUserState(12345L)).thenReturn(State.GENERATION_STEP_1);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.GENERATION_STEP_1);
 
         Assertions.assertFalse(validationService.isValidCommand(splitCommand, 12345L));
     }
@@ -79,7 +82,7 @@ class ValidationServiceTest {
      */
     @Test
     void testIsValidPasswordIndex_ValidIndex() {
-        when(passwordService.countPasswordsByUserId(12345L)).thenReturn(5);
+        Mockito.when(passwordService.countPasswordsByUserId(12345L)).thenReturn(5);
 
         Assertions.assertTrue(validationService.isValidPasswordIndex(12345L, 3));
     }
@@ -89,7 +92,7 @@ class ValidationServiceTest {
      */
     @Test
     void testIsValidPasswordIndex_InvalidIndex() {
-        when(passwordService.countPasswordsByUserId(12345L)).thenReturn(5);
+        Mockito.when(passwordService.countPasswordsByUserId(12345L)).thenReturn(5);
 
         Assertions.assertFalse(validationService.isValidPasswordIndex(12345L, 10));
     }
@@ -178,7 +181,7 @@ class ValidationServiceTest {
     @Test
     void testIsValidCommand_Sort() {
         String[] splitCommand = {"Дате"};
-        when(userStateCache.getUserState(12345L)).thenReturn(State.SORT_STEP_1);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SORT_STEP_1);
 
         Assertions.assertTrue(validationService.isValidCommand(splitCommand, 12345L));
     }
@@ -189,7 +192,7 @@ class ValidationServiceTest {
     @Test
     void testIsValidCommand_SortInvalid() {
         String[] splitCommand = {"smth"};
-        when(userStateCache.getUserState(12345L)).thenReturn(State.SORT_STEP_1);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SORT_STEP_1);
 
         Assertions.assertFalse(validationService.isValidCommand(splitCommand, 12345L));
     }

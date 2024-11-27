@@ -3,10 +3,10 @@ package ru.naumen.handler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import ru.naumen.bot.command.CommandFinder;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.service.UserService;
@@ -24,12 +24,16 @@ class StartHelpHandlerTest {
     @Mock
     private UserStateCache userStateCache;
 
-    @InjectMocks
     private StartHelpHandler startHelpHandler;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        CommandFinder commandFinder = new CommandFinder();
+        startHelpHandler = new StartHelpHandler(
+                userService,
+                userStateCache,
+                commandFinder);
     }
 
     /**

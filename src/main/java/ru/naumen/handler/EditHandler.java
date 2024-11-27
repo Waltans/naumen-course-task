@@ -12,7 +12,10 @@ import ru.naumen.service.ValidationService;
 
 import java.util.List;
 
-import static ru.naumen.bot.Constants.*;
+import static ru.naumen.bot.constants.Errors.*;
+import static ru.naumen.bot.constants.Information.PASSWORD_UPDATED_MESSAGE;
+import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
+import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_INDEX;
 import static ru.naumen.model.State.EDIT_STEP_1;
 import static ru.naumen.model.State.NONE;
 
@@ -26,6 +29,11 @@ public class EditHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final ValidationService validationService;
+
+    /**
+     * Длина команды редактирования, если передано описание
+     */
+    private static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
 
     public EditHandler(PasswordService passwordService, UserStateCache userStateCache, ValidationService validationService) {
         this.passwordService = passwordService;

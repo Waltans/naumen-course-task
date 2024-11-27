@@ -1,14 +1,15 @@
 package ru.naumen.service;
 
 import org.springframework.stereotype.Service;
-import ru.naumen.bot.Command;
+import ru.naumen.bot.command.Command;
+import ru.naumen.bot.command.CommandFinder;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.exception.CommandNotFoundException;
 import ru.naumen.model.State;
 
 import java.util.List;
 
-import static ru.naumen.bot.Constants.*;
-import static ru.naumen.bot.Command.*;
+import static ru.naumen.bot.constants.Parameters.*;
 import static ru.naumen.model.State.*;
 
 
@@ -22,9 +23,22 @@ public class ValidationService {
 
     private final UserStateCache userStateCache;
 
-    public ValidationService(PasswordService passwordService, UserStateCache userStateCache) {
+    private final CommandFinder commandFinder;
+
+    /**
+     * Минимальная длина пароля
+     */
+    private static int MINIMUM_PASSWORD_LENGTH = 8;
+
+    /**
+     * Максимальная длина пароля
+     */
+    private static int MAXIMUM_PASSWORD_LENGTH = 128;
+
+    public ValidationService(PasswordService passwordService, UserStateCache userStateCache, CommandFinder commandFinder) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
+        this.commandFinder = commandFinder;
     }
 
     /**
@@ -35,7 +49,7 @@ public class ValidationService {
      * @return true, если команда и её параметры корректны, иначе false
      */
     boolean isValidCommand(String[] splitCommand, long userId) {
-        String command = splitCommand[0];
+        String commandString = splitCommand[0];
         int paramsCount = splitCommand.length - 1;
 
         State state = userStateCache.getUserState(userId);
@@ -43,19 +57,19 @@ public class ValidationService {
             return switch (state) {
                 case SAVE_STEP_1, SAVE_STEP_2, EDIT_STEP_4, FIND_STEP_1, GENERATION_STEP_2, EDIT_STEP_3 -> true;
                 case GENERATION_STEP_1, EDIT_STEP_1, EDIT_STEP_2, DELETE_STEP_1 ->
-                        isNumber(command);
-                case SORT_STEP_1 -> isValidSortType(command);
+                        isNumber(commandString);
+                case SORT_STEP_1 -> isValidSortType(commandString);
                 default -> false;
             };
         }
 
         List<Integer> params;
-        if (Command.commandsAndNumberOfParams.containsKey(command)) {
-            params = Command.commandsAndNumberOfParams.get(command);
-        } else {
-            params = Command.commandsAndNumberOfParams
-                    .getOrDefault(Command.commandKeyMapping
-                            .getOrDefault(command, ""), List.of());
+
+        try {
+            Command command = commandFinder.findCommand(commandString);
+            params = command.getValidParamCounts();
+        } catch (CommandNotFoundException e) {
+            params = List.of();
         }
 
         return params != null &&
@@ -134,8 +148,8 @@ public class ValidationService {
      * @return true, если тип введен корректно
      */
     private boolean isValidSortType(String sortType) {
-        return sortType.equals(Command.BY_DATE)
-                || sortType.equals(Command.BY_DESCRIPTION);
+        return sortType.equals(BY_DATE)
+                || sortType.equals(BY_DESCRIPTION);
     }
 
     /**

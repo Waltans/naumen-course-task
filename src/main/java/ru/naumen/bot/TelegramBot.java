@@ -15,11 +15,14 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import ru.naumen.bot.command.Command;
 import ru.naumen.model.State;
 import ru.naumen.service.CommandService;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static ru.naumen.bot.constants.Parameters.*;
 
 /**
  * Телеграм бот
@@ -123,9 +126,9 @@ class TelegramBot extends TelegramLongPollingBot {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
-        keyboardRowFirst.add(new KeyboardButton(Command.COMPLEXITY_EASY));
-        keyboardRowFirst.add(new KeyboardButton(Command.COMPLEXITY_MEDIUM));
-        keyboardRowFirst.add(new KeyboardButton(Command.COMPLEXITY_HARD));
+        keyboardRowFirst.add(new KeyboardButton(COMPLEXITY_EASY));
+        keyboardRowFirst.add(new KeyboardButton(COMPLEXITY_MEDIUM));
+        keyboardRowFirst.add(new KeyboardButton(COMPLEXITY_HARD));
 
         keyboardRows.add(keyboardRowFirst);
 
@@ -140,8 +143,8 @@ class TelegramBot extends TelegramLongPollingBot {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
-        keyboardRowFirst.add(new KeyboardButton(Command.BY_DATE));
-        keyboardRowFirst.add(new KeyboardButton(Command.BY_DESCRIPTION));
+        keyboardRowFirst.add(new KeyboardButton(BY_DATE));
+        keyboardRowFirst.add(new KeyboardButton(BY_DESCRIPTION));
 
         keyboardRows.add(keyboardRowFirst);
 
@@ -151,23 +154,23 @@ class TelegramBot extends TelegramLongPollingBot {
     /**
      * Клавиатура в менеджере паролей
      * Кнопки:
-     * MENU_KEYBOARD - возврат в главное меню
-     * DELETE_KEYBOARD - начать процедуру удаления пароля
-     * EDIT_KEYBOARD - начать процедуру изменения пароля
-     * SORT_KEYBOARD - отсортировать пароли
-     * FIND_KEYBOARD - поиск паролей по описанию
+     * MENU - возврат в главное меню
+     * DELETE - начать процедуру удаления пароля
+     * EDIT - начать процедуру изменения пароля
+     * SORT - отсортировать пароли
+     * FIND - поиск паролей по описанию
      */
     private List<KeyboardRow> listKeyBoard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
-        keyboardRowFirst.add(new KeyboardButton(Command.MENU_KEYBOARD));
-        keyboardRowFirst.add(new KeyboardButton(Command.DELETE_KEYBOARD));
-        keyboardRowFirst.add(new KeyboardButton(Command.EDIT_KEYBOARD));
+        keyboardRowFirst.add(new KeyboardButton(Command.START.getKeyboardLabel()));
+        keyboardRowFirst.add(new KeyboardButton(Command.DELETE.getKeyboardLabel()));
+        keyboardRowFirst.add(new KeyboardButton(Command.EDIT.getKeyboardLabel()));
 
         KeyboardRow keyboardRowSecond = new KeyboardRow();
-        keyboardRowSecond.add(new KeyboardButton(Command.SORT_KEYBOARD));
-        keyboardRowSecond.add(new KeyboardButton(Command.FIND_KEYBOARD));
+        keyboardRowSecond.add(new KeyboardButton(Command.SORT.getKeyboardLabel()));
+        keyboardRowSecond.add(new KeyboardButton(Command.FIND.getKeyboardLabel()));
 
         keyboardRows.add(keyboardRowFirst);
         keyboardRows.add(keyboardRowSecond);
@@ -178,19 +181,19 @@ class TelegramBot extends TelegramLongPollingBot {
     /**
      * Клавиатура основная
      * Кнопки:
-     * GENERATE_KEYBOARD - начать процедуру генерации пароля
-     * SAVE_KEYBOARD - начать процедуру сохранения пароля
-     * LIST_KEYBOARD - список паролей и переход к менеджеру (управление сохранёнными паролями)
-     * HELP_KEYBOARD - справка по работе бота
+     * GENERATE - начать процедуру генерации пароля
+     * SAVE - начать процедуру сохранения пароля
+     * LIST - список паролей и переход к менеджеру (управление сохранёнными паролями)
+     * HELP - справка по работе бота
      */
     private List<KeyboardRow> mainKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
-        keyboardRowFirst.add(new KeyboardButton(Command.GENERATE_KEYBOARD));
-        keyboardRowFirst.add(new KeyboardButton(Command.SAVE_KEYBOARD));
-        keyboardRowFirst.add(new KeyboardButton(Command.LIST_KEYBOARD));
-        keyboardRowFirst.add(new KeyboardButton(Command.HELP_KEYBOARD));
+        keyboardRowFirst.add(new KeyboardButton(Command.GENERATE.getKeyboardLabel()));
+        keyboardRowFirst.add(new KeyboardButton(Command.SAVE.getKeyboardLabel()));
+        keyboardRowFirst.add(new KeyboardButton(Command.LIST.getKeyboardLabel()));
+        keyboardRowFirst.add(new KeyboardButton(Command.HELP.getKeyboardLabel()));
 
         keyboardRows.add(keyboardRowFirst);
         return keyboardRows;

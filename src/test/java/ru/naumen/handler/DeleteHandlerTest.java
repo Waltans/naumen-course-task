@@ -18,8 +18,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.naumen.bot.Constants.ENTER_PASSWORD_INDEX;
-import static ru.naumen.bot.Constants.INCORRECT_COMMAND_RESPONSE;
 import static ru.naumen.model.State.DELETE_STEP_1;
 import static ru.naumen.model.State.NONE;
 

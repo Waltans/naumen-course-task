@@ -7,10 +7,12 @@ import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static ru.naumen.bot.Constants.*;
+import static ru.naumen.bot.constants.Errors.PASSWORD_NOT_FOUND_MESSAGE;
+import static ru.naumen.bot.constants.Information.PASSWORD_DELETED_MESSAGE;
+import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
+import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_INDEX;
 import static ru.naumen.model.State.*;
 
 /**

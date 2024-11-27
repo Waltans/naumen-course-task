@@ -1,7 +1,7 @@
 package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
-import ru.naumen.bot.Command;
+import ru.naumen.bot.command.Command;
 
 import java.util.Map;
 
@@ -44,15 +44,15 @@ public class HandlerMapper {
      */
     public CommandHandler getHandler(String command) {
         Map<String, CommandHandler> commandsAndHandlers = Map.of(
-                Command.GENERATE, generateHandler,
-                Command.LIST, listHandler,
-                Command.SAVE, saveHandler,
-                Command.EDIT, editHandler,
-                Command.DELETE, deleteHandler,
-                Command.SORT, sortHandler,
-                Command.FIND, findHandler,
-                Command.START, startHelpHandler,
-                Command.HELP, startHelpHandler
+                Command.GENERATE.getCommand(), generateHandler,
+                Command.LIST.getCommand(), listHandler,
+                Command.SAVE.getCommand(), saveHandler,
+                Command.EDIT.getCommand(), editHandler,
+                Command.DELETE.getCommand(), deleteHandler,
+                Command.SORT.getCommand(), sortHandler,
+                Command.FIND.getCommand(), findHandler,
+                Command.START.getCommand(), startHelpHandler,
+                Command.HELP.getCommand(), startHelpHandler
         );
 
         return commandsAndHandlers.get(command);

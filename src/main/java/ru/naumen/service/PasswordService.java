@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.util.List;
 
-import static ru.naumen.bot.Command.*;
+import static ru.naumen.bot.constants.Parameters.*;
 
 /**
  * Класс для работы с паролями
