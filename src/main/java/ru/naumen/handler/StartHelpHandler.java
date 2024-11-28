@@ -36,8 +36,6 @@ public class StartHelpHandler implements CommandHandler {
 
         Response response;
 
-
-
         try {
             Command command = commandFinder.findCommand(splitCommand[0]);
             switch (command) {

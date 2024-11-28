@@ -28,12 +28,12 @@ public class ValidationService {
     /**
      * Минимальная длина пароля
      */
-    private static int MINIMUM_PASSWORD_LENGTH = 8;
+    private static final int MINIMUM_PASSWORD_LENGTH = 8;
 
     /**
      * Максимальная длина пароля
      */
-    private static int MAXIMUM_PASSWORD_LENGTH = 128;
+    private static final int MAXIMUM_PASSWORD_LENGTH = 128;
 
     public ValidationService(PasswordService passwordService, UserStateCache userStateCache, CommandFinder commandFinder) {
         this.passwordService = passwordService;
