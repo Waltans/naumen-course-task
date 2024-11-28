@@ -39,6 +39,9 @@ class DeleteHandlerTest {
     private DeleteHandler deleteHandler;
 
 
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

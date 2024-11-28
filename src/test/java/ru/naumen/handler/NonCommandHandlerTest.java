@@ -52,7 +52,10 @@ class NonCommandHandlerTest {
 
     private NonCommandHandler nonCommandHandler;
 
-
+    /**
+     * Перед каждым тестом создаёт объекты (не моки!) маммера команд
+     * и тестируемого класса, а также сбрасывает состояние пользователя
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

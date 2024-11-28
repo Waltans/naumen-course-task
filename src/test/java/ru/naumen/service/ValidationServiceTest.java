@@ -23,6 +23,10 @@ class ValidationServiceTest {
 
     private ValidationService validationService;
 
+    /**
+     * Перед каждым тестом создаёт объекты (не моки!)
+     * класса поиска команд и тестируемого класса
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

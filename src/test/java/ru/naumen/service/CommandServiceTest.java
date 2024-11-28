@@ -62,6 +62,10 @@ class CommandServiceTest {
 
     private CommandService commandService;
 
+    /**
+     * Перед каждым тестом создаёт объекты (не моки!) маммера команд,
+     * класса поиска команд и тестируемого класса
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

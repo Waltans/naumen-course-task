@@ -26,6 +26,10 @@ class StartHelpHandlerTest {
 
     private StartHelpHandler startHelpHandler;
 
+    /**
+     * Перед каждым тестом создаёт объекты (не моки!) класса поиска команды
+     * и тестируемого класса
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

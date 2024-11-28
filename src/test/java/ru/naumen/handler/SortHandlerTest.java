@@ -39,6 +39,9 @@ class SortHandlerTest {
     @InjectMocks
     private SortHandler sortHandler;
 
+    /**
+     * Перед каждым тестом сбрасывает состояние пользователя
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

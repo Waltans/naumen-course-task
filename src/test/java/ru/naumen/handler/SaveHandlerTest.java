@@ -31,7 +31,9 @@ class SaveHandlerTest {
     @InjectMocks
     private SaveHandler saveHandler;
 
-
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

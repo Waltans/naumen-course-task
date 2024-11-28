@@ -36,6 +36,9 @@ class FindHandlerTest {
     @InjectMocks
     private FindHandler findHandler;
 
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
