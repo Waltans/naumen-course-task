@@ -22,7 +22,7 @@ import static ru.naumen.model.State.NONE;
 @Component
 public class ClearPasswordHandler implements CommandHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(ClearPasswordHandler.class);
+    private final Logger log = LoggerFactory.getLogger(ClearPasswordHandler.class);
     private final UserStateCache userStateCache;
     private final UserService userService;
     private final PasswordService passwordService;

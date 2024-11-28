@@ -19,9 +19,9 @@ public class EncodeService {
 
     private final String secretKey;
 
-   public EncodeService(@Value("${password.encrypt-key}") String secretKey) {
-       this.secretKey = secretKey;
-   }
+    public EncodeService(@Value("${password.encrypt-key}") String secretKey) {
+        this.secretKey = secretKey;
+    }
 
     /**
      * Шифрует строку алгоритмом AES по заданному ключу

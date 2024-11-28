@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import ru.naumen.bot.Command;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
-import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.State;
 import ru.naumen.service.ValidationService;
 
