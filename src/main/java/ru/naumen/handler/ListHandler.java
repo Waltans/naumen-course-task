@@ -9,7 +9,8 @@ import ru.naumen.service.PasswordService;
 
 import java.util.List;
 
-import static ru.naumen.bot.Constants.*;
+import static ru.naumen.bot.constants.Errors.NO_PASSWORDS_MESSAGE;
+import static ru.naumen.bot.constants.Information.PASSWORD_LIST_FORMAT;
 import static ru.naumen.model.State.*;
 
 /**
@@ -39,7 +40,7 @@ public class ListHandler implements CommandHandler {
         for (int i = 0; i < userPasswords.size(); i++) {
             String description = userPasswords.get(i).getDescription();
             String password = encodeService.decryptData(userPasswords.get(i).getPassword());
-            stringBuilder.append(String.format(PASSWORD_LIST_FORMAT, i + 1, description, password));
+            stringBuilder.append(String.format("\n" + PASSWORD_LIST_FORMAT, i + 1, description, password));
         }
 
         userStateCache.setState(userId, IN_LIST);

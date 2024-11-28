@@ -14,8 +14,6 @@ import ru.naumen.service.PasswordService;
 
 import java.util.ArrayList;
 
-import static ru.naumen.bot.Constants.ENTER_PASSWORD;
-import static ru.naumen.bot.Constants.PASSWORD_SAVED_MESSAGE;
 import static ru.naumen.model.State.NONE;
 import static ru.naumen.model.State.SAVE_STEP_1;
 
@@ -33,7 +31,9 @@ class SaveHandlerTest {
     @InjectMocks
     private SaveHandler saveHandler;
 
-
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

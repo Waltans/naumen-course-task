@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import ru.naumen.bot.command.CommandFinder;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.handler.*;
@@ -61,6 +62,10 @@ class CommandServiceTest {
 
     private CommandService commandService;
 
+    /**
+     * Перед каждым тестом создаёт объекты (не моки!) маммера команд,
+     * класса поиска команд и тестируемого класса
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -76,12 +81,14 @@ class CommandServiceTest {
                 startHelpHandler
         );
 
+        CommandFinder commandFinder = new CommandFinder();
+
         commandService = new CommandService(
                 userStateCache,
                 validationService,
                 nonCommandHandler,
-                handlerMapper
-        );
+                handlerMapper,
+                commandFinder);
     }
 
     /**

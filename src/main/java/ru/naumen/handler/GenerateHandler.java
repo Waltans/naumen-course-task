@@ -5,7 +5,11 @@ import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.service.*;
 
-import static ru.naumen.bot.Constants.*;
+import static ru.naumen.bot.constants.Errors.COMPLEXITY_ERROR_MESSAGE;
+import static ru.naumen.bot.constants.Errors.LENGTH_ERROR_MESSAGE;
+import static ru.naumen.bot.constants.Information.PASSWORD_GENERATED_MESSAGE;
+import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
+import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_LENGTH;
 import static ru.naumen.model.State.*;
 
 /**

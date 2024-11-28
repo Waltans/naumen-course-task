@@ -1,7 +1,6 @@
 package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
-import ru.naumen.bot.Command;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.exception.IncorrectSortTypeException;
@@ -14,7 +13,12 @@ import ru.naumen.service.SortType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.naumen.bot.Constants.*;
+import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
+import static ru.naumen.bot.constants.Errors.NO_PASSWORDS_MESSAGE;
+import static ru.naumen.bot.constants.Information.PASSWORD_LIST_FORMAT;
+import static ru.naumen.bot.constants.Parameters.BY_DATE;
+import static ru.naumen.bot.constants.Parameters.BY_DESCRIPTION;
+import static ru.naumen.bot.constants.Requests.CHOOSE_SORT_TYPE;
 import static ru.naumen.model.State.*;
 
 /**
@@ -43,9 +47,9 @@ public class SortHandler implements CommandHandler {
             try {
                 List<UserPassword> sortedPasswords = new ArrayList<>();
                 switch (sortType) {
-                    case Command.BY_DATE ->
+                    case BY_DATE ->
                             sortedPasswords = passwordService.getUserPasswordsSorted(userId, SortType.BY_DATE);
-                    case Command.BY_DESCRIPTION ->
+                    case BY_DESCRIPTION ->
                             sortedPasswords = passwordService.getUserPasswordsSorted(userId, SortType.BY_DESCRIPTION);
                 }
 
@@ -58,7 +62,7 @@ public class SortHandler implements CommandHandler {
                 for (int i = 0; i < sortedPasswords.size(); i++) {
                     String description = sortedPasswords.get(i).getDescription();
                     String password = encodeService.decryptData(sortedPasswords.get(i).getPassword());
-                    stringBuilder.append(String.format(PASSWORD_LIST_FORMAT, i + 1, description, password));
+                    stringBuilder.append(String.format("\n" + PASSWORD_LIST_FORMAT, i + 1, description, password));
                 }
 
                 userStateCache.setState(userId, NONE);

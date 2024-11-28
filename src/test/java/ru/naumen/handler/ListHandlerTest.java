@@ -35,7 +35,9 @@ class ListHandlerTest {
     @InjectMocks
     private ListHandler listHandler;
 
-
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

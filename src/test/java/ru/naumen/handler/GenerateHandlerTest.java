@@ -35,6 +35,9 @@ class GenerateHandlerTest {
     private GenerateHandler generateHandler;
 
 
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

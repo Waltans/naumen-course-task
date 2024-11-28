@@ -9,7 +9,11 @@ import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.service.PasswordService;
 
-import static ru.naumen.bot.Constants.*;
+import static ru.naumen.bot.constants.Errors.ENCRYPT_ERROR;
+import static ru.naumen.bot.constants.Errors.USER_NOT_FOUND;
+import static ru.naumen.bot.constants.Information.PASSWORD_SAVED_MESSAGE;
+import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
+import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD;
 import static ru.naumen.model.State.*;
 
 /**
@@ -21,6 +25,11 @@ public class SaveHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final Logger log = LoggerFactory.getLogger(SaveHandler.class);
+
+    /**
+     * Длина команды сохранения, если не передано описание
+     */
+    private static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
 
     public SaveHandler(PasswordService passwordService, UserStateCache userStateCache) {
         this.passwordService = passwordService;

@@ -19,7 +19,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.naumen.bot.Constants.CHOOSE_SORT_TYPE;
 import static ru.naumen.model.State.NONE;
 import static ru.naumen.model.State.SORT_STEP_1;
 
@@ -40,6 +39,9 @@ class SortHandlerTest {
     @InjectMocks
     private SortHandler sortHandler;
 
+    /**
+     * Перед каждым тестом сбрасывает состояние пользователя
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

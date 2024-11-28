@@ -1,12 +1,15 @@
 package ru.naumen.service;
 
 import org.springframework.stereotype.Service;
-import ru.naumen.bot.Command;
+import ru.naumen.bot.command.Command;
+import ru.naumen.bot.command.CommandFinder;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.exception.CommandNotFoundException;
 import ru.naumen.handler.*;
 
-import static ru.naumen.bot.Constants.*;
+import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
+import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_DESCRIPTION;
 import static ru.naumen.model.State.*;
 
 /**
@@ -18,15 +21,17 @@ public class CommandService {
     private final ValidationService validationService;
     private final NonCommandHandler nonCommandHandler;
     private final HandlerMapper handlerMapper;
+    private final CommandFinder commandFinder;
 
     public CommandService(UserStateCache userStateCache,
                           ValidationService validationService,
                           NonCommandHandler nonCommandHandler,
-                          HandlerMapper handlerMapper) {
+                          HandlerMapper handlerMapper, CommandFinder commandFinder) {
         this.userStateCache = userStateCache;
         this.validationService = validationService;
         this.nonCommandHandler = nonCommandHandler;
         this.handlerMapper = handlerMapper;
+        this.commandFinder = commandFinder;
     }
 
     /**
@@ -53,25 +58,17 @@ public class CommandService {
      * @return - результат обработки команды
      */
     private Response doCommand(long userId, String[] splitCommand) {
-        return switch (splitCommand[0]) {
-            case Command.GENERATE, Command.GENERATE_KEYBOARD ->
-                    handlerMapper.getHandler(Command.GENERATE).handle(splitCommand, userId);
-            case Command.SAVE, Command.SAVE_KEYBOARD ->
-                    handlerMapper.getHandler(Command.SAVE).handle(splitCommand, userId);
-            case Command.LIST, Command.LIST_KEYBOARD ->
-                    handlerMapper.getHandler(Command.LIST).handle(splitCommand, userId);
-            case Command.DELETE, Command.DELETE_KEYBOARD ->
-                    handlerMapper.getHandler(Command.DELETE).handle(splitCommand, userId);
-            case Command.EDIT, Command.EDIT_KEYBOARD ->
-                    handlerMapper.getHandler(Command.EDIT).handle(splitCommand, userId);
-            case Command.HELP, Command.HELP_KEYBOARD, Command.START, Command.MENU_KEYBOARD
-                    -> handlerMapper.getHandler(Command.HELP).handle(splitCommand, userId);
-            case Command.SORT, Command.SORT_KEYBOARD
-                    -> handlerMapper.getHandler(Command.SORT).handle(splitCommand, userId);
-            case Command.FIND, Command.FIND_KEYBOARD
-                    -> handlerMapper.getHandler(Command.FIND).handle(splitCommand, userId);
-            default -> performNotCommandMessage(splitCommand, userId);
-        };
+        if (splitCommand == null || splitCommand.length == 0) {
+            return performNotCommandMessage(splitCommand, userId);
+        }
+
+        try {
+            Command command = commandFinder.findCommand(splitCommand[0]);
+            return handlerMapper.getHandler(command.getCommand())
+                    .handle(splitCommand, userId);
+        } catch (CommandNotFoundException e) {
+            return performNotCommandMessage(splitCommand, userId);
+        }
     }
 
     /**

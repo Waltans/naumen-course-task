@@ -13,7 +13,6 @@ import ru.naumen.service.ValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.naumen.bot.Constants.ENTER_PASSWORD_COMPLEXITY;
 import static ru.naumen.model.State.*;
 
 /**
@@ -53,7 +52,10 @@ class NonCommandHandlerTest {
 
     private NonCommandHandler nonCommandHandler;
 
-
+    /**
+     * Перед каждым тестом создаёт объекты (не моки!) маммера команд
+     * и тестируемого класса, а также сбрасывает состояние пользователя
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

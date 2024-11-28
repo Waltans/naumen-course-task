@@ -18,8 +18,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.naumen.bot.Constants.ENTER_PASSWORD_INDEX;
-import static ru.naumen.bot.Constants.INCORRECT_COMMAND_RESPONSE;
 import static ru.naumen.model.State.EDIT_STEP_1;
 import static ru.naumen.model.State.NONE;
 
@@ -41,6 +39,9 @@ class EditHandlerTest {
     private EditHandler editHandler;
 
 
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);

@@ -16,8 +16,6 @@ import ru.naumen.service.PasswordService;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.naumen.bot.Constants.ENTER_SEARCH_REQUEST;
-import static ru.naumen.bot.Constants.NO_PASSWORDS_FOUND;
 import static ru.naumen.model.State.FIND_STEP_1;
 import static ru.naumen.model.State.NONE;
 
@@ -38,6 +36,9 @@ class FindHandlerTest {
     @InjectMocks
     private FindHandler findHandler;
 
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
