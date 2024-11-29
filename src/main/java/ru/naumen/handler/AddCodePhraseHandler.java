@@ -18,7 +18,7 @@ import static ru.naumen.bot.Constants.*;
 @Component
 public class AddCodePhraseHandler implements CommandHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(AddCodePhraseHandler.class);
+    private final Logger log = LoggerFactory.getLogger(AddCodePhraseHandler.class);
     private final UserStateCache userStateCache;
     private final UserService userService;
     private final RemindScheduler scheduler;
