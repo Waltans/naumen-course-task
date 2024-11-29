@@ -1,12 +1,11 @@
 package ru.naumen.bot;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.naumen.model.State;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Класс модульных тестов UserStateCache
@@ -30,7 +29,7 @@ class UserStateCacheTest {
     void getUserStateNotInCache() {
         State result = userStateCache.getUserState(12345L);
 
-        assertEquals(State.NONE, result);
+        Assertions.assertEquals(State.NONE, result);
     }
 
     /**
@@ -42,7 +41,7 @@ class UserStateCacheTest {
         userStateCache.setState(12345L, State.FIND_STEP_1);
         State result = userStateCache.getUserState(12345L);
 
-        assertEquals(State.FIND_STEP_1, result);
+        Assertions.assertEquals(State.FIND_STEP_1, result);
     }
 
     /**
@@ -54,7 +53,7 @@ class UserStateCacheTest {
         userStateCache.setState(12345L, State.GENERATION_STEP_1);
         State result = userStateCache.getUserState(12345L);
 
-        assertEquals(State.GENERATION_STEP_1, result);
+        Assertions.assertEquals(State.GENERATION_STEP_1, result);
     }
 
     /**
@@ -63,7 +62,7 @@ class UserStateCacheTest {
     @Test
     void getUserParamsUserNotInCache() {
         List<String> result = userStateCache.getUserParams(12345L);
-        assertTrue(result.isEmpty());
+        Assertions.assertTrue(result.isEmpty());
     }
 
     /**
@@ -76,8 +75,8 @@ class UserStateCacheTest {
 
         List<String> result = userStateCache.getUserParams(12345L);
 
-        assertEquals(1, result.size());
-        assertTrue(result.contains("param1"));
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertTrue(result.contains("param1"));
     }
 
     /**
@@ -90,8 +89,8 @@ class UserStateCacheTest {
 
         List<String> result = userStateCache.getUserParams(12345L);
 
-        assertEquals(2, result.size());
-        assertTrue(result.contains("param2"));
+        Assertions.assertEquals(2, result.size());
+        Assertions.assertTrue(result.contains("param2"));
     }
 
     /**
@@ -103,6 +102,6 @@ class UserStateCacheTest {
         userStateCache.addParam(12345L, "param2");
 
         userStateCache.clearParamsForUser(12345L);
-        assertTrue(userStateCache.getUserParams(12345L).isEmpty());
+        Assertions.assertTrue(userStateCache.getUserParams(12345L).isEmpty());
     }
 }
