@@ -18,7 +18,7 @@ import static ru.naumen.model.State.*;
 /**
  * Хэндлер удаления пароля
  */
-@Component
+@Component("/del")
 public class DeleteHandler implements CommandHandler {
 
     private final PasswordService passwordService;

@@ -8,6 +8,7 @@ import ru.naumen.model.State;
 import ru.naumen.service.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static ru.naumen.bot.constants.Errors.*;
 import static ru.naumen.bot.constants.Requests.*;
@@ -20,12 +21,15 @@ import static ru.naumen.model.State.*;
 public class NonCommandHandler {
     private final UserStateCache userStateCache;
     private final ValidationService validationService;
-    private final HandlerMapper handlerMapper;
+    private final Map<String, CommandHandler> handlers;
 
-    public NonCommandHandler(UserStateCache userStateCache, ValidationService validationService, HandlerMapper handlerMapper) {
+
+    public NonCommandHandler(UserStateCache userStateCache,
+                             ValidationService validationService,
+                             Map<String, CommandHandler> handlers) {
         this.userStateCache = userStateCache;
         this.validationService = validationService;
-        this.handlerMapper = handlerMapper;
+        this.handlers = handlers;
     }
 
     /**
@@ -47,8 +51,8 @@ public class NonCommandHandler {
             if (nextState == NONE) {
                 String[] splitCommand = {Command.GENERATE.getCommand(), params.get(0), complexity};
 
-                return handlerMapper.getHandler(Command.GENERATE.getCommand())
-                        .handle(splitCommand, userId);
+                CommandHandler handler = handlers.get(Command.GENERATE.getCommand());
+                return handler.handle(splitCommand, userId);
             }
 
             return new Response(response, nextState);
@@ -96,8 +100,8 @@ public class NonCommandHandler {
         if (currentState.equals(SAVE_STEP_2)) {
             String[] splitCommand = {Command.SAVE.getCommand(), userStateCache.getUserParams(userId).get(0), description};
 
-            return handlerMapper.getHandler(Command.SAVE.getCommand())
-                    .handle(splitCommand, userId);
+            CommandHandler handler = handlers.get(Command.SAVE.getCommand());
+            return handler.handle(splitCommand, userId);
         } else if (currentState.equals(EDIT_STEP_4)) {
             String[] splitCommand = {Command.EDIT.getCommand(),
                     userStateCache.getUserParams(userId).get(0),
@@ -105,8 +109,8 @@ public class NonCommandHandler {
                     userStateCache.getUserParams(userId).get(2),
                     description};
 
-            return handlerMapper.getHandler(Command.EDIT.getCommand())
-                    .handle(splitCommand, userId);
+            CommandHandler handler = handlers.get(Command.EDIT.getCommand());
+            return handler.handle(splitCommand, userId);
         }
 
         return new Response(response, currentState);
@@ -151,8 +155,8 @@ public class NonCommandHandler {
         } else if (currentState.equals(DELETE_STEP_1)) {
             String[] splitCommand = new String[]{Command.DELETE.getCommand(), index};
 
-            return handlerMapper.getHandler(Command.DELETE.getCommand())
-                    .handle(splitCommand, userId);
+            CommandHandler handler = handlers.get(Command.DELETE.getCommand());
+            return handler.handle(splitCommand, userId);
         }
 
         return new Response(ENTER_PASSWORD_LENGTH, currentState);
@@ -168,8 +172,8 @@ public class NonCommandHandler {
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(SORT_STEP_1)) {
             String[] splitCommand = {sortType};
-            return handlerMapper.getHandler(Command.SORT.getCommand())
-                    .handle(splitCommand, userId);
+            CommandHandler handler = handlers.get(Command.SORT.getCommand());
+            return handler.handle(splitCommand, userId);
         }
 
         userStateCache.clearParamsForUser(userId);
@@ -186,8 +190,8 @@ public class NonCommandHandler {
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(FIND_STEP_1)) {
             String[] splitCommand = {Command.FIND.getCommand(), searchRequest};
-            return handlerMapper.getHandler(Command.FIND.getCommand())
-                    .handle(splitCommand, userId);
+            CommandHandler handler = handlers.get(Command.FIND.getCommand());
+            return handler.handle(splitCommand, userId);
         }
 
         userStateCache.clearParamsForUser(userId);

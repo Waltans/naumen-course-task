@@ -16,7 +16,7 @@ import static ru.naumen.model.State.*;
 /**
  * Хэндлер получения списка паролей
  */
-@Component
+@Component("/list")
 public class ListHandler implements CommandHandler {
     private final EncodeService encodeService;
     private final PasswordService passwordService;

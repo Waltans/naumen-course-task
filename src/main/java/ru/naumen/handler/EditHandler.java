@@ -22,7 +22,7 @@ import static ru.naumen.model.State.NONE;
 /**
  * Хэндлер изменения пароля
  */
-@Component
+@Component("/edit")
 public class EditHandler implements CommandHandler {
 
     private final Logger log = LoggerFactory.getLogger(EditHandler.class);

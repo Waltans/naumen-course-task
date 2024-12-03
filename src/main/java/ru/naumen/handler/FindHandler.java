@@ -18,7 +18,7 @@ import static ru.naumen.model.State.*;
 /**
  * Хэндлер поиска паролей
  */
-@Component
+@Component("/find")
 public class FindHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
@@ -29,7 +29,6 @@ public class FindHandler implements CommandHandler {
         this.userStateCache = userStateCache;
         this.encodeService = encodeService;
     }
-
 
     @Override
     public Response handle(String[] splitCommand, long userId) {

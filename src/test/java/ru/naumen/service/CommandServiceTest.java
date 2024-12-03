@@ -15,6 +15,7 @@ import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Класс модульных тестов для CommandService
@@ -49,9 +50,6 @@ class CommandServiceTest {
     private DeleteHandler deleteHandler;
 
     @Mock
-    private StartHelpHandler startHelpHandler;
-
-    @Mock
     private EditHandler editHandler;
 
     @Mock
@@ -60,35 +58,38 @@ class CommandServiceTest {
     @Mock
     private FindHandler findHandler;
 
+    @Mock
+    private HelpHandler helpHandler;
+
     private CommandService commandService;
 
     /**
-     * Перед каждым тестом создаёт объекты (не моки!) маммера команд,
-     * класса поиска команд и тестируемого класса
+     * Перед каждым тестом создаёт объекты (не моки!)
+     * класса поиска команд, отображения хэндлеров и тестируемого класса
      */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        HandlerMapper handlerMapper = new HandlerMapper(
-                deleteHandler,
-                editHandler,
-                findHandler,
-                generateHandler,
-                listHandler,
-                saveHandler,
-                sortHandler,
-                startHelpHandler
-        );
-
         CommandFinder commandFinder = new CommandFinder();
+
+        Map<String, CommandHandler> handlers = Map.of(
+                "/generate", generateHandler,
+                "/list", listHandler,
+                "/edit", editHandler,
+                "/del", deleteHandler,
+                "/save", saveHandler,
+                "/sort", sortHandler,
+                "/find", findHandler,
+                "/help", helpHandler
+        );
 
         commandService = new CommandService(
                 userStateCache,
                 validationService,
                 nonCommandHandler,
-                handlerMapper,
-                commandFinder);
+                commandFinder,
+                handlers);
     }
 
     /**
@@ -349,7 +350,7 @@ class CommandServiceTest {
                 "- /help - Справка.";
 
         Mockito.when(validationService.isValidCommand(new String[]{"/help"}, 12345L)).thenReturn(true);
-        Mockito.when(startHelpHandler.handle(new String[]{"/help"}, 12345L))
+        Mockito.when(helpHandler.handle(new String[]{"/help"}, 12345L))
                 .thenReturn(new Response(expectedResponse, State.NONE));
 
         Response response = commandService.performCommand("/help", 12345L);

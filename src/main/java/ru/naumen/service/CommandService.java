@@ -8,6 +8,8 @@ import ru.naumen.bot.UserStateCache;
 import ru.naumen.exception.CommandNotFoundException;
 import ru.naumen.handler.*;
 
+import java.util.Map;
+
 import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_DESCRIPTION;
 import static ru.naumen.model.State.*;
@@ -20,18 +22,19 @@ public class CommandService {
     private final UserStateCache userStateCache;
     private final ValidationService validationService;
     private final NonCommandHandler nonCommandHandler;
-    private final HandlerMapper handlerMapper;
     private final CommandFinder commandFinder;
+    private final Map<String, CommandHandler> handlers;
 
     public CommandService(UserStateCache userStateCache,
                           ValidationService validationService,
                           NonCommandHandler nonCommandHandler,
-                          HandlerMapper handlerMapper, CommandFinder commandFinder) {
+                          CommandFinder commandFinder,
+                          Map<String, CommandHandler> handlers) {
         this.userStateCache = userStateCache;
         this.validationService = validationService;
         this.nonCommandHandler = nonCommandHandler;
-        this.handlerMapper = handlerMapper;
         this.commandFinder = commandFinder;
+        this.handlers = handlers;
     }
 
     /**
@@ -64,8 +67,8 @@ public class CommandService {
 
         try {
             Command command = commandFinder.findCommand(splitCommand[0]);
-            return handlerMapper.getHandler(command.getCommand())
-                    .handle(splitCommand, userId);
+            CommandHandler handler = handlers.get(command.getCommand());
+            return handler.handle(splitCommand, userId);
         } catch (CommandNotFoundException e) {
             return performNotCommandMessage(splitCommand, userId);
         }
