@@ -66,10 +66,6 @@ public class CommandService {
      * @return - результат обработки команды
      */
     private Response doCommand(long userId, String[] splitCommand) {
-        if (splitCommand == null || splitCommand.length == 0) {
-            return performNotCommandMessage(splitCommand, userId);
-        }
-
         try {
             Command command = commandFinder.findCommand(splitCommand[0]);
             CommandHandler handler = commandHandlers.get(command.getCommand());
