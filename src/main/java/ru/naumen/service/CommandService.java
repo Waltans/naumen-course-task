@@ -23,6 +23,11 @@ public class CommandService {
     private final ValidationService validationService;
     private final NonCommandHandler nonCommandHandler;
     private final CommandFinder commandFinder;
+
+    /**
+     * Хэндлеры команд
+     * Название бина (сама команда формата "/command") -> хэндлер
+     */
     private final Map<String, CommandHandler> commandHandlers;
 
     public CommandService(UserStateCache userStateCache,

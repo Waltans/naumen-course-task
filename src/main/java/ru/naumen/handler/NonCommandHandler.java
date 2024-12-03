@@ -21,6 +21,11 @@ import static ru.naumen.model.State.*;
 public class NonCommandHandler {
     private final UserStateCache userStateCache;
     private final ValidationService validationService;
+
+    /**
+     * Хэндлеры команд
+     * Название бина (сама команда формата "/command") -> хэндлер
+     */
     private final Map<String, CommandHandler> commandHandlers;
 
 
