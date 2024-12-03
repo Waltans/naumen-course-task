@@ -21,15 +21,15 @@ import static ru.naumen.model.State.*;
 public class NonCommandHandler {
     private final UserStateCache userStateCache;
     private final ValidationService validationService;
-    private final Map<String, CommandHandler> handlers;
+    private final Map<String, CommandHandler> commandHandlers;
 
 
     public NonCommandHandler(UserStateCache userStateCache,
                              ValidationService validationService,
-                             Map<String, CommandHandler> handlers) {
+                             Map<String, CommandHandler> commandHandlers) {
         this.userStateCache = userStateCache;
         this.validationService = validationService;
-        this.handlers = handlers;
+        this.commandHandlers = commandHandlers;
     }
 
     /**
@@ -51,7 +51,7 @@ public class NonCommandHandler {
             if (nextState == NONE) {
                 String[] splitCommand = {Command.GENERATE.getCommand(), params.get(0), complexity};
 
-                CommandHandler handler = handlers.get(Command.GENERATE.getCommand());
+                CommandHandler handler = commandHandlers.get(Command.GENERATE.getCommand());
                 return handler.handle(splitCommand, userId);
             }
 
@@ -100,7 +100,7 @@ public class NonCommandHandler {
         if (currentState.equals(SAVE_STEP_2)) {
             String[] splitCommand = {Command.SAVE.getCommand(), userStateCache.getUserParams(userId).get(0), description};
 
-            CommandHandler handler = handlers.get(Command.SAVE.getCommand());
+            CommandHandler handler = commandHandlers.get(Command.SAVE.getCommand());
             return handler.handle(splitCommand, userId);
         } else if (currentState.equals(EDIT_STEP_4)) {
             String[] splitCommand = {Command.EDIT.getCommand(),
@@ -109,7 +109,7 @@ public class NonCommandHandler {
                     userStateCache.getUserParams(userId).get(2),
                     description};
 
-            CommandHandler handler = handlers.get(Command.EDIT.getCommand());
+            CommandHandler handler = commandHandlers.get(Command.EDIT.getCommand());
             return handler.handle(splitCommand, userId);
         }
 
@@ -155,7 +155,7 @@ public class NonCommandHandler {
         } else if (currentState.equals(DELETE_STEP_1)) {
             String[] splitCommand = new String[]{Command.DELETE.getCommand(), index};
 
-            CommandHandler handler = handlers.get(Command.DELETE.getCommand());
+            CommandHandler handler = commandHandlers.get(Command.DELETE.getCommand());
             return handler.handle(splitCommand, userId);
         }
 
@@ -172,7 +172,7 @@ public class NonCommandHandler {
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(SORT_STEP_1)) {
             String[] splitCommand = {sortType};
-            CommandHandler handler = handlers.get(Command.SORT.getCommand());
+            CommandHandler handler = commandHandlers.get(Command.SORT.getCommand());
             return handler.handle(splitCommand, userId);
         }
 
@@ -190,7 +190,7 @@ public class NonCommandHandler {
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(FIND_STEP_1)) {
             String[] splitCommand = {Command.FIND.getCommand(), searchRequest};
-            CommandHandler handler = handlers.get(Command.FIND.getCommand());
+            CommandHandler handler = commandHandlers.get(Command.FIND.getCommand());
             return handler.handle(splitCommand, userId);
         }
 

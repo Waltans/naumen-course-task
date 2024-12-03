@@ -23,18 +23,18 @@ public class CommandService {
     private final ValidationService validationService;
     private final NonCommandHandler nonCommandHandler;
     private final CommandFinder commandFinder;
-    private final Map<String, CommandHandler> handlers;
+    private final Map<String, CommandHandler> commandHandlers;
 
     public CommandService(UserStateCache userStateCache,
                           ValidationService validationService,
                           NonCommandHandler nonCommandHandler,
                           CommandFinder commandFinder,
-                          Map<String, CommandHandler> handlers) {
+                          Map<String, CommandHandler> commandHandlers) {
         this.userStateCache = userStateCache;
         this.validationService = validationService;
         this.nonCommandHandler = nonCommandHandler;
         this.commandFinder = commandFinder;
-        this.handlers = handlers;
+        this.commandHandlers = commandHandlers;
     }
 
     /**
@@ -67,7 +67,7 @@ public class CommandService {
 
         try {
             Command command = commandFinder.findCommand(splitCommand[0]);
-            CommandHandler handler = handlers.get(command.getCommand());
+            CommandHandler handler = commandHandlers.get(command.getCommand());
             return handler.handle(splitCommand, userId);
         } catch (CommandNotFoundException e) {
             return performNotCommandMessage(splitCommand, userId);

@@ -54,7 +54,7 @@ class NonCommandHandlerTest {
         Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
         Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
 
-        Map<String, CommandHandler> handlers = Map.of(
+        Map<String, CommandHandler> commandHandlers = Map.of(
                 "/edit", editHandler,
                 "/del", deleteHandler,
                 "/save", saveHandler,
@@ -65,7 +65,7 @@ class NonCommandHandlerTest {
         nonCommandHandler = new NonCommandHandler(
                 userStateCache,
                 validationService,
-                handlers
+                commandHandlers
         );
     }
 

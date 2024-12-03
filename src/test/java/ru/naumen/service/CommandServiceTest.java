@@ -73,7 +73,7 @@ class CommandServiceTest {
 
         CommandFinder commandFinder = new CommandFinder();
 
-        Map<String, CommandHandler> handlers = Map.of(
+        Map<String, CommandHandler> commandHandlers = Map.of(
                 "/generate", generateHandler,
                 "/list", listHandler,
                 "/edit", editHandler,
@@ -89,7 +89,7 @@ class CommandServiceTest {
                 validationService,
                 nonCommandHandler,
                 commandFinder,
-                handlers);
+                commandHandlers);
     }
 
     /**
