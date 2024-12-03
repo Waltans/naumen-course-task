@@ -40,6 +40,18 @@ class UserServiceTest {
     }
 
     /**
+     * Тест создания объекта пользователя если он уже есть
+     */
+    @Test
+    void testCreateUserIfUserExists() {
+        long id = 12345L;
+        Mockito.when(userRepository.existsById(id)).thenReturn(true);
+        userService.createUserIfUserNotExists(id);
+
+        Mockito.verify(userRepository, Mockito.never()).save(ArgumentMatchers.any(User.class));
+    }
+
+    /**
      * Тест получения объекта пользователя по ID
      */
     @Test

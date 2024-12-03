@@ -15,7 +15,7 @@ import static ru.naumen.model.State.*;
 /**
  * Хэндлер генерации
  */
-@Component
+@Component("/generate")
 public class GenerateHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
@@ -26,6 +26,7 @@ public class GenerateHandler implements CommandHandler {
         this.userStateCache = userStateCache;
         this.validationService = validationService;
     }
+
     @Override
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {

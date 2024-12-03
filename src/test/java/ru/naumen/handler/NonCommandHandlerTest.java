@@ -12,6 +12,7 @@ import ru.naumen.service.ValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static ru.naumen.model.State.*;
 
@@ -41,20 +42,11 @@ class NonCommandHandlerTest {
     @Mock
     private FindHandler findHandler;
 
-    @Mock
-    private GenerateHandler generateHandler;
-
-    @Mock
-    private ListHandler listHandler;
-
-    @Mock
-    private StartHelpHandler startHelpHandler;
-
     private NonCommandHandler nonCommandHandler;
 
     /**
-     * Перед каждым тестом создаёт объекты (не моки!) маммера команд
-     * и тестируемого класса, а также сбрасывает состояние пользователя
+     * Перед каждым тестом создаёт объекты (не моки!)
+     * класса поиска команд, отображения хэндлеров и тестируемого класса
      */
     @BeforeEach
     void setUp() {
@@ -62,21 +54,18 @@ class NonCommandHandlerTest {
         Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
         Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
 
-        HandlerMapper handlerMapper = new HandlerMapper(
-                deleteHandler,
-                editHandler,
-                findHandler,
-                generateHandler,
-                listHandler,
-                saveHandler,
-                sortHandler,
-                startHelpHandler
+        Map<String, CommandHandler> handlers = Map.of(
+                "/edit", editHandler,
+                "/del", deleteHandler,
+                "/save", saveHandler,
+                "/sort", sortHandler,
+                "/find", findHandler
         );
 
         nonCommandHandler = new NonCommandHandler(
                 userStateCache,
                 validationService,
-                handlerMapper
+                handlers
         );
     }
 

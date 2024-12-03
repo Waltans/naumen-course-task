@@ -24,7 +24,7 @@ import static ru.naumen.model.State.*;
 /**
  * Хэндлер сортировки паролей
  */
-@Component
+@Component("/sort")
 public class SortHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
@@ -35,7 +35,6 @@ public class SortHandler implements CommandHandler {
         this.userStateCache = userStateCache;
         this.encodeService = encodeService;
     }
-
 
     @Override
     public Response handle(String[] splitCommand, long userId) {

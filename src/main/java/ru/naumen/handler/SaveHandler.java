@@ -19,7 +19,7 @@ import static ru.naumen.model.State.*;
 /**
  * Хэндлер сохранения пароля
  */
-@Component
+@Component("/save")
 public class SaveHandler implements CommandHandler {
 
     private final PasswordService passwordService;
