@@ -10,12 +10,10 @@ import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 
 import java.util.ArrayList;
-
-import static ru.naumen.model.State.NONE;
-import static ru.naumen.model.State.SAVE_STEP_1;
 
 /**
  * Класс модульных тестов для SaveHandler
@@ -45,13 +43,13 @@ class SaveHandlerTest {
     @Test
     void testSavePassword_WithoutParams() {
         String[] command = {"Сохранить"};
-        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
         Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
 
         Response response = saveHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Введите пароль", response.message());
-        Assertions.assertEquals(SAVE_STEP_1, response.botState());
+        Assertions.assertEquals(State.SAVE_STEP_1, response.botState());
     }
 
     /**
@@ -66,7 +64,7 @@ class SaveHandlerTest {
 
         Mockito.verify(passwordService).createUserPassword("password", "Неизвестно", 12345L);
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
@@ -82,7 +80,7 @@ class SaveHandlerTest {
 
         Mockito.verify(passwordService).createUserPassword("pass", "desc", 12345L);
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 }

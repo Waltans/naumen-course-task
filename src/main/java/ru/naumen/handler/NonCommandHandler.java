@@ -12,7 +12,6 @@ import java.util.Map;
 
 import static ru.naumen.bot.constants.Errors.*;
 import static ru.naumen.bot.constants.Requests.*;
-import static ru.naumen.model.State.*;
 
 /**
  * Хэндлер сообщений, не являющихся командой
@@ -53,7 +52,7 @@ public class NonCommandHandler {
             List<String> params = userStateCache.getUserParams(userId);
 
             userStateCache.setState(userId, nextState);
-            if (nextState == NONE) {
+            if (nextState == State.NONE) {
                 String[] splitCommand = {Command.GENERATE.getCommand(), params.get(0), complexity};
 
                 CommandHandler handler = commandHandlers.get(Command.GENERATE.getCommand());
@@ -102,12 +101,12 @@ public class NonCommandHandler {
         State currentState = userStateCache.getUserState(userId);
         userStateCache.setState(userId, nextState);
 
-        if (currentState.equals(SAVE_STEP_2)) {
+        if (currentState.equals(State.SAVE_STEP_2)) {
             String[] splitCommand = {Command.SAVE.getCommand(), userStateCache.getUserParams(userId).get(0), description};
 
             CommandHandler handler = commandHandlers.get(Command.SAVE.getCommand());
             return handler.handle(splitCommand, userId);
-        } else if (currentState.equals(EDIT_STEP_4)) {
+        } else if (currentState.equals(State.EDIT_STEP_4)) {
             String[] splitCommand = {Command.EDIT.getCommand(),
                     userStateCache.getUserParams(userId).get(0),
                     userStateCache.getUserParams(userId).get(1),
@@ -148,16 +147,16 @@ public class NonCommandHandler {
         State currentState = userStateCache.getUserState(userId);
 
         if (!validationService.isValidPasswordIndex(userId, Integer.parseInt(index))) {
-            userStateCache.setState(userId, NONE);
+            userStateCache.setState(userId, State.NONE);
             userStateCache.clearParamsForUser(userId);
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index), NONE);
+            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index), State.NONE);
         }
 
-        if (currentState.equals(EDIT_STEP_1)) {
-            userStateCache.setState(userId, EDIT_STEP_2);
+        if (currentState.equals(State.EDIT_STEP_1)) {
+            userStateCache.setState(userId, State.EDIT_STEP_2);
 
-            return new Response(ENTER_PASSWORD_LENGTH, EDIT_STEP_2);
-        } else if (currentState.equals(DELETE_STEP_1)) {
+            return new Response(ENTER_PASSWORD_LENGTH, State.EDIT_STEP_2);
+        } else if (currentState.equals(State.DELETE_STEP_1)) {
             String[] splitCommand = new String[]{Command.DELETE.getCommand(), index};
 
             CommandHandler handler = commandHandlers.get(Command.DELETE.getCommand());
@@ -175,7 +174,7 @@ public class NonCommandHandler {
      */
     public Response getSortType(String sortType, Long userId) {
         State currentState = userStateCache.getUserState(userId);
-        if (currentState.equals(SORT_STEP_1)) {
+        if (currentState.equals(State.SORT_STEP_1)) {
             String[] splitCommand = {sortType};
             CommandHandler handler = commandHandlers.get(Command.SORT.getCommand());
             return handler.handle(splitCommand, userId);
@@ -193,7 +192,7 @@ public class NonCommandHandler {
      */
     public Response getSearchRequest(String searchRequest, Long userId) {
         State currentState = userStateCache.getUserState(userId);
-        if (currentState.equals(FIND_STEP_1)) {
+        if (currentState.equals(State.FIND_STEP_1)) {
             String[] splitCommand = {Command.FIND.getCommand(), searchRequest};
             CommandHandler handler = commandHandlers.get(Command.FIND.getCommand());
             return handler.handle(splitCommand, userId);

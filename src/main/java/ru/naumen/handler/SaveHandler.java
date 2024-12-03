@@ -7,6 +7,7 @@ import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 
 import static ru.naumen.bot.constants.Errors.ENCRYPT_ERROR;
@@ -14,7 +15,6 @@ import static ru.naumen.bot.constants.Errors.USER_NOT_FOUND;
 import static ru.naumen.bot.constants.Information.PASSWORD_SAVED_MESSAGE;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD;
-import static ru.naumen.model.State.*;
 
 /**
  * Хэндлер сохранения пароля
@@ -39,9 +39,9 @@ public class SaveHandler implements CommandHandler {
     @Override
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
-            userStateCache.setState(userId, SAVE_STEP_1);
+            userStateCache.setState(userId, State.SAVE_STEP_1);
 
-            return new Response(ENTER_PASSWORD, SAVE_STEP_1);
+            return new Response(ENTER_PASSWORD, State.SAVE_STEP_1);
         }
 
         try {
@@ -54,18 +54,18 @@ public class SaveHandler implements CommandHandler {
             }
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(PASSWORD_SAVED_MESSAGE, NONE);
+            return new Response(PASSWORD_SAVED_MESSAGE, State.NONE);
         } catch (UserNotFoundException e){
             log.error("Ошибка при сохранении пароля - не найден пользователь", e);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(USER_NOT_FOUND, NONE);
+            return new Response(USER_NOT_FOUND, State.NONE);
         }
         catch (EncryptException e){
             log.error("Ошибка шифрования при сохранении пароля", e);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(ENCRYPT_ERROR, NONE);
+            return new Response(ENCRYPT_ERROR, State.NONE);
         }
     }
 }

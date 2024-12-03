@@ -9,15 +9,13 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static ru.naumen.model.State.FIND_STEP_1;
-import static ru.naumen.model.State.NONE;
 
 /**
  * Класс модульных тестов для FindHandler
@@ -58,7 +56,7 @@ class FindHandlerTest {
         Response response = findHandler.handle(command, 12345L);
 
         Assertions.assertEquals("\n1) Сайт: desc, Пароль: dpass", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
@@ -73,7 +71,7 @@ class FindHandlerTest {
         Response response = findHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Не найдены пароли по вашему запросу", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -82,12 +80,12 @@ class FindHandlerTest {
     @Test
     void testFindPasswords_WithoutParams() {
         String[] command = {"Искать"};
-        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
         Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
 
         Response response = findHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Введите поисковый запрос", response.message());
-        Assertions.assertEquals(FIND_STEP_1, response.botState());
+        Assertions.assertEquals(State.FIND_STEP_1, response.botState());
     }
 }

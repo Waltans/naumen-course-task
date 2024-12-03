@@ -3,6 +3,7 @@ package ru.naumen.handler;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
@@ -13,7 +14,6 @@ import static ru.naumen.bot.constants.Errors.PASSWORD_NOT_FOUND_MESSAGE;
 import static ru.naumen.bot.constants.Information.PASSWORD_DELETED_MESSAGE;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_INDEX;
-import static ru.naumen.model.State.*;
 
 /**
  * Хэндлер удаления пароля
@@ -34,17 +34,17 @@ public class DeleteHandler implements CommandHandler {
     @Override
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
-            userStateCache.setState(userId, DELETE_STEP_1);
+            userStateCache.setState(userId, State.DELETE_STEP_1);
 
-            return new Response(ENTER_PASSWORD_INDEX, DELETE_STEP_1);
+            return new Response(ENTER_PASSWORD_INDEX, State.DELETE_STEP_1);
         }
 
         int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
         if (!validationService.isValidPasswordIndex(userId, passwordIndex)){
-            userStateCache.setState(userId, NONE);
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
+            userStateCache.setState(userId, State.NONE);
+            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), State.NONE);
         }
 
         // Пользователь получает список начиная с 1
@@ -53,9 +53,9 @@ public class DeleteHandler implements CommandHandler {
         String uuid = userPasswords.get(passwordIndexInSystem).getUuid();
         String description = userPasswords.get(passwordIndexInSystem).getDescription();
         passwordService.deletePassword(uuid);
-        userStateCache.setState(userId, NONE);
+        userStateCache.setState(userId, State.NONE);
         userStateCache.clearParamsForUser(userId);
 
-        return new Response(String.format(PASSWORD_DELETED_MESSAGE, description), NONE);
+        return new Response(String.format(PASSWORD_DELETED_MESSAGE, description), State.NONE);
     }
 }

@@ -19,7 +19,6 @@ import static ru.naumen.bot.constants.Information.PASSWORD_LIST_FORMAT;
 import static ru.naumen.bot.constants.Parameters.BY_DATE;
 import static ru.naumen.bot.constants.Parameters.BY_DESCRIPTION;
 import static ru.naumen.bot.constants.Requests.CHOOSE_SORT_TYPE;
-import static ru.naumen.model.State.*;
 
 /**
  * Хэндлер сортировки паролей
@@ -40,7 +39,7 @@ public class SortHandler implements CommandHandler {
     public Response handle(String[] splitCommand, long userId) {
         State currentState = userStateCache.getUserState(userId);
 
-        if (currentState.equals(SORT_STEP_1)) {
+        if (currentState.equals(State.SORT_STEP_1)) {
             String sortType = splitCommand[0];
 
             try {
@@ -53,8 +52,8 @@ public class SortHandler implements CommandHandler {
                 }
 
                 if (sortedPasswords.isEmpty()) {
-                    userStateCache.setState(userId, NONE);
-                    return new Response(NO_PASSWORDS_MESSAGE, NONE);
+                    userStateCache.setState(userId, State.NONE);
+                    return new Response(NO_PASSWORDS_MESSAGE, State.NONE);
                 }
 
                 StringBuilder stringBuilder = new StringBuilder();
@@ -64,18 +63,18 @@ public class SortHandler implements CommandHandler {
                     stringBuilder.append(String.format("\n" + PASSWORD_LIST_FORMAT, i + 1, description, password));
                 }
 
-                userStateCache.setState(userId, NONE);
+                userStateCache.setState(userId, State.NONE);
                 userStateCache.clearParamsForUser(userId);
 
-                return new Response(stringBuilder.toString(), NONE);
+                return new Response(stringBuilder.toString(), State.NONE);
             } catch (IncorrectSortTypeException e) {
-                userStateCache.setState(userId, IN_LIST);
-                return new Response(INCORRECT_COMMAND_RESPONSE, IN_LIST);
+                userStateCache.setState(userId, State.IN_LIST);
+                return new Response(INCORRECT_COMMAND_RESPONSE, State.IN_LIST);
             }
 
         } else {
-            userStateCache.setState(userId, SORT_STEP_1);
-            return new Response(CHOOSE_SORT_TYPE, SORT_STEP_1);
+            userStateCache.setState(userId, State.SORT_STEP_1);
+            return new Response(CHOOSE_SORT_TYPE, State.SORT_STEP_1);
         }
     }
 }

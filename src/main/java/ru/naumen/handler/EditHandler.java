@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.exception.PasswordNotFoundException;
+import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
@@ -16,8 +17,6 @@ import static ru.naumen.bot.constants.Errors.*;
 import static ru.naumen.bot.constants.Information.PASSWORD_UPDATED_MESSAGE;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_INDEX;
-import static ru.naumen.model.State.EDIT_STEP_1;
-import static ru.naumen.model.State.NONE;
 
 /**
  * Хэндлер изменения пароля
@@ -44,30 +43,30 @@ public class EditHandler implements CommandHandler {
     @Override
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
-            userStateCache.setState(userId, EDIT_STEP_1);
-            return new Response(ENTER_PASSWORD_INDEX, EDIT_STEP_1);
+            userStateCache.setState(userId, State.EDIT_STEP_1);
+            return new Response(ENTER_PASSWORD_INDEX, State.EDIT_STEP_1);
         }
 
         int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
         if (!validationService.isValidPasswordIndex(userId, passwordIndex)) {
-            userStateCache.setState(userId, NONE);
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
+            userStateCache.setState(userId, State.NONE);
+            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), State.NONE);
         }
 
         int length = Integer.parseInt(splitCommand[2]);
         String complexity = splitCommand[3];
 
         if (!validationService.isValidLength(length)) {
-            userStateCache.setState(userId, NONE);
+            userStateCache.setState(userId, State.NONE);
             userStateCache.clearParamsForUser(userId);
-            return new Response(LENGTH_ERROR_MESSAGE, NONE);
+            return new Response(LENGTH_ERROR_MESSAGE, State.NONE);
         }
         if (!validationService.isValidComplexity(complexity)) {
-            userStateCache.setState(userId, NONE);
+            userStateCache.setState(userId, State.NONE);
             userStateCache.clearParamsForUser(userId);
-            return new Response(COMPLEXITY_ERROR_MESSAGE, NONE);
+            return new Response(COMPLEXITY_ERROR_MESSAGE, State.NONE);
         }
 
         String uuid = userPasswords.get(passwordIndex - 1).getUuid();
@@ -76,9 +75,9 @@ public class EditHandler implements CommandHandler {
             passwordByUuid = passwordService.findPasswordByUuid(uuid);
         } catch (PasswordNotFoundException e) {
             log.error(e.getMessage());
-            userStateCache.setState(userId, NONE);
+            userStateCache.setState(userId, State.NONE);
 
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
+            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), State.NONE);
         }
         String description = passwordByUuid.getDescription();
 
@@ -88,9 +87,9 @@ public class EditHandler implements CommandHandler {
         }
 
         passwordService.updatePassword(uuid, description, newPassword);
-        userStateCache.setState(userId, NONE);
+        userStateCache.setState(userId, State.NONE);
         userStateCache.clearParamsForUser(userId);
 
-        return new Response(String.format(PASSWORD_UPDATED_MESSAGE, description, newPassword), NONE);
+        return new Response(String.format(PASSWORD_UPDATED_MESSAGE, description, newPassword), State.NONE);
     }
 }

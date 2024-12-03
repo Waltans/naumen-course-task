@@ -9,6 +9,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.model.State;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
@@ -17,9 +18,6 @@ import ru.naumen.service.ValidationService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-import static ru.naumen.model.State.DELETE_STEP_1;
-import static ru.naumen.model.State.NONE;
 
 /**
  * Класс модульных тестов для DeleteHandler
@@ -65,7 +63,7 @@ class DeleteHandlerTest {
         Response response = deleteHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Удалён пароль для сайта desc", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
 
         Mockito.verify(passwordService).deletePassword("uuid2");
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
@@ -87,7 +85,7 @@ class DeleteHandlerTest {
         Response response = deleteHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Не найден пароль с id 5", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
 
         Mockito.verify(passwordService, Mockito.never()).deletePassword(Mockito.anyString());
     }
@@ -98,12 +96,12 @@ class DeleteHandlerTest {
     @Test
     void testDeletePassword_WithoutParams() {
         String[] command = {"Удалить"};
-        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
         Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
 
         Response response = deleteHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Введите индекс пароля", response.message());
-        Assertions.assertEquals(DELETE_STEP_1, response.botState());
+        Assertions.assertEquals(State.DELETE_STEP_1, response.botState());
     }
 }
