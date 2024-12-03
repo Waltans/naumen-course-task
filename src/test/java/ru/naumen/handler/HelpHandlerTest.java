@@ -9,8 +9,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
-
-import static ru.naumen.model.State.NONE;
+import ru.naumen.model.State;
 
 /**
  * Класс модульных тестов для HelpHandler
@@ -49,7 +48,7 @@ class HelpHandlerTest {
         Response response = helpHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResult, response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 }

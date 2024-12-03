@@ -3,6 +3,7 @@ package ru.naumen.handler;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
@@ -13,7 +14,6 @@ import static ru.naumen.bot.constants.Errors.NO_PASSWORDS_FOUND;
 import static ru.naumen.bot.constants.Information.PASSWORD_LIST_FORMAT;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 import static ru.naumen.bot.constants.Requests.ENTER_SEARCH_REQUEST;
-import static ru.naumen.model.State.*;
 
 /**
  * Хэндлер поиска паролей
@@ -33,17 +33,17 @@ public class FindHandler implements CommandHandler {
     @Override
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
-            userStateCache.setState(userId, FIND_STEP_1);
-            return new Response(ENTER_SEARCH_REQUEST, FIND_STEP_1);
+            userStateCache.setState(userId, State.FIND_STEP_1);
+            return new Response(ENTER_SEARCH_REQUEST, State.FIND_STEP_1);
         }
 
         String searchRequest = splitCommand[1];
         List<UserPassword> foundPasswords = passwordService.getUserPasswordsWithPartialDescription(userId, searchRequest);
 
         if (foundPasswords.isEmpty()) {
-            userStateCache.setState(userId, NONE);
+            userStateCache.setState(userId, State.NONE);
 
-            return new Response(NO_PASSWORDS_FOUND, NONE);
+            return new Response(NO_PASSWORDS_FOUND, State.NONE);
         }
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -53,9 +53,9 @@ public class FindHandler implements CommandHandler {
             stringBuilder.append(String.format("\n" + PASSWORD_LIST_FORMAT, i + 1, description, password));
         }
 
-        userStateCache.setState(userId, NONE);
+        userStateCache.setState(userId, State.NONE);
         userStateCache.clearParamsForUser(userId);
 
-        return new Response(stringBuilder.toString(), NONE);
+        return new Response(stringBuilder.toString(), State.NONE);
     }
 }

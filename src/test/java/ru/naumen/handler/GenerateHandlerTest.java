@@ -9,13 +9,11 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
 
 import java.util.ArrayList;
-
-import static ru.naumen.model.State.GENERATION_STEP_1;
-import static ru.naumen.model.State.NONE;
 
 /**
  * Класс модульных тестов для GenerateHandler
@@ -57,7 +55,7 @@ class GenerateHandlerTest {
         Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Сгенерирован пароль: generatedPassword", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
@@ -75,7 +73,7 @@ class GenerateHandlerTest {
         Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -92,7 +90,7 @@ class GenerateHandlerTest {
         Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -112,7 +110,7 @@ class GenerateHandlerTest {
         Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResponse, response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -123,11 +121,11 @@ class GenerateHandlerTest {
         String[] command = {"Генерировать"};
         String expectedResponse = "Введите длину пароля";
 
-        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
         Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
         Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResponse, response.message());
-        Assertions.assertEquals(GENERATION_STEP_1, response.botState());
+        Assertions.assertEquals(State.GENERATION_STEP_1, response.botState());
     }
 }

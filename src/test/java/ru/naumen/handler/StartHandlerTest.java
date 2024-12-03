@@ -9,13 +9,16 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
-
-import static ru.naumen.model.State.NONE;
+import ru.naumen.model.State;
+import ru.naumen.service.UserService;
 
 /**
  * Класс модульных тестов для StartHandler
  */
 class StartHandlerTest {
+
+    @Mock
+    private UserService userService;
 
     @Mock
     private UserStateCache userStateCache;
@@ -49,7 +52,7 @@ class StartHandlerTest {
         Response response = startHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResult, response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 }

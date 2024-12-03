@@ -8,13 +8,12 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
+import ru.naumen.model.State;
 import ru.naumen.service.ValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static ru.naumen.model.State.*;
 
 /**
  * Класс модульных тестов для NonCommandHandler
@@ -51,7 +50,7 @@ class NonCommandHandlerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
         Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
 
         Map<String, CommandHandler> commandHandlers = Map.of(
@@ -75,11 +74,11 @@ class NonCommandHandlerTest {
     @Test
     void testGetComplexity() {
         Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
-        Response response = nonCommandHandler.getComplexity("3", 12345L, SAVE_STEP_2, "complexity entered");
+        Response response = nonCommandHandler.getComplexity("3", 12345L, State.SAVE_STEP_2, "complexity entered");
 
         Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("3"));
 
-        Assertions.assertEquals(SAVE_STEP_2, response.botState());
+        Assertions.assertEquals(State.SAVE_STEP_2, response.botState());
         Mockito.verify(userStateCache).addParam(12345L,"3");
         Assertions.assertEquals("complexity entered", response.message());
     }
@@ -90,10 +89,10 @@ class NonCommandHandlerTest {
     @Test
     void testGetPasswordLength() {
         Mockito.when(validationService.isValidLength(8)).thenReturn(true);
-        Response response = nonCommandHandler.getPasswordLength("8", 12345L, SAVE_STEP_1);
+        Response response = nonCommandHandler.getPasswordLength("8", 12345L, State.SAVE_STEP_1);
 
         Assertions.assertEquals("Выберите сложность пароля", response.message());
-        Assertions.assertEquals(SAVE_STEP_1, response.botState());
+        Assertions.assertEquals(State.SAVE_STEP_1, response.botState());
         Mockito.verify(userStateCache).addParam(12345L, "8");
     }
 
@@ -103,15 +102,15 @@ class NonCommandHandlerTest {
     @Test
     void testGetDescriptionWhenSave() {
         String[] splitCommand = {"/save", "pass", "desc"};
-        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(SAVE_STEP_2);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SAVE_STEP_2);
         Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("pass"));
         Mockito.when(saveHandler.handle(splitCommand, 12345L))
-                .thenReturn(new Response("pass saved", NONE));
+                .thenReturn(new Response("pass saved", State.NONE));
 
-        Response response = nonCommandHandler.getDescription("desc", 12345L, NONE, null);
+        Response response = nonCommandHandler.getDescription("desc", 12345L, State.NONE, null);
 
         Assertions.assertEquals("pass saved", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -120,15 +119,15 @@ class NonCommandHandlerTest {
     @Test
     void testGetDescriptionWhenEdit() {
         String[] splitCommand = {"/edit", "1", "12", "3", "desc"};
-        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(EDIT_STEP_4);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.EDIT_STEP_4);
         Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("1", "12", "3"));
         Mockito.when(editHandler.handle(splitCommand, 12345L))
-                .thenReturn(new Response("pass updated", NONE));
+                .thenReturn(new Response("pass updated", State.NONE));
 
-        Response response = nonCommandHandler.getDescription("desc", 12345L, NONE, null);
+        Response response = nonCommandHandler.getDescription("desc", 12345L, State.NONE, null);
 
         Assertions.assertEquals("pass updated", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -136,10 +135,10 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetPassword() {
-        Response response = nonCommandHandler.getPassword("pass", 12345L, SAVE_STEP_2);
+        Response response = nonCommandHandler.getPassword("pass", 12345L, State.SAVE_STEP_2);
 
         Assertions.assertEquals("Введите описание пароля", response.message());
-        Assertions.assertEquals(SAVE_STEP_2, response.botState());
+        Assertions.assertEquals(State.SAVE_STEP_2, response.botState());
         Mockito.verify(userStateCache).addParam(12345L, "pass");
     }
 
@@ -148,13 +147,13 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetIndexPasswordWhenEdit() {
-        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(EDIT_STEP_1);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.EDIT_STEP_1);
         Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
 
         Response response = nonCommandHandler.getIndexPassword("1", 12345L);
 
         Assertions.assertEquals("Введите длину пароля", response.message());
-        Assertions.assertEquals(EDIT_STEP_2, response.botState());
+        Assertions.assertEquals(State.EDIT_STEP_2, response.botState());
     }
 
     /**
@@ -162,17 +161,17 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetIndexPasswordWhenDelete() {
-        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(DELETE_STEP_1);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.DELETE_STEP_1);
         Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
 
         String[] splitCommand = {"/del", "1"};
         Mockito.when(deleteHandler.handle(splitCommand, 12345L))
-                .thenReturn(new Response("pass deleted", NONE));
+                .thenReturn(new Response("pass deleted", State.NONE));
 
         Response response = nonCommandHandler.getIndexPassword("1", 12345L);
 
         Assertions.assertEquals("pass deleted", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -181,13 +180,13 @@ class NonCommandHandlerTest {
     @Test
     void testGetSortType() {
         String[] splitCommand = {"Дате"};
-        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(SORT_STEP_1);
-        Mockito.when(sortHandler.handle(splitCommand, 12345L)).thenReturn(new Response("sorted", NONE));
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SORT_STEP_1);
+        Mockito.when(sortHandler.handle(splitCommand, 12345L)).thenReturn(new Response("sorted", State.NONE));
 
         Response response = nonCommandHandler.getSortType("Дате", 12345L);
 
         Assertions.assertEquals("sorted", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -196,12 +195,12 @@ class NonCommandHandlerTest {
     @Test
     void testGetSearchRequest() {
         String[] splitCommand = {"/find", "query"};
-        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(FIND_STEP_1);
-        Mockito.when(findHandler.handle(splitCommand, 12345L)).thenReturn(new Response("found", NONE));
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.FIND_STEP_1);
+        Mockito.when(findHandler.handle(splitCommand, 12345L)).thenReturn(new Response("found", State.NONE));
 
         Response response = nonCommandHandler.getSearchRequest("query", 12345L);
 
         Assertions.assertEquals("found", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
     }
 }

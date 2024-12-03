@@ -10,6 +10,7 @@ import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.exception.PasswordNotFoundException;
+import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
@@ -17,9 +18,6 @@ import ru.naumen.service.ValidationService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-import static ru.naumen.model.State.EDIT_STEP_1;
-import static ru.naumen.model.State.NONE;
 
 /**
  * Класс модульных тестов для EditHandler
@@ -67,7 +65,7 @@ class EditHandlerTest {
         Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Обновлён пароль для newd: npass", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(passwordService).updatePassword("uuid", "newd", "npass");
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
@@ -93,7 +91,7 @@ class EditHandlerTest {
         Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Обновлён пароль для d: npass", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(passwordService).updatePassword("uuid", "d", "npass");
     }
 
@@ -109,7 +107,7 @@ class EditHandlerTest {
         Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Не найден пароль с id 5", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(passwordService, Mockito.never())
                 .updatePassword(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }
@@ -120,13 +118,13 @@ class EditHandlerTest {
     @Test
     void testUpdatePassword_WithoutParams() {
         String[] command = {"Изменить"};
-        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
         Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
 
         Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Введите индекс пароля", response.message());
-        Assertions.assertEquals(EDIT_STEP_1, response.botState());
+        Assertions.assertEquals(State.EDIT_STEP_1, response.botState());
     }
 
     /**
@@ -144,7 +142,7 @@ class EditHandlerTest {
         Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(passwordService, Mockito.never())
                 .updatePassword(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }

@@ -7,12 +7,12 @@ import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.exception.CommandNotFoundException;
 import ru.naumen.handler.*;
+import ru.naumen.model.State;
 
 import java.util.Map;
 
 import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_DESCRIPTION;
-import static ru.naumen.model.State.*;
 
 /**
  * Класс для работы с командами бота
@@ -88,20 +88,20 @@ public class CommandService {
      */
     private Response performNotCommandMessage(String[] splitCommand, long userId) {
         if (splitCommand.length > 1) {
-            return new Response(INCORRECT_COMMAND_RESPONSE, NONE);
+            return new Response(INCORRECT_COMMAND_RESPONSE, State.NONE);
         }
         final String command = splitCommand[0];
         return switch (userStateCache.getUserState(userId)) {
-            case GENERATION_STEP_1 -> nonCommandHandler.getPasswordLength(command, userId, GENERATION_STEP_2);
-            case GENERATION_STEP_2 -> nonCommandHandler.getComplexity(command, userId, NONE, null);
-            case SAVE_STEP_1 -> nonCommandHandler.getPassword(command, userId, SAVE_STEP_2);
-            case SAVE_STEP_2, EDIT_STEP_4 -> nonCommandHandler.getDescription(command, userId, NONE, null);
+            case GENERATION_STEP_1 -> nonCommandHandler.getPasswordLength(command, userId, State.GENERATION_STEP_2);
+            case GENERATION_STEP_2 -> nonCommandHandler.getComplexity(command, userId, State.NONE, null);
+            case SAVE_STEP_1 -> nonCommandHandler.getPassword(command, userId, State.SAVE_STEP_2);
+            case SAVE_STEP_2, EDIT_STEP_4 -> nonCommandHandler.getDescription(command, userId, State.NONE, null);
             case EDIT_STEP_1, DELETE_STEP_1 -> nonCommandHandler.getIndexPassword(command, userId);
-            case EDIT_STEP_2 -> nonCommandHandler.getPasswordLength(command, userId, EDIT_STEP_3);
-            case EDIT_STEP_3 -> nonCommandHandler.getComplexity(command, userId, EDIT_STEP_4, ENTER_PASSWORD_DESCRIPTION);
+            case EDIT_STEP_2 -> nonCommandHandler.getPasswordLength(command, userId, State.EDIT_STEP_3);
+            case EDIT_STEP_3 -> nonCommandHandler.getComplexity(command, userId, State.EDIT_STEP_4, ENTER_PASSWORD_DESCRIPTION);
             case SORT_STEP_1 -> nonCommandHandler.getSortType(command, userId);
             case FIND_STEP_1 -> nonCommandHandler.getSearchRequest(command, userId);
-            default -> new Response(INCORRECT_COMMAND_RESPONSE, NONE);
+            default -> new Response(INCORRECT_COMMAND_RESPONSE, State.NONE);
         };
     }
 }
