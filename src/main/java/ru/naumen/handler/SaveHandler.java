@@ -4,10 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
 import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.State;
+import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.PasswordService;
 
 import static ru.naumen.bot.constants.Errors.ENCRYPT_ERROR;
@@ -21,7 +21,6 @@ import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD;
  */
 @Component("/save")
 public class SaveHandler implements CommandHandler {
-
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final Logger log = LoggerFactory.getLogger(SaveHandler.class);
@@ -41,7 +40,7 @@ public class SaveHandler implements CommandHandler {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.SAVE_STEP_1);
 
-            return new Response(ENTER_PASSWORD, State.SAVE_STEP_1);
+            return new Response(ENTER_PASSWORD);
         }
 
         try {
@@ -54,18 +53,18 @@ public class SaveHandler implements CommandHandler {
             }
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(PASSWORD_SAVED_MESSAGE, State.NONE);
+            return new Response(PASSWORD_SAVED_MESSAGE);
         } catch (UserNotFoundException e){
             log.error("Ошибка при сохранении пароля - не найден пользователь", e);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(USER_NOT_FOUND, State.NONE);
+            return new Response(USER_NOT_FOUND);
         }
         catch (EncryptException e){
             log.error("Ошибка шифрования при сохранении пароля", e);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(ENCRYPT_ERROR, State.NONE);
+            return new Response(ENCRYPT_ERROR);
         }
     }
 }

@@ -8,9 +8,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.State;
+import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.PasswordService;
 
 import java.util.ArrayList;
@@ -49,7 +49,6 @@ class SaveHandlerTest {
         Response response = saveHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Введите пароль", response.message());
-        Assertions.assertEquals(State.SAVE_STEP_1, response.botState());
     }
 
     /**
@@ -64,7 +63,6 @@ class SaveHandlerTest {
 
         Mockito.verify(passwordService).createUserPassword("password", "Неизвестно", 12345L);
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
-        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
@@ -80,7 +78,6 @@ class SaveHandlerTest {
 
         Mockito.verify(passwordService).createUserPassword("pass", "desc", 12345L);
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
-        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 }

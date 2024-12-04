@@ -8,12 +8,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
+import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.PasswordService;
-import ru.naumen.service.ValidationService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,9 +28,6 @@ class DeleteHandlerTest {
 
     @Mock
     private UserStateCache userStateCache;
-
-    @Mock
-    private ValidationService validationService;
 
     @InjectMocks
     private DeleteHandler deleteHandler;
@@ -56,14 +52,12 @@ class DeleteHandlerTest {
                 new UserPassword("uuid", "desc", "pass", user, LocalDate.now()),
                 new UserPassword("uuid2", "desc", "pass", user, LocalDate.now()));
 
-        Mockito.when(validationService.areNumbersDeleteCommandParams(command)).thenReturn(true);
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
-        Mockito.when(validationService.isValidPasswordIndex(12345L, 2)).thenReturn(true);
+        Mockito.when(passwordService.isValidPasswordIndex(2, 12345L)).thenReturn(true);
 
         Response response = deleteHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Удалён пароль для сайта desc", response.message());
-        Assertions.assertEquals(State.NONE, response.botState());
 
         Mockito.verify(passwordService).deletePassword("uuid2");
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
@@ -78,14 +72,11 @@ class DeleteHandlerTest {
         User user = new User(12345L, new ArrayList<>());
         List<UserPassword> userPasswords = List.of(new UserPassword("desc", "pass", user));
 
-        Mockito.when(validationService.areNumbersDeleteCommandParams(command)).thenReturn(true);
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
-        Mockito.when(validationService.isValidPasswordIndex(12345L, 5)).thenReturn(false);
 
         Response response = deleteHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Не найден пароль с id 5", response.message());
-        Assertions.assertEquals(State.NONE, response.botState());
 
         Mockito.verify(passwordService, Mockito.never()).deletePassword(Mockito.anyString());
     }
@@ -102,6 +93,5 @@ class DeleteHandlerTest {
         Response response = deleteHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Введите индекс пароля", response.message());
-        Assertions.assertEquals(State.DELETE_STEP_1, response.botState());
     }
 }

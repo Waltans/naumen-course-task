@@ -2,8 +2,8 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
+import ru.naumen.repository.UserStateCache;
 
 import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
 import static ru.naumen.bot.constants.Information.WELCOME_MESSAGE;
@@ -23,12 +23,12 @@ public class HelpHandler implements CommandHandler {
     @Override
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand == null || splitCommand.length == 0) {
-            return new Response(INCORRECT_COMMAND_RESPONSE, State.NONE);
+            return new Response(INCORRECT_COMMAND_RESPONSE);
         }
 
         userStateCache.setState(userId, State.NONE);
         userStateCache.clearParamsForUser(userId);
 
-        return new Response(WELCOME_MESSAGE, State.NONE);
+        return new Response(WELCOME_MESSAGE);
     }
 }

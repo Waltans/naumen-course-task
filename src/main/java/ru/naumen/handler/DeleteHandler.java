@@ -2,11 +2,10 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
+import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.PasswordService;
-import ru.naumen.service.ValidationService;
 
 import java.util.List;
 
@@ -20,15 +19,12 @@ import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_INDEX;
  */
 @Component("/del")
 public class DeleteHandler implements CommandHandler {
-
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
-    private final ValidationService validationService;
 
-    public DeleteHandler(PasswordService passwordService, UserStateCache userStateCache, ValidationService validationService) {
+    public DeleteHandler(PasswordService passwordService, UserStateCache userStateCache) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
-        this.validationService = validationService;
     }
 
     @Override
@@ -36,15 +32,15 @@ public class DeleteHandler implements CommandHandler {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.DELETE_STEP_1);
 
-            return new Response(ENTER_PASSWORD_INDEX, State.DELETE_STEP_1);
+            return new Response(ENTER_PASSWORD_INDEX);
         }
 
         int passwordIndex = Integer.parseInt(splitCommand[1]);
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        if (!validationService.isValidPasswordIndex(userId, passwordIndex)){
+        if (!passwordService.isValidPasswordIndex(passwordIndex, userId)) {
             userStateCache.setState(userId, State.NONE);
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), State.NONE);
+            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex));
         }
 
         // Пользователь получает список начиная с 1
@@ -56,6 +52,6 @@ public class DeleteHandler implements CommandHandler {
         userStateCache.setState(userId, State.NONE);
         userStateCache.clearParamsForUser(userId);
 
-        return new Response(String.format(PASSWORD_DELETED_MESSAGE, description), State.NONE);
+        return new Response(String.format(PASSWORD_DELETED_MESSAGE, description));
     }
 }

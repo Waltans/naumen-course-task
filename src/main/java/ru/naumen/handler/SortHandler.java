@@ -2,10 +2,10 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
 import ru.naumen.exception.IncorrectSortTypeException;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
+import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.SortType;
@@ -53,7 +53,7 @@ public class SortHandler implements CommandHandler {
 
                 if (sortedPasswords.isEmpty()) {
                     userStateCache.setState(userId, State.NONE);
-                    return new Response(NO_PASSWORDS_MESSAGE, State.NONE);
+                    return new Response(NO_PASSWORDS_MESSAGE);
                 }
 
                 StringBuilder stringBuilder = new StringBuilder();
@@ -66,15 +66,15 @@ public class SortHandler implements CommandHandler {
                 userStateCache.setState(userId, State.NONE);
                 userStateCache.clearParamsForUser(userId);
 
-                return new Response(stringBuilder.toString(), State.NONE);
+                return new Response(stringBuilder.toString());
             } catch (IncorrectSortTypeException e) {
                 userStateCache.setState(userId, State.IN_LIST);
-                return new Response(INCORRECT_COMMAND_RESPONSE, State.IN_LIST);
+                return new Response(INCORRECT_COMMAND_RESPONSE);
             }
 
         } else {
             userStateCache.setState(userId, State.SORT_STEP_1);
-            return new Response(CHOOSE_SORT_TYPE, State.SORT_STEP_1);
+            return new Response(CHOOSE_SORT_TYPE);
         }
     }
 }

@@ -8,9 +8,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
-import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
+import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 
@@ -52,7 +51,6 @@ class ListHandlerTest {
         Response response = listHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Нет ни одного пароля. Справка: /help", response.message());
-        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -74,6 +72,5 @@ class ListHandlerTest {
                 String.format("\n%s) Сайт: %s, Пароль: %s", 2, "d2", "dpass2");
 
         Assertions.assertEquals(expectedMessage, response.message());
-        Assertions.assertEquals(State.IN_LIST, response.botState());
     }
 }

@@ -4,10 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.naumen.exception.EncryptException;
-import ru.naumen.exception.IncorrectSortTypeException;
-import ru.naumen.exception.PasswordNotFoundException;
-import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.exception.*;
+import ru.naumen.handler.validators.PasswordValidator;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
 import ru.naumen.repository.UserPasswordRepository;
@@ -71,7 +69,7 @@ public class PasswordService {
     /**
      * Ищет пароли у конкретного пользователя
      *
-     * @param userId ID пользователя
+     * @param userId        ID пользователя
      * @param searchRequest поисковый запрос пароля (частичное описание без учёта регистра)
      */
     @Transactional(readOnly = true)
@@ -94,12 +92,9 @@ public class PasswordService {
             case BY_DESCRIPTION -> {
                 return userPasswordRepository.findByUserIdOrderByDescriptionAsc(userId);
             }
-            default -> {
-                throw new IncorrectSortTypeException("Некорректный тип сортировки!");
-            }
+            default -> throw new IncorrectSortTypeException("Некорректный тип сортировки!");
         }
     }
-
 
     /**
      * Удаляет пароль
@@ -152,6 +147,7 @@ public class PasswordService {
 
     /**
      * Подсчитывает количество паролей пользователя
+     *
      * @param userId id пользователя
      */
     public int countPasswordsByUserId(long userId) {
@@ -160,17 +156,17 @@ public class PasswordService {
 
     /**
      * Генерирует пароль по заданным параметрам
+     *
      * @param complexity сложность
-     * @param length длина
+     * @param length     длина
      * @return пароль
      */
-    public String generatePassword(int length, String complexity) {
-        int complexityValue;
-        switch (complexity) {
-            case "1", COMPLEXITY_EASY -> complexityValue = 1;
-            case "2", COMPLEXITY_MEDIUM -> complexityValue = 2;
-            case "3", COMPLEXITY_HARD -> complexityValue = 3;
-            default -> throw new IllegalArgumentException("Некорректно задана сложность!");
+    public String generatePassword(int length, String complexity) throws PasswordLengthException, ComplexityFormatException {
+        PasswordValidator passwordValidator = new PasswordValidator();
+        int complexityValue = parseComplexity(complexity, passwordValidator);
+
+        if (!passwordValidator.isValidLength(length)) {
+            throw new PasswordLengthException("Password length should be between 8 and 128");
         }
 
         StringBuilder password = new StringBuilder(length);
@@ -204,9 +200,46 @@ public class PasswordService {
 
     /**
      * Получает случайный символ из набора
+     *
      * @param characters набор символов
      */
     private char getRandomCharacter(String characters) {
         return characters.charAt(random.nextInt(characters.length()));
+    }
+
+    /**
+     * Проверяет валидность индекса пароля
+     *
+     * @param passwordIndex - индекс
+     * @param userId        - ID пользователя
+     * @return true, если индекс валиден
+     */
+    public boolean isValidPasswordIndex(int passwordIndex, long userId) {
+        int countPasswords = getUserPasswords(userId).size();
+
+        return (passwordIndex <= countPasswords) && (passwordIndex >= 1);
+    }
+
+    /**
+     * Метод парсит сложность в число
+     *
+     * @param complexity        - сложность в виде строки
+     * @param passwordValidator - валидатор
+     * @return - число обозначающее сложность или ошибку
+     * @throws ComplexityFormatException - ошибка, что число не может быть конвертировано
+     */
+    private int parseComplexity(String complexity, PasswordValidator passwordValidator)
+            throws ComplexityFormatException {
+
+        if (!passwordValidator.isValidComplexity(complexity)) {
+            throw new ComplexityFormatException("Complexity should be between 1 and 3");
+        }
+
+        return switch (complexity) {
+            case "1", COMPLEXITY_EASY -> 1;
+            case "2", COMPLEXITY_MEDIUM -> 2;
+            case "3", COMPLEXITY_HARD -> 3;
+            default -> throw new IllegalArgumentException("Некорректно задана сложность!");
+        };
     }
 }

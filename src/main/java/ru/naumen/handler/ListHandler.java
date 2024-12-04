@@ -2,9 +2,9 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
+import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 
@@ -33,7 +33,7 @@ public class ListHandler implements CommandHandler {
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
         if (userPasswords.isEmpty()) {
-            return new Response(NO_PASSWORDS_MESSAGE, State.NONE);
+            return new Response(NO_PASSWORDS_MESSAGE);
         }
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -45,6 +45,6 @@ public class ListHandler implements CommandHandler {
 
         userStateCache.setState(userId, State.IN_LIST);
 
-        return new Response(stringBuilder.toString(), State.IN_LIST);
+        return new Response(stringBuilder.toString());
     }
 }

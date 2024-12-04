@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.naumen.model.State;
+import ru.naumen.repository.UserStateCache;
 
 import java.util.List;
 

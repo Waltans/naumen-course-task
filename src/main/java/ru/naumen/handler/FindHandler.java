@@ -2,9 +2,9 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
+import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 
@@ -34,7 +34,7 @@ public class FindHandler implements CommandHandler {
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.FIND_STEP_1);
-            return new Response(ENTER_SEARCH_REQUEST, State.FIND_STEP_1);
+            return new Response(ENTER_SEARCH_REQUEST);
         }
 
         String searchRequest = splitCommand[1];
@@ -43,7 +43,7 @@ public class FindHandler implements CommandHandler {
         if (foundPasswords.isEmpty()) {
             userStateCache.setState(userId, State.NONE);
 
-            return new Response(NO_PASSWORDS_FOUND, State.NONE);
+            return new Response(NO_PASSWORDS_FOUND);
         }
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -56,6 +56,6 @@ public class FindHandler implements CommandHandler {
         userStateCache.setState(userId, State.NONE);
         userStateCache.clearParamsForUser(userId);
 
-        return new Response(stringBuilder.toString(), State.NONE);
+        return new Response(stringBuilder.toString());
     }
 }

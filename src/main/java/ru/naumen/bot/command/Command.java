@@ -1,6 +1,9 @@
 package ru.naumen.bot.command;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Команды, их подпись на клавиатуре и количество допустимых параметров для каждой команды
@@ -66,18 +69,8 @@ public enum Command {
      */
     private final List<Integer> validParamCounts;
 
-    /**
-     * Конструктор для команды, ее подписи на клавиатуре и количества параметров
-     *
-     * @param command     Текст команды
-     * @param keyboardLabel Описание команды
-     * @param validParamCounts допустимое количество парметров
-     */
-    Command(String command, String keyboardLabel, List<Integer> validParamCounts) {
-        this.command = command;
-        this.keyboardLabel = keyboardLabel;
-        this.validParamCounts = validParamCounts;
-    }
+    //Мы же не хотим чтобы это инициализировать много раз
+    private static final Map<String, Command> COMMAND_MAP = new HashMap<>();
 
     /**
      * Получить команду
@@ -101,6 +94,36 @@ public enum Command {
         return validParamCounts;
     }
 
+    static {
+        for (Command cmd : Command.values()) {
+            COMMAND_MAP.put(cmd.command, cmd);
+            COMMAND_MAP.put(cmd.keyboardLabel, cmd);
+        }
+    }
+
+    /**
+     * Конструктор для команды, ее подписи на клавиатуре и количества параметров
+     *
+     * @param command          Текст команды
+     * @param keyboardLabel    Описание команды
+     * @param validParamCounts допустимое количество парметров
+     */
+    Command(String command, String keyboardLabel, List<Integer> validParamCounts) {
+        this.command = command;
+        this.keyboardLabel = keyboardLabel;
+        this.validParamCounts = validParamCounts;
+    }
+
+    /**
+     * Получение команды по введенному слову
+     *
+     * @param command - введенная команда
+     * @return - команда, если она существует
+     */
+    public static Optional<Command> getCommand(String command) {
+        return Optional.ofNullable(COMMAND_MAP.get(command));
+    }
+
     /**
      * Проверяет, соответствует ли введённая строка команде.
      * Сравнивает как команду, так и подпись на клавиатуре.
@@ -108,7 +131,7 @@ public enum Command {
      * @param input ввод
      * @return true, если строка соответствует команде или подписи
      */
-    boolean isCommandMatches(String input) {
+    public boolean isCommandMatches(String input) {
         return this.command.equalsIgnoreCase(input)
                 || this.keyboardLabel.equalsIgnoreCase(input);
     }

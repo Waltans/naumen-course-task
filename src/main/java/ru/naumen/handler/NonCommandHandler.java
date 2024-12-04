@@ -1,11 +1,12 @@
 package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
-import ru.naumen.bot.command.Command;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.bot.command.Command;
+import ru.naumen.handler.validators.PasswordValidator;
 import ru.naumen.model.State;
-import ru.naumen.service.*;
+import ru.naumen.repository.UserStateCache;
+import ru.naumen.service.PasswordService;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ import static ru.naumen.bot.constants.Requests.*;
 @Component
 public class NonCommandHandler {
     private final UserStateCache userStateCache;
-    private final ValidationService validationService;
+    private final PasswordService passwordService;
 
     /**
      * Хэндлеры команд
@@ -28,11 +29,10 @@ public class NonCommandHandler {
     private final Map<String, CommandHandler> commandHandlers;
 
 
-    public NonCommandHandler(UserStateCache userStateCache,
-                             ValidationService validationService,
+    public NonCommandHandler(UserStateCache userStateCache, PasswordService passwordService,
                              Map<String, CommandHandler> commandHandlers) {
         this.userStateCache = userStateCache;
-        this.validationService = validationService;
+        this.passwordService = passwordService;
         this.commandHandlers = commandHandlers;
     }
 
@@ -45,9 +45,12 @@ public class NonCommandHandler {
      * @param response   - ответ в случае завершения
      * @return ответ и состояние пользователя
      */
-    public Response getComplexity(String complexity, long userId, State nextState, String response) {
+    public Response getComplexity(String complexity, long userId,
+                                  State nextState, String response) {
         State currentState = userStateCache.getUserState(userId);
-        if (validationService.isValidComplexity(complexity)) {
+        PasswordValidator passwordValidator = new PasswordValidator();
+
+        if (passwordValidator.isValidComplexity(complexity)) {
             userStateCache.addParam(userId, complexity);
             List<String> params = userStateCache.getUserParams(userId);
 
@@ -59,10 +62,11 @@ public class NonCommandHandler {
                 return handler.handle(splitCommand, userId);
             }
 
-            return new Response(response, nextState);
+            return new Response(response);
         } else {
             userStateCache.setState(userId, currentState);
-            return new Response(COMPLEXITY_ERROR_MESSAGE, currentState);
+
+            return new Response(COMPLEXITY_ERROR_MESSAGE);
         }
     }
 
@@ -76,14 +80,16 @@ public class NonCommandHandler {
      */
     public Response getPasswordLength(String length, long userId, State nextState) {
         State currentState = userStateCache.getUserState(userId);
-        if (validationService.isValidLength(Integer.parseInt(length))) {
+        PasswordValidator passwordValidator = new PasswordValidator();
+
+        if (passwordValidator.isValidLength(Integer.parseInt(length))) {
             userStateCache.setState(userId, nextState);
             userStateCache.addParam(userId, length);
 
-            return new Response(ENTER_PASSWORD_COMPLEXITY, nextState);
+            return new Response(ENTER_PASSWORD_COMPLEXITY);
         } else {
             userStateCache.setState(userId, currentState);
-            return new Response(LENGTH_ERROR_MESSAGE, currentState);
+            return new Response(LENGTH_ERROR_MESSAGE);
         }
     }
 
@@ -117,7 +123,7 @@ public class NonCommandHandler {
             return handler.handle(splitCommand, userId);
         }
 
-        return new Response(response, currentState);
+        return new Response(response);
     }
 
     /**
@@ -132,7 +138,7 @@ public class NonCommandHandler {
         userStateCache.addParam(userId, password);
         userStateCache.setState(userId, nextState);
 
-        return new Response(ENTER_PASSWORD_DESCRIPTION, nextState);
+        return new Response(ENTER_PASSWORD_DESCRIPTION);
     }
 
     /**
@@ -146,16 +152,17 @@ public class NonCommandHandler {
         userStateCache.addParam(userId, index);
         State currentState = userStateCache.getUserState(userId);
 
-        if (!validationService.isValidPasswordIndex(userId, Integer.parseInt(index))) {
+        if (!passwordService.isValidPasswordIndex(Integer.parseInt(index), userId)) {
             userStateCache.setState(userId, State.NONE);
             userStateCache.clearParamsForUser(userId);
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index), State.NONE);
+
+            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index));
         }
 
         if (currentState.equals(State.EDIT_STEP_1)) {
             userStateCache.setState(userId, State.EDIT_STEP_2);
 
-            return new Response(ENTER_PASSWORD_LENGTH, State.EDIT_STEP_2);
+            return new Response(ENTER_PASSWORD_LENGTH);
         } else if (currentState.equals(State.DELETE_STEP_1)) {
             String[] splitCommand = new String[]{Command.DELETE.getCommand(), index};
 
@@ -163,13 +170,14 @@ public class NonCommandHandler {
             return handler.handle(splitCommand, userId);
         }
 
-        return new Response(ENTER_PASSWORD_LENGTH, currentState);
+        return new Response(ENTER_PASSWORD_LENGTH);
     }
 
     /**
      * Получение типа сортировки из команды
+     *
      * @param sortType тип сортировки
-     * @param userId id пользователя
+     * @param userId   id пользователя
      * @return ответ и состояние пользователя
      */
     public Response getSortType(String sortType, Long userId) {
@@ -181,13 +189,14 @@ public class NonCommandHandler {
         }
 
         userStateCache.clearParamsForUser(userId);
-        return new Response(FAILURE, currentState);
+        return new Response(FAILURE);
     }
 
     /**
      * Получение поискового запроса из команды
+     *
      * @param searchRequest поисковый запрос
-     * @param userId id пользователя
+     * @param userId        id пользователя
      * @return ответ и состояние пользователя
      */
     public Response getSearchRequest(String searchRequest, Long userId) {
@@ -199,6 +208,6 @@ public class NonCommandHandler {
         }
 
         userStateCache.clearParamsForUser(userId);
-        return new Response(FAILURE, currentState);
+        return new Response(FAILURE);
     }
 }
