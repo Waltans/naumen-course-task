@@ -2,9 +2,9 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
-import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 
@@ -46,5 +46,10 @@ public class ListHandler implements CommandHandler {
         userStateCache.setState(userId, State.IN_LIST);
 
         return new Response(stringBuilder.toString());
+    }
+
+    @Override
+    public boolean isValid(String[] command) {
+        return true;
     }
 }

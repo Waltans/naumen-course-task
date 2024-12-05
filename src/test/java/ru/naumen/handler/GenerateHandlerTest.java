@@ -8,11 +8,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.ComplexityFormatException;
 import ru.naumen.exception.PasswordLengthException;
 import ru.naumen.handler.validators.PasswordValidator;
 import ru.naumen.model.State;
-import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.PasswordService;
 
 import java.util.ArrayList;

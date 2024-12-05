@@ -3,15 +3,15 @@ package ru.naumen.handler;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.command.Command;
-import ru.naumen.handler.validators.PasswordValidator;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
-import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.PasswordService;
 
 import java.util.List;
 import java.util.Map;
 
-import static ru.naumen.bot.constants.Errors.*;
+import static ru.naumen.bot.constants.Errors.FAILURE;
+import static ru.naumen.bot.constants.Errors.PASSWORD_NOT_FOUND_MESSAGE;
 import static ru.naumen.bot.constants.Requests.*;
 
 /**
@@ -47,27 +47,18 @@ public class NonCommandHandler {
      */
     public Response getComplexity(String complexity, long userId,
                                   State nextState, String response) {
-        State currentState = userStateCache.getUserState(userId);
-        PasswordValidator passwordValidator = new PasswordValidator();
+        userStateCache.addParam(userId, complexity);
+        List<String> params = userStateCache.getUserParams(userId);
 
-        if (passwordValidator.isValidComplexity(complexity)) {
-            userStateCache.addParam(userId, complexity);
-            List<String> params = userStateCache.getUserParams(userId);
+        userStateCache.setState(userId, nextState);
+        if (nextState == State.NONE) {
+            String[] splitCommand = {Command.GENERATE.getCommand(), params.get(0), complexity};
 
-            userStateCache.setState(userId, nextState);
-            if (nextState == State.NONE) {
-                String[] splitCommand = {Command.GENERATE.getCommand(), params.get(0), complexity};
-
-                CommandHandler handler = commandHandlers.get(Command.GENERATE.getCommand());
-                return handler.handle(splitCommand, userId);
-            }
-
-            return new Response(response);
-        } else {
-            userStateCache.setState(userId, currentState);
-
-            return new Response(COMPLEXITY_ERROR_MESSAGE);
+            CommandHandler handler = commandHandlers.get(Command.GENERATE.getCommand());
+            return handler.handle(splitCommand, userId);
         }
+
+        return new Response(response);
     }
 
     /**
@@ -79,18 +70,10 @@ public class NonCommandHandler {
      * @return ответ и состояние пользователя
      */
     public Response getPasswordLength(String length, long userId, State nextState) {
-        State currentState = userStateCache.getUserState(userId);
-        PasswordValidator passwordValidator = new PasswordValidator();
+        userStateCache.setState(userId, nextState);
+        userStateCache.addParam(userId, length);
 
-        if (passwordValidator.isValidLength(Integer.parseInt(length))) {
-            userStateCache.setState(userId, nextState);
-            userStateCache.addParam(userId, length);
-
-            return new Response(ENTER_PASSWORD_COMPLEXITY);
-        } else {
-            userStateCache.setState(userId, currentState);
-            return new Response(LENGTH_ERROR_MESSAGE);
-        }
+        return new Response(ENTER_PASSWORD_COMPLEXITY);
     }
 
     /**

@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.naumen.bot.command.Command;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
-import ru.naumen.repository.UserStateCache;
 
 import java.util.ArrayList;
 import java.util.List;

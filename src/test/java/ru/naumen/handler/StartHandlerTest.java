@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.repository.UserStateCache;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.service.UserService;
 
 /**

@@ -2,8 +2,8 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
-import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.UserService;
 
 import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
@@ -34,6 +34,11 @@ public class StartHandler implements CommandHandler {
         userStateCache.clearParamsForUser(userId);
 
         return new Response(WELCOME_MESSAGE);
+    }
+
+    @Override
+    public boolean isValid(String[] command) {
+        return true;
     }
 }
 

@@ -1,4 +1,4 @@
-package ru.naumen.repository;
+package ru.naumen.cache;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.model.State;

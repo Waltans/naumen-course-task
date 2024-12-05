@@ -2,10 +2,10 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.IncorrectSortTypeException;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
-import ru.naumen.repository.UserStateCache;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.SortType;
@@ -76,5 +76,10 @@ public class SortHandler implements CommandHandler {
             userStateCache.setState(userId, State.SORT_STEP_1);
             return new Response(CHOOSE_SORT_TYPE);
         }
+    }
+
+    @Override
+    public boolean isValid(String[] command) {
+        return true;
     }
 }

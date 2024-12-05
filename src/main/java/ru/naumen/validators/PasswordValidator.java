@@ -6,8 +6,7 @@ import static ru.naumen.bot.constants.Parameters.*;
  * Класс для унификации валидации пароля
  */
 public class PasswordValidator {
-    private static final int MINIMUM_PASSWORD_LENGTH = 8;
-    private static final int MAXIMUM_PASSWORD_LENGTH = 128;
+
 
     /**
      * Проверяем корректность введённой длины пароля

@@ -1,9 +1,6 @@
 package ru.naumen.bot.command;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Команды, их подпись на клавиатуре и количество допустимых параметров для каждой команды
@@ -69,16 +66,12 @@ public enum Command {
      */
     private final List<Integer> validParamCounts;
 
-    //Мы же не хотим чтобы это инициализировать много раз
-    private static final Map<String, Command> COMMAND_MAP = new HashMap<>();
-
     /**
      * Получить команду
      */
     public String getCommand() {
         return command;
     }
-
 
     /**
      * Получить подпись команды на клавиатуре
@@ -94,13 +87,6 @@ public enum Command {
         return validParamCounts;
     }
 
-    static {
-        for (Command cmd : Command.values()) {
-            COMMAND_MAP.put(cmd.command, cmd);
-            COMMAND_MAP.put(cmd.keyboardLabel, cmd);
-        }
-    }
-
     /**
      * Конструктор для команды, ее подписи на клавиатуре и количества параметров
      *
@@ -112,27 +98,5 @@ public enum Command {
         this.command = command;
         this.keyboardLabel = keyboardLabel;
         this.validParamCounts = validParamCounts;
-    }
-
-    /**
-     * Получение команды по введенному слову
-     *
-     * @param command - введенная команда
-     * @return - команда, если она существует
-     */
-    public static Optional<Command> getCommand(String command) {
-        return Optional.ofNullable(COMMAND_MAP.get(command));
-    }
-
-    /**
-     * Проверяет, соответствует ли введённая строка команде.
-     * Сравнивает как команду, так и подпись на клавиатуре.
-     *
-     * @param input ввод
-     * @return true, если строка соответствует команде или подписи
-     */
-    public boolean isCommandMatches(String input) {
-        return this.command.equalsIgnoreCase(input)
-                || this.keyboardLabel.equalsIgnoreCase(input);
     }
 }
