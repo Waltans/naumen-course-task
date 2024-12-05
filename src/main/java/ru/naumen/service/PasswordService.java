@@ -29,6 +29,15 @@ public class PasswordService {
     private static final String DIGITS = "0123456789";
     private static final String SPECIAL_CHARACTERS = "!@#$%^&*()-_=+<>";
 
+    /**
+     * Минимальная длина пароля
+     */
+    private static final int MINIMUM_PASSWORD_LENGTH = 8;
+
+    /**
+     * Максимальная длина пароля
+     */
+    private static final int MAXIMUM_PASSWORD_LENGTH = 128;
 
     public PasswordService(EncodeService encodeService, UserService userService, UserPasswordRepository userPasswordRepository) {
         this.encodeService = encodeService;
@@ -128,7 +137,7 @@ public class PasswordService {
      * Ищет пароль по UUID
      *
      * @param uuid uuid
-     * @return найденный пароль
+     * @throws PasswordNotFoundException если пароль не найден
      */
     public UserPassword findPasswordByUuid(String uuid) throws PasswordNotFoundException {
         UserPassword password = userPasswordRepository.findByUuid(uuid);
@@ -139,12 +148,17 @@ public class PasswordService {
     }
 
     /**
-     * Подсчитывает количество паролей пользователя
+     * Проверяет валидность индекса пароля
      *
-     * @param userId id пользователя
+     * @param passwordIndex - индекс
+     * @param userId        - ID пользователя
+     * @return true, если индекс валиден
      */
-    public int countPasswordsByUserId(long userId) {
-        return userPasswordRepository.countByUserId(userId);
+    public boolean isValidPasswordIndex(int passwordIndex, long userId) {
+        int countPasswords = userPasswordRepository.countByUserId(userId);
+
+        return passwordIndex <= countPasswords
+                && passwordIndex >= 1;
     }
 
     /**
@@ -200,24 +214,10 @@ public class PasswordService {
     }
 
     /**
-     * Проверяет валидность индекса пароля
-     *
-     * @param passwordIndex - индекс
-     * @param userId        - ID пользователя
-     * @return true, если индекс валиден
-     */
-    public boolean isValidPasswordIndex(int passwordIndex, long userId) {
-        int countPasswords = getUserPasswords(userId).size();
-
-        return (passwordIndex <= countPasswords) && (passwordIndex >= 1);
-    }
-
-    /**
      * Метод парсит сложность в число
      *
-     * @param complexity        - сложность в виде строки
-     * @param passwordValidator - валидатор
-     * @return - число обозначающее сложность или ошибку
+     * @param complexity - сложность в виде строки
+     * @return - число обозначающее сложность
      * @throws ComplexityFormatException - ошибка, что число не может быть конвертировано
      */
     private int parseComplexity(String complexity)
@@ -242,7 +242,8 @@ public class PasswordService {
      * @return корректна ли длина
      */
     private boolean isValidLength(int length) {
-        return length >= MINIMUM_PASSWORD_LENGTH && length <= MAXIMUM_PASSWORD_LENGTH;
+        return length >= MINIMUM_PASSWORD_LENGTH
+                && length <= MAXIMUM_PASSWORD_LENGTH;
     }
 
     /**

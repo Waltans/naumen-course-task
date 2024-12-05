@@ -11,7 +11,6 @@ import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +50,7 @@ class NonCommandHandlerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
 
         Map<String, CommandHandler> commandHandlers = Map.of(
                 "/edit", editHandler,

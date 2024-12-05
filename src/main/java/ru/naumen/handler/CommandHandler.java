@@ -15,11 +15,4 @@ public interface CommandHandler {
      * @return ответ
      */
     Response handle(String[] splitCommand, long userId);
-
-    /**
-     * Проверяем корректность введенной команды
-     *
-     * @return true, если команда корректна
-     */
-    boolean isValid(String[] command);
 }

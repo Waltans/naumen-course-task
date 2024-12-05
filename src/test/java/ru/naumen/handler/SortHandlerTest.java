@@ -17,7 +17,6 @@ import ru.naumen.service.PasswordService;
 import ru.naumen.service.SortType;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,7 +43,7 @@ class SortHandlerTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
     }
 
     /**
@@ -108,7 +107,7 @@ class SortHandlerTest {
     @Test
     void testSortPasswords_Empty() throws IncorrectSortTypeException {
         String[] command = {"Дате"};
-        List<UserPassword> passwords = new ArrayList<>();
+        List<UserPassword> passwords = List.of();
 
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SORT_STEP_1);
         Mockito.when(passwordService.getUserPasswordsSorted(12345L, SortType.BY_DATE)).thenReturn(passwords);
@@ -129,5 +128,17 @@ class SortHandlerTest {
         Response response = sortHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Отсортировать пароли по:", response.message());
+    }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testSortPasswords_InvalidCommand() {
+        String[] command = {"/sort", "1", "3", "1"};
+
+        Response response = sortHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 }

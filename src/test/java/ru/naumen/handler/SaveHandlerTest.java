@@ -13,7 +13,7 @@ import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Класс модульных тестов для SaveHandler
@@ -44,7 +44,7 @@ class SaveHandlerTest {
     void testSavePassword_WithoutParams() {
         String[] command = {"Сохранить"};
         Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
 
         Response response = saveHandler.handle(command, 12345L);
 
@@ -57,7 +57,7 @@ class SaveHandlerTest {
     @Test
     void testSavePassword_NoDescription() throws UserNotFoundException {
         String[] command = {"/save", "password"};
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
 
         Response response = saveHandler.handle(command, 12345L);
 
@@ -72,12 +72,24 @@ class SaveHandlerTest {
     @Test
     void testSavePassword_WithDescription() throws UserNotFoundException {
         String[] command = {"/save", "pass", "desc"};
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
 
         Response response = saveHandler.handle(command, 12345L);
 
         Mockito.verify(passwordService).createUserPassword("pass", "desc", 12345L);
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
+    }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testSavePassword_InvalidCommand() {
+        String[] command = {"/save", "1", "3", "1"};
+
+        Response response = saveHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 }

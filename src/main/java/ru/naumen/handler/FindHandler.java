@@ -11,10 +11,8 @@ import ru.naumen.service.PasswordService;
 import java.util.List;
 
 import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
-import static ru.naumen.bot.constants.Errors.NO_PASSWORDS_FOUND;
 import static ru.naumen.bot.constants.Information.PASSWORD_LIST_FORMAT;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
-import static ru.naumen.bot.constants.Requests.ENTER_SEARCH_REQUEST;
 
 /**
  * Хэндлер поиска паролей
@@ -24,7 +22,21 @@ public class FindHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final EncodeService encodeService;
-    private final List<Integer> params = List.of(1);
+
+    /**
+     * Сообщение с запросом на ввод поискового запроса
+     */
+    private static final String ENTER_SEARCH_REQUEST = "Введите поисковый запрос";
+
+    /**
+     * Сообщение, когда пароли не найдены
+     */
+    private static final String NO_PASSWORDS_FOUND = "Не найдены пароли по вашему запросу";
+
+    /**
+     * Количество параметров команды
+     */
+    private static final int PARAMS_COUNT = 1;
 
     public FindHandler(PasswordService passwordService, UserStateCache userStateCache, EncodeService encodeService) {
         this.passwordService = passwordService;
@@ -39,7 +51,7 @@ public class FindHandler implements CommandHandler {
             return new Response(ENTER_SEARCH_REQUEST);
         }
 
-        if (!isValid(splitCommand)) {
+        if (!isValidCommand(splitCommand)) {
             return new Response(INCORRECT_COMMAND_RESPONSE);
         }
 
@@ -65,8 +77,13 @@ public class FindHandler implements CommandHandler {
         return new Response(stringBuilder.toString());
     }
 
-    @Override
-    public boolean isValid(String[] command) {
-        return params.contains(command.length - 1);
+    /**
+     * Валидирует команду
+     *
+     * @param splitCommand команда, разделённая по пробелам
+     * @return true, если команда валидна
+     */
+    private boolean isValidCommand(String[] splitCommand) {
+        return (splitCommand.length - COMMAND_WITHOUT_PARAMS_LENGTH) == PARAMS_COUNT;
     }
 }

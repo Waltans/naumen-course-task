@@ -48,8 +48,7 @@ class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     * Обрабатывает полученное сообщение, создаёт нового пользователя,
-     * если он впервые взаимодействует с ботом
+     * Обрабатывает полученное сообщение
      *
      * @param update обновление
      */
@@ -83,7 +82,7 @@ class TelegramBot extends TelegramLongPollingBot {
         replyKeyboardMarkup.setOneTimeKeyboard(true);
 
         replyKeyboardMarkup.setKeyboard(
-                commandService.getKeyboards(Integer.parseInt(id)));
+                commandService.getKeyboards(Long.parseLong(id)));
 
         try {
             execute(tgMessage);

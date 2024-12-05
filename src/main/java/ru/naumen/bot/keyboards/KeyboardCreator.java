@@ -15,14 +15,15 @@ import static ru.naumen.bot.constants.Parameters.*;
  */
 @Component
 public class KeyboardCreator {
+
     /**
-     * Клавиатура с выбором сложности
+     * Создаёт клавиатуру с выбором сложности
      * Варианты:
      * Простой (COMPLEXITY_EASY)
      * Средний (COMPLEXITY_MEDIUM),
      * Сложный (COMPLEXITY_HARD)
      */
-    public List<KeyboardRow> createComplexityKeyboard() {
+    public List<KeyboardRow> createSelectComplexityKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
@@ -36,10 +37,10 @@ public class KeyboardCreator {
     }
 
     /**
-     * Клавиатура с выбором типа сортировки
+     * Создаёт клавиатуру с выбором типа сортировки
      * Можно выбрать по дате (BY_DATE) и описанию (BY_DESCRIPTION)
      */
-    public List<KeyboardRow> createSortKeyboard() {
+    public List<KeyboardRow> createSelectSortTypeKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
@@ -52,7 +53,7 @@ public class KeyboardCreator {
     }
 
     /**
-     * Клавиатура в менеджере паролей
+     * Создаёт клавиатуру в менеджере паролей
      * Кнопки:
      * MENU - возврат в главное меню
      * DELETE - начать процедуру удаления пароля
@@ -60,7 +61,7 @@ public class KeyboardCreator {
      * SORT - отсортировать пароли
      * FIND - поиск паролей по описанию
      */
-    public List<KeyboardRow> createListKeyboard() {
+    public List<KeyboardRow> createInListKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
@@ -79,7 +80,7 @@ public class KeyboardCreator {
     }
 
     /**
-     * Клавиатура основная
+     * Создаёт клавиатуру основная
      * Кнопки:
      * GENERATE - начать процедуру генерации пароля
      * SAVE - начать процедуру сохранения пароля

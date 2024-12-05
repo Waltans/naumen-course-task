@@ -15,9 +15,7 @@ import java.util.List;
 import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
 import static ru.naumen.bot.constants.Errors.NO_PASSWORDS_MESSAGE;
 import static ru.naumen.bot.constants.Information.PASSWORD_LIST_FORMAT;
-import static ru.naumen.bot.constants.Parameters.BY_DATE;
-import static ru.naumen.bot.constants.Parameters.BY_DESCRIPTION;
-import static ru.naumen.bot.constants.Requests.CHOOSE_SORT_TYPE;
+import static ru.naumen.bot.constants.Parameters.*;
 
 /**
  * Хэндлер сортировки паролей
@@ -28,6 +26,11 @@ public class SortHandler implements CommandHandler {
     private final UserStateCache userStateCache;
     private final EncodeService encodeService;
 
+    /**
+     * Сообщение с запросом на выбор типа сортировки
+     */
+    private static final String CHOOSE_SORT_TYPE_REQUEST = "Отсортировать пароли по:";
+
     public SortHandler(PasswordService passwordService, UserStateCache userStateCache, EncodeService encodeService) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
@@ -36,8 +39,11 @@ public class SortHandler implements CommandHandler {
 
     @Override
     public Response handle(String[] splitCommand, long userId) {
-        State currentState = userStateCache.getUserState(userId);
+        if (!isValidCommand(splitCommand)) {
+            return new Response(INCORRECT_COMMAND_RESPONSE);
+        }
 
+        State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(State.SORT_STEP_1)) {
             String sortType = splitCommand[0];
 
@@ -75,12 +81,17 @@ public class SortHandler implements CommandHandler {
 
         } else {
             userStateCache.setState(userId, State.SORT_STEP_1);
-            return new Response(CHOOSE_SORT_TYPE);
+            return new Response(CHOOSE_SORT_TYPE_REQUEST);
         }
     }
 
-    @Override
-    public boolean isValid(String[] command) {
-        return true;
+    /**
+     * Валидирует команду
+     *
+     * @param splitCommand команда, разделённая по пробелам
+     * @return true, если команда валидна
+     */
+    private boolean isValidCommand(String[] splitCommand) {
+        return splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH;
     }
 }

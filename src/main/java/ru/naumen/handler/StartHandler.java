@@ -8,6 +8,7 @@ import ru.naumen.service.UserService;
 
 import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
 import static ru.naumen.bot.constants.Information.WELCOME_MESSAGE;
+import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 
 /**
  * Хэндлер команды запуска
@@ -25,7 +26,7 @@ public class StartHandler implements CommandHandler {
 
     @Override
     public Response handle(String[] splitCommand, long userId) {
-        if (splitCommand == null || splitCommand.length == 0) {
+        if (!isValidCommand(splitCommand)) {
             return new Response(INCORRECT_COMMAND_RESPONSE);
         }
 
@@ -36,9 +37,14 @@ public class StartHandler implements CommandHandler {
         return new Response(WELCOME_MESSAGE);
     }
 
-    @Override
-    public boolean isValid(String[] command) {
-        return true;
+    /**
+     * Валидирует команду
+     *
+     * @param splitCommand команда, разделённая по пробелам
+     * @return true, если команда валидна
+     */
+    private boolean isValidCommand(String[] splitCommand) {
+        return splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH;
     }
 }
 

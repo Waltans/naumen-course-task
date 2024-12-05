@@ -11,11 +11,10 @@ import ru.naumen.bot.Response;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.ComplexityFormatException;
 import ru.naumen.exception.PasswordLengthException;
-import ru.naumen.handler.validators.PasswordValidator;
 import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Класс модульных тестов для GenerateHandler
@@ -30,8 +29,6 @@ class GenerateHandlerTest {
 
     @InjectMocks
     private GenerateHandler generateHandler;
-
-    private final PasswordValidator passwordValidator = new PasswordValidator();
 
 
     /**
@@ -110,9 +107,21 @@ class GenerateHandlerTest {
         String expectedResponse = "Введите длину пароля";
 
         Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
         Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResponse, response.message());
+    }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testGeneratePassword_InvalidCommand() {
+        String[] command = {"/generate", "1", "3", "1"};
+
+        Response response = generateHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 }

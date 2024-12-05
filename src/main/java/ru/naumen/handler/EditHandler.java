@@ -15,7 +15,6 @@ import ru.naumen.service.PasswordService;
 import java.util.List;
 
 import static ru.naumen.bot.constants.Errors.*;
-import static ru.naumen.bot.constants.Information.PASSWORD_UPDATED_MESSAGE;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_INDEX;
 
@@ -27,6 +26,15 @@ public class EditHandler implements CommandHandler {
     private final Logger log = LoggerFactory.getLogger(EditHandler.class);
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
+
+    /**
+     * Сообщение об обновлении пароля
+     */
+    private static final String PASSWORD_UPDATED_MESSAGE = "Обновлён пароль для %s: %s";
+
+    /**
+     * Возможные количества параметров команды
+     */
     private final List<Integer> paramsCount = List.of(3, 4);
 
     /**
@@ -46,24 +54,30 @@ public class EditHandler implements CommandHandler {
             return new Response(ENTER_PASSWORD_INDEX);
         }
 
-        if (!isValid(splitCommand)) {
+        if (!isValidCommand(splitCommand)) {
             return new Response(INCORRECT_COMMAND_RESPONSE);
         }
 
-        int passwordIndex = Integer.parseInt(splitCommand[1]);
-
-        if (!passwordService.isValidPasswordIndex(passwordIndex, userId)) {
-            userStateCache.setState(userId, State.NONE);
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex));
+        int passwordIndex;
+        try {
+            passwordIndex = Integer.parseInt(splitCommand[1]);
+        } catch (NumberFormatException e) {
+            userStateCache.setState(userId, State.IN_LIST);
+            return new Response(INCORRECT_COMMAND_RESPONSE);
         }
 
-        int length = Integer.parseInt(splitCommand[2]);
-        String complexity = splitCommand[3];
+        if (!passwordService.isValidPasswordIndex(passwordIndex, userId)) {
+            userStateCache.setState(userId, State.IN_LIST);
+            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex));
+        }
 
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
         String uuid = userPasswords.get(passwordIndex - 1).getUuid();
         try {
+            int length = Integer.parseInt(splitCommand[2]);
+            String complexity = splitCommand[3];
+
             UserPassword passwordByUuid = passwordService.findPasswordByUuid(uuid);
             String description = passwordByUuid.getDescription();
             String newPassword = passwordService.generatePassword(length, complexity);
@@ -76,7 +90,7 @@ public class EditHandler implements CommandHandler {
             userStateCache.clearParamsForUser(userId);
 
             return new Response(String.format(PASSWORD_UPDATED_MESSAGE, description, newPassword));
-        } catch (PasswordLengthException e) {
+        } catch (PasswordLengthException | NumberFormatException e) {
             userStateCache.setState(userId, State.NONE);
             userStateCache.clearParamsForUser(userId);
 
@@ -94,9 +108,13 @@ public class EditHandler implements CommandHandler {
         }
     }
 
-    @Override
-    public boolean isValid(String[] command) {
-        return paramsCount.contains(command.length - 1);
+    /**
+     * Валидирует команду
+     *
+     * @param splitCommand команда, разделённая по пробелам
+     * @return true, если команда валидна
+     */
+    private boolean isValidCommand(String[] splitCommand) {
+        return paramsCount.contains(splitCommand.length - COMMAND_WITHOUT_PARAMS_LENGTH);
     }
-
 }
