@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.naumen.bot.command.Command;
-import ru.naumen.cache.UserStateCache;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,13 +15,6 @@ import static ru.naumen.bot.constants.Parameters.*;
  */
 @Component
 public class KeyboardCreator {
-
-    private final UserStateCache userStateCache;
-
-    public KeyboardCreator(UserStateCache userStateCache) {
-        this.userStateCache = userStateCache;
-    }
-
     /**
      * Клавиатура с выбором сложности
      * Варианты:

@@ -13,7 +13,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-import ru.naumen.bot.keyboards.KeyboardCreator;
 import ru.naumen.service.CommandService;
 
 /**
@@ -25,16 +24,13 @@ class TelegramBot extends TelegramLongPollingBot {
     private final Logger log = LoggerFactory.getLogger(TelegramBot.class);
     private final CommandService commandService;
     private final String botName;
-    private final KeyboardCreator keyboardCreator;
 
     public TelegramBot(@Value("${bot.token}") String botToken,
                        @Value("${bot.name}") String botName,
-                       CommandService commandService,
-                       KeyboardCreator keyboardCreator) {
+                       CommandService commandService) {
         super(botToken);
         this.commandService = commandService;
         this.botName = botName;
-        this.keyboardCreator = keyboardCreator;
     }
 
     /**

@@ -1,6 +1,7 @@
 package ru.naumen.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.command.Command;
@@ -69,6 +70,7 @@ public class CommandService {
      * @param userId  ID пользователя
      * @return ответ на команду и состояние пользователя
      */
+    @Transactional
     public Response performCommand(String message, long userId) {
         String[] splitCommand = message.split(" ");
 
