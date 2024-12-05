@@ -98,6 +98,19 @@ class EditHandlerTest {
     }
 
     /**
+     * Тест обновления пароля с не числовым индексом
+     */
+    @Test
+    void testUpdatePassword_NotNumberIndex() {
+        String[] command = {"/edit", "q", "12", "3"};
+        Response response = editHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Индекс должен быть числом", response.message());
+        Mockito.verify(passwordService, Mockito.never())
+                .updatePassword(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+    }
+
+    /**
      * Тест обновления, если команда введена с кнопки
      */
     @Test

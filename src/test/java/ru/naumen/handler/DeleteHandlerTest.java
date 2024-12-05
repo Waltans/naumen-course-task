@@ -81,6 +81,19 @@ class DeleteHandlerTest {
     }
 
     /**
+     * Тест удаления пароля с не числовым индексом
+     */
+    @Test
+    void testDeletePassword_NotNumberIndex() {
+        String[] command = {"/del", "q"};
+        Response response = deleteHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Индекс должен быть числом", response.message());
+        Mockito.verify(passwordService, Mockito.never())
+                .updatePassword(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+    }
+
+    /**
      * Тест удаления, если команда введена с кнопки
      */
     @Test

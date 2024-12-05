@@ -63,7 +63,7 @@ public class EditHandler implements CommandHandler {
             passwordIndex = Integer.parseInt(splitCommand[1]);
         } catch (NumberFormatException e) {
             userStateCache.setState(userId, State.IN_LIST);
-            return new Response(INCORRECT_COMMAND_RESPONSE);
+            return new Response(INDEX_ERROR_MESSAGE);
         }
 
         if (!passwordService.isValidPasswordIndex(passwordIndex, userId)) {

@@ -9,8 +9,7 @@ import ru.naumen.service.PasswordService;
 
 import java.util.List;
 
-import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
-import static ru.naumen.bot.constants.Errors.PASSWORD_NOT_FOUND_MESSAGE;
+import static ru.naumen.bot.constants.Errors.*;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_INDEX;
 
@@ -54,7 +53,7 @@ public class DeleteHandler implements CommandHandler {
             passwordIndex = Integer.parseInt(splitCommand[1]);
         } catch (NumberFormatException e) {
             userStateCache.setState(userId, State.IN_LIST);
-            return new Response(INCORRECT_COMMAND_RESPONSE);
+            return new Response(INDEX_ERROR_MESSAGE);
         }
 
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);

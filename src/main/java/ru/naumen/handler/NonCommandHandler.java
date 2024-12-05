@@ -147,7 +147,7 @@ public class NonCommandHandler {
             }
         } catch (NumberFormatException e) {
             userStateCache.setState(userId, State.IN_LIST);
-            return new Response(INCORRECT_COMMAND_RESPONSE);
+            return new Response(INDEX_ERROR_MESSAGE);
         }
 
         if (currentState.equals(State.EDIT_STEP_1)) {
