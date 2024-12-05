@@ -6,20 +6,28 @@ package ru.naumen.bot;
 public class Constants {
 
     public static final String INCORRECT_COMMAND_RESPONSE = "Введена некорректная команда! Справка: /help";
-    public static final String WELCOME_MESSAGE = "Здравствуйте. Я бот, который поможет Вам генерировать и управлять паролями.\n\n" +
-            "Доступны следующие команды:\n" +
-            "- /generate [length] [complexity] – Генерировать пароль длиной [length] символов и сложностью [complexity] (1, 2 или 3, где 1 - простой, 3 - сложный);\n" +
-            "- /save [password] [description] – Сохранить пароль, задать описание;\n" +
-            "- /list – Показать список сохранённых паролей;\n" +
-            "- /edit [passwordID] [length] [complexity] [description] – Изменяет пароль с ID [passwordID], генерирует новый под заданные параметры;\n" +
-            "- /del [passwordID] – Удалить сохранённый пароль с ID [passwordID];\n" +
-            "- /help - Справка.";
+    public static final String WELCOME_MESSAGE = """
+             Здравствуйте. Я бот, который поможет Вам генерировать и управлять паролями.
+                        
+             Доступны следующие команды:
+             - /generate [length] [complexity] – Генерировать пароль длиной [length] символов и сложностью [complexity] (1, 2 или 3, где 1 - простой, 3 - сложный);
+             - /save [password] [description] [days] – Сохранить пароль, задать описание;
+             - /list – Показать список сохранённых паролей;
+             - /edit [passwordID] [length] [complexity] [description] – Изменяет пароль с ID [passwordID], генерирует новый под заданные параметры;
+             - /del [passwordID] – Удалить сохранённый пароль с ID [passwordID];
+             - /code [codePhrase] - Ввести кодовое слово для того чтобы можно было очистить несколько паролей по названию
+             - /clear - команда которая очищает пароли у которых описание начинается с какого-то слова или буквы
+             - /remind [passwordID] [days] - для того чтобы поставить напоминание через сколько обновить пароль
+             - /help - Справка.
+            """;
     public static final String PASSWORD_GENERATED_MESSAGE = "Сгенерирован пароль: %s";
     public static final String LENGTH_ERROR_MESSAGE = "Длина пароля должна быть от 8 до 128 символов!";
-    public static final String COMPLEXITY_ERROR_MESSAGE = "Сложность должна быть от 1 до 3, где:\n" +
-            "1 - простой пароль;\n" +
-            "2 - пароль средней сложности;\n" +
-            "3 - сложный пароль.";
+    public static final String COMPLEXITY_ERROR_MESSAGE = """
+            Сложность должна быть от 1 до 3, где:
+            "1 - простой пароль;
+            "2 - пароль средней сложности;
+            "3 - сложный пароль.
+            """;
     public static final String PASSWORD_NOT_FOUND_MESSAGE = "Не найден пароль с id %s";
     public static final String PASSWORD_SAVED_MESSAGE = "Пароль успешно сохранён";
     public static final String NO_PASSWORDS_MESSAGE = "Нет ни одного пароля. Справка: /help";
@@ -33,6 +41,7 @@ public class Constants {
     public static final String CHOOSE_SORT_TYPE = "Отсортировать пароли по:";
     public static final String ENTER_PASSWORD_INDEX = "Введите индекс пароля";
     public static final String FAILURE = "Что-то пошло не так :( ";
+    public static final String DONT_AGREE = "Пароли не будут очищены";
     public static final String NO_PASSWORDS_FOUND = "Не найдены пароли по вашему запросу";
     public static final String ENTER_SEARCH_REQUEST = "Введите поисковый запрос";
     public static final String USER_NOT_FOUND = "Пользователь не найден";
@@ -48,8 +57,9 @@ public class Constants {
     public static final String CODE_ADDED_SUCCESS = "Кодовое слово успешно установлено";
     public static final String ADD_CODE_PHRASE = "Введите кодовое слово";
     public static final String ENTER_CLEAR_PASSWORD = "Начало слова с которого вы хотите удалить пароли(ALL - если удалить все)";
+    public static final String ENTER_AGREEMENT = "Введите да, если хотите чтобы отчистилось %s паролей";
     public static final String ENTER_CODE = "У вас не установлено кодовое слово";
-    public static final String CODE_UNCORRECTED = "Неверное кодовое слово";
+    public static final String CANT_RUN_OPERATION = "Невозможно запустить операцию";
     public static final String CLEAR_SUCCESS = "Пароли, что начинаются с %s удалены";
     public static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
     public static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;

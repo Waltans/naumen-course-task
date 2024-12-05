@@ -10,6 +10,7 @@ import ru.naumen.bot.Command;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
+import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
 
 import java.util.ArrayList;
@@ -55,9 +56,10 @@ class NonCommandHandlerTest {
     private AddCodePhraseHandler addCodePhraseHandler;
     @Mock
     private ClearPasswordHandler clearPasswordHandler;
-
     @Mock
     private RemindHandler remindHandler;
+    @Mock
+    private PasswordService passwordService;
 
     private NonCommandHandler nonCommandHandler;
 
@@ -85,7 +87,8 @@ class NonCommandHandlerTest {
         nonCommandHandler = new NonCommandHandler(
                 userStateCache,
                 validationService,
-                handlerMapper
+                handlerMapper,
+                passwordService
         );
     }
 
@@ -280,7 +283,7 @@ class NonCommandHandlerTest {
     }
 
     /**
-     * Тест, что метод работает корректно, если у пользователя верное состояние и параметры
+     * Тест, что метод запрашивает соглашение пользователя при верном количестве параметров
      * Команда должна возвращать верное состояние и ответ пользователя
      */
     @Test
@@ -291,15 +294,46 @@ class NonCommandHandlerTest {
 
         Mockito.when(userStateCache.getUserState(userId)).thenReturn(CLEAR_2);
         Mockito.when(userStateCache.getUserParams(userId)).thenReturn(userParams);
-        Mockito.when(clearPasswordHandler.handle(new String[]{Command.CLEAR, userParams.getFirst(), phrase}, userId))
-                .thenReturn(new Response("Success", NONE));
 
         Response actualResponse = nonCommandHandler.getPhraseForClear(phrase, userId);
 
-        Assertions.assertEquals(NONE, actualResponse.botState());
-        Assertions.assertEquals("Success", actualResponse.message());
-        Mockito.verify(userStateCache).getUserParams(userId);
+        Assertions.assertEquals(CLEAR_3, actualResponse.botState());
+        Assertions.assertEquals("Введите да, если хотите чтобы отчистилось 0 паролей", actualResponse.message());
+    }
 
+    /**
+     * Тест, что команда работает корректно, если пользователь соглашается на отчистку паролей
+     */
+    @Test
+    void clear_success() {
+        long userId = 12345L;
+        String phrase = "code";
+        List<String> userParams = List.of("/clear", "code");
+
+        Mockito.when(userStateCache.getUserState(userId)).thenReturn(CLEAR_3);
+        Mockito.when(userStateCache.getUserParams(userId)).thenReturn(userParams);
+        Mockito.when(clearPasswordHandler.handle(new String[]{Command.CLEAR, userParams.getFirst(), phrase}, userId))
+                .thenReturn(new Response("Success", NONE));
+
+        Response response = nonCommandHandler.getAgreement("да", userId);
+        Assertions.assertEquals("Success", response.message());
+        Assertions.assertEquals(NONE, response.botState());
+    }
+
+    /**
+     * Тест, что команда работает корректно, если пользователь отказывается от отчистки паролей
+     */
+    @Test
+    void clear_failure() {
+        long userId = 12345L;
+        List<String> userParams = List.of("/clear", "code");
+
+        Mockito.when(userStateCache.getUserState(userId)).thenReturn(CLEAR_3);
+        Mockito.when(userStateCache.getUserParams(userId)).thenReturn(userParams);
+
+        Response response = nonCommandHandler.getAgreement("нет", userId);
+        Assertions.assertEquals("Пароли не будут очищены", response.message());
+        Assertions.assertEquals(NONE, response.botState());
     }
 
     /**

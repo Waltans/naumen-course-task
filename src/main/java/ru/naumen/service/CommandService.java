@@ -75,10 +75,8 @@ public class CommandService {
                     handlerMapper.getHandler(Command.FIND).handle(splitCommand, userId);
             case Command.REMIND, Command.REMIND_KEYBOARD ->
                     handlerMapper.getHandler(Command.REMIND).handle(splitCommand, userId);
-            case Command.ADD_CODE ->
-                    handlerMapper.getHandler(Command.ADD_CODE).handle(splitCommand, userId);
-            case Command.CLEAR ->
-                handlerMapper.getHandler(Command.CLEAR).handle(splitCommand, userId);
+            case Command.ADD_CODE -> handlerMapper.getHandler(Command.ADD_CODE).handle(splitCommand, userId);
+            case Command.CLEAR -> handlerMapper.getHandler(Command.CLEAR).handle(splitCommand, userId);
 
             default -> performNotCommandMessage(splitCommand, userId);
         };
@@ -111,6 +109,7 @@ public class CommandService {
             case REMIND_STEP_2, SAVE_STEP_3 -> nonCommandHandler.getRemindDays(command, userId, NONE);
             case CODE_PHRASE_1, CLEAR_1 -> nonCommandHandler.getCodeWord(command, userId);
             case CLEAR_2 -> nonCommandHandler.getPhraseForClear(command, userId);
+            case CLEAR_3 -> nonCommandHandler.getAgreement(command, userId);
             default -> new Response(INCORRECT_COMMAND_RESPONSE, NONE);
         };
     }

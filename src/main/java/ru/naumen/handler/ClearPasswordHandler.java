@@ -57,7 +57,7 @@ public class ClearPasswordHandler implements CommandHandler {
                     userStateCache.setState(userId, NONE);
                     userStateCache.clearParamsForUser(userId);
 
-                    return new Response(CODE_UNCORRECTED, NONE);
+                    return new Response(CANT_RUN_OPERATION, NONE);
                 }
             } else {
                 userStateCache.setState(userId, NONE);

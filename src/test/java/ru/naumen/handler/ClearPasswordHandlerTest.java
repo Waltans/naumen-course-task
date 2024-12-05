@@ -98,7 +98,7 @@ class ClearPasswordHandlerTest {
         Response response = clearPasswordHandler.handle(splitCommand, userId);
 
         assertEquals(State.NONE, response.botState());
-        assertEquals("Неверное кодовое слово", response.message());
+        assertEquals("Невозможно запустить операцию", response.message());
         verify(userStateCache).clearParamsForUser(userId);
         verify(userStateCache).setState(userId, State.NONE);
     }
