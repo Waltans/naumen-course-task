@@ -10,7 +10,6 @@ import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.SortType;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
@@ -43,12 +42,14 @@ public class SortHandler implements CommandHandler {
             String sortType = splitCommand[0];
 
             try {
-                List<UserPassword> sortedPasswords = new ArrayList<>();
+                List<UserPassword> sortedPasswords;
                 switch (sortType) {
-                    case BY_DATE ->
-                            sortedPasswords = passwordService.getUserPasswordsSorted(userId, SortType.BY_DATE);
+                    case BY_DATE -> sortedPasswords = passwordService.getUserPasswordsSorted(userId, SortType.BY_DATE);
                     case BY_DESCRIPTION ->
                             sortedPasswords = passwordService.getUserPasswordsSorted(userId, SortType.BY_DESCRIPTION);
+                    default -> {
+                        return new Response(INCORRECT_COMMAND_RESPONSE);
+                    }
                 }
 
                 if (sortedPasswords.isEmpty()) {

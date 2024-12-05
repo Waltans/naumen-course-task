@@ -1,20 +1,21 @@
 package ru.naumen.service;
 
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.command.Command;
+import ru.naumen.bot.keyboards.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.handler.CommandHandler;
 import ru.naumen.handler.NonCommandHandler;
 import ru.naumen.model.State;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
-import static ru.naumen.bot.constants.Parameters.BY_DATE;
-import static ru.naumen.bot.constants.Parameters.BY_DESCRIPTION;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_DESCRIPTION;
 
 /**
@@ -24,6 +25,7 @@ import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_DESCRIPTION;
 public class CommandService {
     private final UserStateCache userStateCache;
     private final NonCommandHandler nonCommandHandler;
+    private final KeyboardCreator keyboardCreator;
 
     /**
      * Хэндлеры команд
@@ -37,10 +39,11 @@ public class CommandService {
 
 
     public CommandService(UserStateCache userStateCache,
-                          NonCommandHandler nonCommandHandler,
+                          NonCommandHandler nonCommandHandler, KeyboardCreator keyboardCreator,
                           Map<String, CommandHandler> commandHandlers) {
         this.userStateCache = userStateCache;
         this.nonCommandHandler = nonCommandHandler;
+        this.keyboardCreator = keyboardCreator;
         this.commandHandlers = commandHandlers;
         for (Command cmd : Command.values()) {
             commandMap.put(cmd.getCommand(), cmd);
@@ -78,48 +81,21 @@ public class CommandService {
     }
 
     /**
-     * Проверяет корректность команды
+     * Метод по получению клавиатуры
      *
-     * @param splitCommand разделённая по пробелам команда
-     * @param state        - ID пользователя
-     * @return true, если команда и её параметры корректны, иначе false
+     * @param userId - id пользователя
+     * @return - клавиатуру
      */
-    private boolean isValid(String splitCommand, State state) {
-        if (state != null && !state.equals(State.NONE) && !state.equals(State.IN_LIST)) {
-            return switch (state) {
-                case SAVE_STEP_1, SAVE_STEP_2, EDIT_STEP_4, FIND_STEP_1, GENERATION_STEP_2, EDIT_STEP_3 -> true;
-                case GENERATION_STEP_1, EDIT_STEP_1, EDIT_STEP_2, DELETE_STEP_1 -> isNumber(splitCommand);
-                case SORT_STEP_1 -> isValidSortType(splitCommand);
-                default -> false;
-            };
-        } else return false;
-    }
+    public List<KeyboardRow> getKeyboards(Integer userId) {
+        State state = userStateCache.getUserState(userId);
 
-    /**
-     * Проверяет, является ли валидным тип сортировки
-     *
-     * @param sortType тип сортировки
-     * @return true, если тип введен корректно
-     */
-    private boolean isValidSortType(String sortType) {
-        return sortType.equals(BY_DATE)
-                || sortType.equals(BY_DESCRIPTION);
-    }
-
-    /**
-     * Проверяет, является ли строка числом
-     *
-     * @param string строка
-     * @return true, если строка состоит из числа
-     */
-    private boolean isNumber(String string) {
-        try {
-            Integer.parseInt(string);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-
-        return true;
+        return switch (state) {
+            case NONE -> keyboardCreator.createMainKeyboard();
+            case GENERATION_STEP_2, EDIT_STEP_3 -> keyboardCreator.createComplexityKeyboard();
+            case SORT_STEP_1 -> keyboardCreator.createSortKeyboard();
+            case IN_LIST -> keyboardCreator.createListKeyboard();
+            default -> List.of();
+        };
     }
 
     /**

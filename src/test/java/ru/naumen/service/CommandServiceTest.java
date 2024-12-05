@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
+import ru.naumen.bot.keyboards.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.handler.*;
 import ru.naumen.model.State;
@@ -57,6 +58,9 @@ class CommandServiceTest {
     @Mock
     private HelpHandler helpHandler;
 
+    @Mock
+    private KeyboardCreator keyboardCreator;
+
     private CommandService commandService;
 
     /**
@@ -81,6 +85,7 @@ class CommandServiceTest {
         commandService = new CommandService(
                 userStateCache,
                 nonCommandHandler,
+                keyboardCreator,
                 commandHandlers);
     }
 

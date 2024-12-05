@@ -13,7 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-import ru.naumen.bot.keyboards.KeyboardsService;
+import ru.naumen.bot.keyboards.KeyboardCreator;
 import ru.naumen.service.CommandService;
 
 /**
@@ -25,16 +25,16 @@ class TelegramBot extends TelegramLongPollingBot {
     private final Logger log = LoggerFactory.getLogger(TelegramBot.class);
     private final CommandService commandService;
     private final String botName;
-    private final KeyboardsService keyboardsService;
+    private final KeyboardCreator keyboardCreator;
 
     public TelegramBot(@Value("${bot.token}") String botToken,
                        @Value("${bot.name}") String botName,
                        CommandService commandService,
-                       KeyboardsService keyboardsService) {
+                       KeyboardCreator keyboardCreator) {
         super(botToken);
         this.commandService = commandService;
         this.botName = botName;
-        this.keyboardsService = keyboardsService;
+        this.keyboardCreator = keyboardCreator;
     }
 
     /**
@@ -86,7 +86,8 @@ class TelegramBot extends TelegramLongPollingBot {
         replyKeyboardMarkup.setResizeKeyboard(true);
         replyKeyboardMarkup.setOneTimeKeyboard(true);
 
-        replyKeyboardMarkup.setKeyboard(keyboardsService.getKeyboards(Integer.parseInt(id)));
+        replyKeyboardMarkup.setKeyboard(
+                commandService.getKeyboards(Integer.parseInt(id)));
 
         try {
             execute(tgMessage);

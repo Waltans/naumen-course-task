@@ -1,38 +1,27 @@
 package ru.naumen.bot.keyboards;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.naumen.bot.command.Command;
 import ru.naumen.cache.UserStateCache;
-import ru.naumen.model.State;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static ru.naumen.bot.constants.Parameters.*;
 
-@Service
-public class KeyboardsService {
+/**
+ * Класс по заданию клавиатур
+ */
+@Component
+public class KeyboardCreator {
 
     private final UserStateCache userStateCache;
 
-    public KeyboardsService(UserStateCache userStateCache) {
+    public KeyboardCreator(UserStateCache userStateCache) {
         this.userStateCache = userStateCache;
     }
-
-    public List<KeyboardRow> getKeyboards(Integer userId) {
-        State state = userStateCache.getUserState(userId);
-
-        return switch (state) {
-            case NONE -> createMainKeyboard();
-            case GENERATION_STEP_2, EDIT_STEP_3 -> createComplexityKeyBoard();
-            case SORT_STEP_1 -> createSortKeyboard();
-            case IN_LIST -> createListKeyboard();
-            default -> List.of();
-        };
-    }
-
 
     /**
      * Клавиатура с выбором сложности
@@ -41,7 +30,7 @@ public class KeyboardsService {
      * Средний (COMPLEXITY_MEDIUM),
      * Сложный (COMPLEXITY_HARD)
      */
-    private List<KeyboardRow> createComplexityKeyBoard() {
+    public List<KeyboardRow> createComplexityKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
@@ -58,7 +47,7 @@ public class KeyboardsService {
      * Клавиатура с выбором типа сортировки
      * Можно выбрать по дате (BY_DATE) и описанию (BY_DESCRIPTION)
      */
-    private List<KeyboardRow> createSortKeyboard() {
+    public List<KeyboardRow> createSortKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
@@ -79,7 +68,7 @@ public class KeyboardsService {
      * SORT - отсортировать пароли
      * FIND - поиск паролей по описанию
      */
-    private List<KeyboardRow> createListKeyboard() {
+    public List<KeyboardRow> createListKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
@@ -105,7 +94,7 @@ public class KeyboardsService {
      * LIST - список паролей и переход к менеджеру (управление сохранёнными паролями)
      * HELP - справка по работе бота
      */
-    private List<KeyboardRow> createMainKeyboard() {
+    public List<KeyboardRow> createMainKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();

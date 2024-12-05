@@ -31,14 +31,14 @@ public class DeleteHandler implements CommandHandler {
 
     @Override
     public Response handle(String[] splitCommand, long userId) {
-        if (!isValid(splitCommand)) {
-            return new Response(INCORRECT_COMMAND_RESPONSE);
-        }
-
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.DELETE_STEP_1);
 
             return new Response(ENTER_PASSWORD_INDEX);
+        }
+
+        if (!isValid(splitCommand)) {
+            return new Response(INCORRECT_COMMAND_RESPONSE);
         }
 
         int passwordIndex = Integer.parseInt(splitCommand[1]);
@@ -63,25 +63,6 @@ public class DeleteHandler implements CommandHandler {
 
     @Override
     public boolean isValid(String[] command) {
-        if (!params.contains(command.length - 1)) {
-            return false;
-        }
-        return (command.length) != 2 || isNumber(command[1]);
-    }
-
-    /**
-     * Проверяет, является ли строка числом
-     *
-     * @param string строка
-     * @return true, если строка состоит из числа
-     */
-    private boolean isNumber(String string) {
-        try {
-            Integer.parseInt(string);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-
-        return true;
+        return params.contains(command.length - 1);
     }
 }
