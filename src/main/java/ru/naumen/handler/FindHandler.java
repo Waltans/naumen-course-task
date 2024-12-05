@@ -2,7 +2,7 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
@@ -10,6 +10,7 @@ import ru.naumen.service.PasswordService;
 
 import java.util.List;
 
+import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
 import static ru.naumen.bot.constants.Errors.NO_PASSWORDS_FOUND;
 import static ru.naumen.bot.constants.Information.PASSWORD_LIST_FORMAT;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
@@ -23,6 +24,7 @@ public class FindHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final EncodeService encodeService;
+    private final List<Integer> params = List.of(1);
 
     public FindHandler(PasswordService passwordService, UserStateCache userStateCache, EncodeService encodeService) {
         this.passwordService = passwordService;
@@ -34,7 +36,11 @@ public class FindHandler implements CommandHandler {
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.FIND_STEP_1);
-            return new Response(ENTER_SEARCH_REQUEST, State.FIND_STEP_1);
+            return new Response(ENTER_SEARCH_REQUEST);
+        }
+
+        if (!isValid(splitCommand)) {
+            return new Response(INCORRECT_COMMAND_RESPONSE);
         }
 
         String searchRequest = splitCommand[1];
@@ -43,7 +49,7 @@ public class FindHandler implements CommandHandler {
         if (foundPasswords.isEmpty()) {
             userStateCache.setState(userId, State.NONE);
 
-            return new Response(NO_PASSWORDS_FOUND, State.NONE);
+            return new Response(NO_PASSWORDS_FOUND);
         }
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -56,6 +62,11 @@ public class FindHandler implements CommandHandler {
         userStateCache.setState(userId, State.NONE);
         userStateCache.clearParamsForUser(userId);
 
-        return new Response(stringBuilder.toString(), State.NONE);
+        return new Response(stringBuilder.toString());
+    }
+
+    @Override
+    public boolean isValid(String[] command) {
+        return params.contains(command.length - 1);
     }
 }

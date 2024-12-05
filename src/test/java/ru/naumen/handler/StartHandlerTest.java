@@ -8,8 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
-import ru.naumen.model.State;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.service.UserService;
 
 /**
@@ -52,7 +51,6 @@ class StartHandlerTest {
         Response response = startHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResult, response.message());
-        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 }

@@ -5,9 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
-import ru.naumen.exception.IncorrectSortTypeException;
-import ru.naumen.exception.PasswordNotFoundException;
-import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.exception.*;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
 import ru.naumen.repository.UserPasswordRepository;
@@ -205,7 +203,7 @@ class PasswordServiceTest {
      * Тест генерации пароля для сложности 1
      */
     @RepeatedTest(20)
-    void testGeneratePassword_WithComplexity_Level1() {
+    void testGeneratePassword_WithComplexity_Level1() throws PasswordLengthException, ComplexityFormatException {
         int length = 10;
         String complexity = "1";
 
@@ -219,7 +217,7 @@ class PasswordServiceTest {
      * Тест генерации пароля для сложности 2
      */
     @RepeatedTest(20)
-    void testGeneratePassword_WithComplexity_Level2() {
+    void testGeneratePassword_WithComplexity_Level2() throws PasswordLengthException, ComplexityFormatException {
         int length = 12;
         String complexity = "2";
 
@@ -233,7 +231,7 @@ class PasswordServiceTest {
      * Тест генерации пароля для сложности 3
      */
     @RepeatedTest(20)
-    void testGeneratePassword_WithComplexity_Level3() {
+    void testGeneratePassword_WithComplexity_Level3() throws PasswordLengthException, ComplexityFormatException {
         int length = 15;
         String complexity = "3";
 
@@ -247,7 +245,7 @@ class PasswordServiceTest {
      * Тест уникальности паролей
      */
     @RepeatedTest(5)
-    void testGenerateUniquePassword() {
+    void testGenerateUniquePassword() throws PasswordLengthException, ComplexityFormatException {
         int length = 10;
         String complexity = "2";
 

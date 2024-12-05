@@ -4,14 +4,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 
-import static ru.naumen.bot.constants.Errors.ENCRYPT_ERROR;
-import static ru.naumen.bot.constants.Errors.USER_NOT_FOUND;
+import java.util.List;
+
+import static ru.naumen.bot.constants.Errors.*;
 import static ru.naumen.bot.constants.Information.PASSWORD_SAVED_MESSAGE;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD;
@@ -21,10 +22,10 @@ import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD;
  */
 @Component("/save")
 public class SaveHandler implements CommandHandler {
-
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final Logger log = LoggerFactory.getLogger(SaveHandler.class);
+    private final List<Integer> params = List.of(1, 2);
 
     /**
      * Длина команды сохранения, если не передано описание
@@ -41,7 +42,11 @@ public class SaveHandler implements CommandHandler {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.SAVE_STEP_1);
 
-            return new Response(ENTER_PASSWORD, State.SAVE_STEP_1);
+            return new Response(ENTER_PASSWORD);
+        }
+
+        if (!isValid(splitCommand)) {
+            return new Response(INCORRECT_COMMAND_RESPONSE);
         }
 
         try {
@@ -54,18 +59,22 @@ public class SaveHandler implements CommandHandler {
             }
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(PASSWORD_SAVED_MESSAGE, State.NONE);
-        } catch (UserNotFoundException e){
+            return new Response(PASSWORD_SAVED_MESSAGE);
+        } catch (UserNotFoundException e) {
             log.error("Ошибка при сохранении пароля - не найден пользователь", e);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(USER_NOT_FOUND, State.NONE);
-        }
-        catch (EncryptException e){
+            return new Response(USER_NOT_FOUND);
+        } catch (EncryptException e) {
             log.error("Ошибка шифрования при сохранении пароля", e);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(ENCRYPT_ERROR, State.NONE);
+            return new Response(ENCRYPT_ERROR);
         }
+    }
+
+    @Override
+    public boolean isValid(String[] command) {
+        return params.contains(command.length - 1);
     }
 }

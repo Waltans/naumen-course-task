@@ -8,8 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
-import ru.naumen.model.State;
+import ru.naumen.cache.UserStateCache;
 
 /**
  * Класс модульных тестов для HelpHandler
@@ -48,7 +47,6 @@ class HelpHandlerTest {
         Response response = helpHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResult, response.message());
-        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 }

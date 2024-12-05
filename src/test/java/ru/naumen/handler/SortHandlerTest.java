@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.IncorrectSortTypeException;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
@@ -70,7 +70,6 @@ class SortHandlerTest {
         Response response = sortHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResponse, response.message());
-        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
@@ -100,7 +99,6 @@ class SortHandlerTest {
         Response response = sortHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResponse, response.message());
-        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
@@ -118,7 +116,6 @@ class SortHandlerTest {
         Response response = sortHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Нет ни одного пароля. Справка: /help", response.message());
-        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -132,6 +129,5 @@ class SortHandlerTest {
         Response response = sortHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Отсортировать пароли по:", response.message());
-        Assertions.assertEquals(State.SORT_STEP_1, response.botState());
     }
 }

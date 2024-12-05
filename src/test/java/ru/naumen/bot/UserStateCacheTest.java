@@ -3,6 +3,7 @@ package ru.naumen.bot;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
 
 import java.util.List;

@@ -2,7 +2,7 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.IncorrectSortTypeException;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
@@ -10,7 +10,6 @@ import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.SortType;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
@@ -43,17 +42,19 @@ public class SortHandler implements CommandHandler {
             String sortType = splitCommand[0];
 
             try {
-                List<UserPassword> sortedPasswords = new ArrayList<>();
+                List<UserPassword> sortedPasswords;
                 switch (sortType) {
-                    case BY_DATE ->
-                            sortedPasswords = passwordService.getUserPasswordsSorted(userId, SortType.BY_DATE);
+                    case BY_DATE -> sortedPasswords = passwordService.getUserPasswordsSorted(userId, SortType.BY_DATE);
                     case BY_DESCRIPTION ->
                             sortedPasswords = passwordService.getUserPasswordsSorted(userId, SortType.BY_DESCRIPTION);
+                    default -> {
+                        return new Response(INCORRECT_COMMAND_RESPONSE);
+                    }
                 }
 
                 if (sortedPasswords.isEmpty()) {
                     userStateCache.setState(userId, State.NONE);
-                    return new Response(NO_PASSWORDS_MESSAGE, State.NONE);
+                    return new Response(NO_PASSWORDS_MESSAGE);
                 }
 
                 StringBuilder stringBuilder = new StringBuilder();
@@ -66,15 +67,20 @@ public class SortHandler implements CommandHandler {
                 userStateCache.setState(userId, State.NONE);
                 userStateCache.clearParamsForUser(userId);
 
-                return new Response(stringBuilder.toString(), State.NONE);
+                return new Response(stringBuilder.toString());
             } catch (IncorrectSortTypeException e) {
                 userStateCache.setState(userId, State.IN_LIST);
-                return new Response(INCORRECT_COMMAND_RESPONSE, State.IN_LIST);
+                return new Response(INCORRECT_COMMAND_RESPONSE);
             }
 
         } else {
             userStateCache.setState(userId, State.SORT_STEP_1);
-            return new Response(CHOOSE_SORT_TYPE, State.SORT_STEP_1);
+            return new Response(CHOOSE_SORT_TYPE);
         }
+    }
+
+    @Override
+    public boolean isValid(String[] command) {
+        return true;
     }
 }

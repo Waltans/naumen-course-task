@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
@@ -56,7 +56,6 @@ class FindHandlerTest {
         Response response = findHandler.handle(command, 12345L);
 
         Assertions.assertEquals("\n1) Сайт: desc, Пароль: dpass", response.message());
-        Assertions.assertEquals(State.NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
@@ -71,7 +70,6 @@ class FindHandlerTest {
         Response response = findHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Не найдены пароли по вашему запросу", response.message());
-        Assertions.assertEquals(State.NONE, response.botState());
     }
 
     /**
@@ -86,6 +84,5 @@ class FindHandlerTest {
         Response response = findHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Введите поисковый запрос", response.message());
-        Assertions.assertEquals(State.FIND_STEP_1, response.botState());
     }
 }
