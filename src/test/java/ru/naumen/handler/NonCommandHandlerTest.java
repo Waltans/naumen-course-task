@@ -298,7 +298,9 @@ class NonCommandHandlerTest {
         Response actualResponse = nonCommandHandler.getPhraseForClear(phrase, userId);
 
         Assertions.assertEquals(CLEAR_3, actualResponse.botState());
-        Assertions.assertEquals("Найдено 0 совпадение, вы точно хотите удалить все пароли, описание которых начинается на testPhrase", actualResponse.message());
+        Assertions.assertEquals(
+                "Найдено 0 совпадений, вы точно хотите удалить все пароли, описание которых начинается на testPhrase",
+                actualResponse.message());
     }
 
     /**
