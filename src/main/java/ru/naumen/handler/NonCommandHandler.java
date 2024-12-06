@@ -5,6 +5,7 @@ import ru.naumen.bot.Command;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.UserStateCache;
 import ru.naumen.model.State;
+import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
 
 import java.util.List;
@@ -20,11 +21,13 @@ public class NonCommandHandler {
     private final UserStateCache userStateCache;
     private final ValidationService validationService;
     private final HandlerMapper handlerMapper;
+    private final PasswordService passwordService;
 
-    public NonCommandHandler(UserStateCache userStateCache, ValidationService validationService, HandlerMapper handlerMapper) {
+    public NonCommandHandler(UserStateCache userStateCache, ValidationService validationService, HandlerMapper handlerMapper, PasswordService passwordService) {
         this.userStateCache = userStateCache;
         this.validationService = validationService;
         this.handlerMapper = handlerMapper;
+        this.passwordService = passwordService;
     }
 
     /**
@@ -206,7 +209,7 @@ public class NonCommandHandler {
      * @param userId   - ID пользователя
      * @return - сообщение и состояние пользователя
      */
-    public Response getCodeWord(String codeWord, long userId){
+    public Response getCodeWord(String codeWord, long userId) {
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(CODE_PHRASE_1)) {
             return handlerMapper.getHandler(Command.ADD_CODE)
@@ -271,13 +274,36 @@ public class NonCommandHandler {
     public Response getPhraseForClear(String phrase, long userId) {
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(CLEAR_2)) {
-            List<String> userParams = userStateCache.getUserParams(userId);
-            return handlerMapper.getHandler(Command.CLEAR)
-                    .handle(new String[]{Command.CLEAR, userParams.getFirst(), phrase},
-                            userId);
+            userStateCache.setState(userId, CLEAR_3);
+            userStateCache.addParam(userId, phrase);
+            int userPasswordsSize = passwordService.getUserPasswords(userId).size();
+
+            return new Response(String.format(ENTER_AGREEMENT, userPasswordsSize, phrase), CLEAR_3);
         }
 
         userStateCache.clearParamsForUser(userId);
         return new Response(FAILURE, currentState);
+    }
+
+    /**
+     * Метод получения согласия на отчистку паролей
+     *
+     * @param agreement - согласие
+     * @param userId    - ID пользователя
+     * @return Ответ об отчистке
+     */
+    public Response getAgreement(String agreement, long userId) {
+        State currentState = userStateCache.getUserState(userId);
+
+        if (currentState.equals(CLEAR_3) && agreement.equalsIgnoreCase("да")) {
+            List<String> userParams = userStateCache.getUserParams(userId);
+            return handlerMapper.getHandler(Command.CLEAR)
+                    .handle(new String[]{Command.CLEAR, userParams.getFirst(), userParams.get(1)}, userId);
+        } else {
+            userStateCache.clearParamsForUser(userId);
+            userStateCache.setState(userId, NONE);
+
+            return new Response(DONT_AGREE, NONE);
+        }
     }
 }

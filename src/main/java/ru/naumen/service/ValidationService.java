@@ -42,8 +42,8 @@ public class ValidationService {
         State state = userStateCache.getUserState(userId);
         if (state != null && !state.equals(NONE) && !state.equals(IN_LIST)) {
             return switch (state) {
-                case SAVE_STEP_1, SAVE_STEP_2, EDIT_STEP_4, FIND_STEP_1, GENERATION_STEP_2, EDIT_STEP_3, CLEAR_2 ->
-                        true;
+                case SAVE_STEP_1, SAVE_STEP_2, EDIT_STEP_4, FIND_STEP_1, GENERATION_STEP_2, EDIT_STEP_3, CLEAR_2,
+                     CLEAR_3 -> true;
                 case GENERATION_STEP_1, EDIT_STEP_1, EDIT_STEP_2, DELETE_STEP_1,
                      REMIND_STEP_1, REMIND_STEP_2, SAVE_STEP_3 -> isNumber(command);
                 case SORT_STEP_1 -> isValidSortType(command);

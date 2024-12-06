@@ -100,10 +100,12 @@ class GenerateHandlerTest {
         Mockito.when(validationService.areNumbersGenerationCommandParams(Mockito.any(String[].class))).thenReturn(true);
 
         String[] command = {"/generate", "15", "4"};
-        String expectedResponse = "Сложность должна быть от 1 до 3, где:\n" +
-                "1 - простой пароль;\n" +
-                "2 - пароль средней сложности;\n" +
-                "3 - сложный пароль.";
+        String expectedResponse = """
+                Сложность должна быть от 1 до 3, где:
+                "1 - простой пароль;
+                "2 - пароль средней сложности;
+                "3 - сложный пароль.
+                """;
 
 
         Response response = generateHandler.handle(command, 12345L);
