@@ -278,7 +278,7 @@ public class NonCommandHandler {
             userStateCache.addParam(userId, phrase);
             int userPasswordsSize = passwordService.getUserPasswords(userId).size();
 
-            return new Response(String.format(ENTER_AGREEMENT, userPasswordsSize), CLEAR_3);
+            return new Response(String.format(ENTER_AGREEMENT, userPasswordsSize, phrase), CLEAR_3);
         }
 
         userStateCache.clearParamsForUser(userId);

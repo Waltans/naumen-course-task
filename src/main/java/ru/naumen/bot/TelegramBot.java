@@ -109,6 +109,9 @@ class TelegramBot extends TelegramLongPollingBot {
         } else if (response.botState().equals(State.IN_LIST)) {
             List<KeyboardRow> keyboardRows = listKeyBoard();
             replyKeyboardMarkup.setKeyboard(keyboardRows);
+        } else if (response.botState().equals(State.CLEAR_3)) {
+            List<KeyboardRow> keyboardRows = createAgreementKeyboard();
+            replyKeyboardMarkup.setKeyboard(keyboardRows);
         } else {
             replyKeyboardMarkup.setKeyboard(List.of());
         }
@@ -201,6 +204,18 @@ class TelegramBot extends TelegramLongPollingBot {
         keyboardRowFirst.add(new KeyboardButton(Command.SAVE_KEYBOARD));
         keyboardRowFirst.add(new KeyboardButton(Command.LIST_KEYBOARD));
         keyboardRowFirst.add(new KeyboardButton(Command.HELP_KEYBOARD));
+
+        keyboardRows.add(keyboardRowFirst);
+        return keyboardRows;
+    }
+
+
+    private List<KeyboardRow> createAgreementKeyboard() {
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow keyboardRowFirst = new KeyboardRow();
+        keyboardRowFirst.add(new KeyboardButton("Да"));
+        keyboardRowFirst.add(new KeyboardButton("Нет"));
 
         keyboardRows.add(keyboardRowFirst);
         return keyboardRows;
