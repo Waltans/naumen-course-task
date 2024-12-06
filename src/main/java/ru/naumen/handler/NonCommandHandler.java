@@ -276,7 +276,7 @@ public class NonCommandHandler {
         if (currentState.equals(CLEAR_2)) {
             userStateCache.setState(userId, CLEAR_3);
             userStateCache.addParam(userId, phrase);
-            int userPasswordsSize = passwordService.getUserPasswords(userId).size();
+            int userPasswordsSize = passwordService.findCountPasswordsStartedFrom(userId, phrase);
 
             return new Response(String.format(ENTER_AGREEMENT, userPasswordsSize, phrase), CLEAR_3);
         }

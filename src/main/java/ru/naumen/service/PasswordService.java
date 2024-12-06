@@ -216,13 +216,31 @@ public class PasswordService {
     }
 
     /**
-     * Удаляем пароли пользователя начинающиеся с word
+     * Получить все пароли которые начинаются с phrase
      *
      * @param userId - ID пользователя
-     * @param word   - слово для удаления
+     * @param phrase - фраза, с которой начинается описание паролей
+     * @return - количество паролей, которые начинаются с phrase
+     */
+    public int findCountPasswordsStartedFrom(Long userId, String phrase) {
+        return userPasswordRepository
+                .findAllByUserIdAndDescriptionStartingWithIgnoreCase(userId, phrase)
+                .size();
+    }
+
+    /**
+     * Удаляем пароли пользователя начинающиеся с phrase
+     *
+     * @param userId - ID пользователя
+     * @param phrase   - слово для удаления
+     * @return количество удаленных паролей
      */
     @Transactional
-    public void deletePasswordByStartWord(long userId, String word) {
-        userPasswordRepository.deleteAllByUserIdAndDescriptionStartingWithIgnoreCase(userId, word);
+    public int deletePasswordByStartWord(long userId, String phrase) {
+        List<UserPassword> passwords = userPasswordRepository
+                .findAllByUserIdAndDescriptionStartingWithIgnoreCase(userId, phrase);
+
+        userPasswordRepository.deleteAll(passwords);
+        return passwords.size();
     }
 }
