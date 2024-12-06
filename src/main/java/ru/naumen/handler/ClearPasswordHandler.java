@@ -48,11 +48,15 @@ public class ClearPasswordHandler implements CommandHandler {
                 User user = userService.getUserById(userId);
                 String codePhrase = encodeService.decryptData(user.getCodePhrase());
                 if (codePhrase.equals(splitCommand[1])) {
-                    passwordService.deletePasswordByStartWord(userId, splitCommand[2]);
+                    int countDeletedPassword = passwordService
+                            .deletePasswordByStartWord(userId, splitCommand[2]);
                     userStateCache.clearParamsForUser(userId);
                     userStateCache.setState(userId, NONE);
+                    String passwordForm = getPasswordForm(countDeletedPassword);
+                    String deleteForm = getDeleteForm(countDeletedPassword);
 
-                    return new Response(String.format(CLEAR_SUCCESS, splitCommand[2]), NONE);
+                    return new Response(
+                            deleteForm + " " + countDeletedPassword + " " + passwordForm, NONE);
                 } else {
                     userStateCache.setState(userId, NONE);
                     userStateCache.clearParamsForUser(userId);
@@ -77,5 +81,44 @@ public class ClearPasswordHandler implements CommandHandler {
 
             return new Response(DECRYPT_ERROR, NONE);
         }
+    }
+
+    /**
+     * Получить форму слова "пароля"
+     *
+     * @param countDeletedPassword - количество паролей для удаления
+     * @return - форму слова "пароль"
+     */
+    private String getPasswordForm(int countDeletedPassword) {
+        int preLastDigit = countDeletedPassword % 100 / 10;
+        String passwordForm = "пароль";
+        if (preLastDigit == 1) {
+            return passwordForm;
+        }
+
+        return switch (countDeletedPassword % 10) {
+            case 1 -> "пароль";
+            case 2, 3, 4 -> "пароля";
+            default -> "паролей";
+        };
+    }
+
+    /**
+     * Получить форму слова "Удалить"
+     *
+     * @param countDeletedPassword - количество паролей для удаления
+     * @return - форма слова "удалить"
+     */
+    private String getDeleteForm(int countDeletedPassword) {
+        int preLastDigit = countDeletedPassword % 100 / 10;
+        String passwordForm = "Удален";
+        if (preLastDigit == 1) {
+            return passwordForm;
+        }
+
+        return switch (countDeletedPassword % 10) {
+            case 1 -> "Удален";
+            default -> "Удалено";
+        };
     }
 }

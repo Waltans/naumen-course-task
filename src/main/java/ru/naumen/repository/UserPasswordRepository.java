@@ -69,10 +69,10 @@ public interface UserPasswordRepository extends JpaRepository<UserPassword, Long
     List<UserPassword> findByUserIdOrderByLastModifyDate(long userId);
 
     /**
-     * Удаляем все пароли пользователя начинающихся с searchRequest
+     * Ищет все пароли пользователя начинающихся с searchRequest
      *
      * @param userId - ID пользователя
      * @param searchRequest - слово, с которого начинается поиск
      */
-    void deleteAllByUserIdAndDescriptionStartingWithIgnoreCase(long userId, String searchRequest);
+    List<UserPassword> findAllByUserIdAndDescriptionStartingWithIgnoreCase(long userId, String searchRequest);
 }

@@ -276,9 +276,10 @@ public class NonCommandHandler {
         if (currentState.equals(CLEAR_2)) {
             userStateCache.setState(userId, CLEAR_3);
             userStateCache.addParam(userId, phrase);
-            int userPasswordsSize = passwordService.getUserPasswords(userId).size();
+            int userPasswordsSize = passwordService.findCountPasswordsStartedFrom(userId, phrase);
+            String matchForm = getMatchForm(userPasswordsSize);
 
-            return new Response(String.format(ENTER_AGREEMENT, userPasswordsSize, phrase), CLEAR_3);
+            return new Response(String.format(ENTER_AGREEMENT, userPasswordsSize, matchForm, phrase), CLEAR_3);
         }
 
         userStateCache.clearParamsForUser(userId);
@@ -305,5 +306,25 @@ public class NonCommandHandler {
 
             return new Response(DONT_AGREE, NONE);
         }
+    }
+
+    /**
+     * Получить форму слова "пароля"
+     *
+     * @param countDeletedPassword - количество паролей для удаления
+     * @return - форму слова "пароль"
+     */
+    private String getMatchForm(int countDeletedPassword) {
+        int preLastDigit = countDeletedPassword % 100 / 10;
+        String passwordForm = "совпадение";
+        if (preLastDigit == 1) {
+            return passwordForm;
+        }
+
+        return switch (countDeletedPassword % 10) {
+            case 1 -> "совпадение";
+            case 2, 3, 4 -> "совпадения";
+            default -> "совпадений";
+        };
     }
 }
