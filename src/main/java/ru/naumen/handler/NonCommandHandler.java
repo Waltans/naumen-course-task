@@ -172,7 +172,7 @@ public class NonCommandHandler {
     public Response getRemindDays(String daysToRemind, long userId, State nextState) {
         State currentState = userStateCache.getUserState(userId);
         if (daysToRemind.equals("0") &&
-                currentState.equals(SAVE_STEP_3)) {
+                currentState.equals(SAVE_STEP_4)) {
             userStateCache.setState(userId, nextState);
             String[] splitCommand = new String[]{Command.SAVE,
                     userStateCache.getUserParams(userId).get(0),
@@ -188,7 +188,7 @@ public class NonCommandHandler {
 
         userStateCache.setState(userId, nextState);
         userStateCache.addParam(userId, daysToRemind);
-        if (currentState.equals(SAVE_STEP_3)) {
+        if (currentState.equals(SAVE_STEP_4)) {
             String[] splitCommand = new String[]{Command.SAVE,
                     userStateCache.getUserParams(userId).get(0),
                     userStateCache.getUserParams(userId).get(1),
@@ -299,8 +299,16 @@ public class NonCommandHandler {
         if (currentState.equals(CLEAR_3) && agreement.equalsIgnoreCase("да")) {
             List<String> userParams = userStateCache.getUserParams(userId);
             return handlerMapper.getHandler(Command.CLEAR)
-                    .handle(new String[]{Command.CLEAR, userParams.getFirst(), userParams.get(1)}, userId);
+                    .handle(new String[]{Command.CLEAR, userParams.get(0), userParams.get(1)}, userId);
+        } else if (currentState.equals(SAVE_STEP_3) && agreement.equalsIgnoreCase("да")) {
+            List<String> userParams = userStateCache.getUserParams(userId);
+            return handlerMapper.getHandler(Command.SAVE)
+                    .handle(new String[]{Command.SAVE, userParams.get(0), userParams.get(1), "30"}, userId);
         } else {
+            if (currentState.equals(SAVE_STEP_3)) {
+                userStateCache.setState(userId, SAVE_STEP_4);
+                return new Response(ENTER_REMIND_DAYS_ON_SAVE_NOT_AGREE, SAVE_STEP_4);
+            }
             userStateCache.clearParamsForUser(userId);
             userStateCache.setState(userId, NONE);
 

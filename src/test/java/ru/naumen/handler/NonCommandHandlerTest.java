@@ -132,7 +132,7 @@ class NonCommandHandlerTest {
 
         Response response = nonCommandHandler.getDescription("desc", 12345L, NONE, null);
 
-        Assertions.assertEquals("Через сколько дней напомнить о смене пароля? (0 - не ставить напоминание)", response.message());
+        Assertions.assertEquals("Установить напоминание о смене пароля? Стандартное значение 30 дней, сохранить?", response.message());
         Assertions.assertEquals(NONE, response.botState());
     }
 
@@ -267,7 +267,7 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetRemindDaysWhenSave() {
-        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(SAVE_STEP_3);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(SAVE_STEP_4);
         Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("111", "desc"));
         Mockito.when(validationService.isValidDays(10)).thenReturn(true);
 
@@ -314,7 +314,7 @@ class NonCommandHandlerTest {
 
         Mockito.when(userStateCache.getUserState(userId)).thenReturn(CLEAR_3);
         Mockito.when(userStateCache.getUserParams(userId)).thenReturn(userParams);
-        Mockito.when(clearPasswordHandler.handle(new String[]{Command.CLEAR, userParams.getFirst(), phrase}, userId))
+        Mockito.when(clearPasswordHandler.handle(new String[]{Command.CLEAR, userParams.get(0), phrase}, userId))
                 .thenReturn(new Response("Success", NONE));
 
         Response response = nonCommandHandler.getAgreement("да", userId);

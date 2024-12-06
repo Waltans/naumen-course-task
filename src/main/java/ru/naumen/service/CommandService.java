@@ -106,10 +106,10 @@ public class CommandService {
                     nonCommandHandler.getComplexity(command, userId, EDIT_STEP_4, ENTER_PASSWORD_DESCRIPTION);
             case SORT_STEP_1 -> nonCommandHandler.getSortType(command, userId);
             case FIND_STEP_1 -> nonCommandHandler.getSearchRequest(command, userId);
-            case REMIND_STEP_2, SAVE_STEP_3 -> nonCommandHandler.getRemindDays(command, userId, NONE);
+            case REMIND_STEP_2, SAVE_STEP_4 -> nonCommandHandler.getRemindDays(command, userId, NONE);
             case CODE_PHRASE_1, CLEAR_1 -> nonCommandHandler.getCodeWord(command, userId);
             case CLEAR_2 -> nonCommandHandler.getPhraseForClear(command, userId);
-            case CLEAR_3 -> nonCommandHandler.getAgreement(command, userId);
+            case CLEAR_3, SAVE_STEP_3 -> nonCommandHandler.getAgreement(command, userId);
             default -> new Response(INCORRECT_COMMAND_RESPONSE, NONE);
         };
     }
