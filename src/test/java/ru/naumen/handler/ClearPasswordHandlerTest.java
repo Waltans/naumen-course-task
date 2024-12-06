@@ -16,7 +16,8 @@ import ru.naumen.service.PasswordService;
 import ru.naumen.service.UserService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Тестовый класс для хэндлера по очистке паролей
@@ -71,12 +72,12 @@ class ClearPasswordHandlerTest {
         when(userService.getUserById(userId)).thenReturn(user);
         when(encodeService.decryptData(user.getCodePhrase())).thenReturn("code");
 
-        doNothing().when(passwordService).deletePasswordByStartWord(userId, "de");
+        when(passwordService.deletePasswordByStartWord(userId, "de")).thenReturn(0);
 
         Response response = clearPasswordHandler.handle(splitCommand, userId);
 
         assertEquals(State.NONE, response.botState());
-        assertEquals("Пароли, что начинаются с de удалены", response.message());
+        assertEquals("Удалено 0 паролей", response.message());
         verify(userStateCache).clearParamsForUser(userId);
         verify(userStateCache).setState(userId, State.NONE);
         verify(passwordService).deletePasswordByStartWord(userId, "de");
