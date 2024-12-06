@@ -13,9 +13,7 @@ import ru.naumen.service.PasswordService;
 import java.util.List;
 
 import static ru.naumen.bot.constants.Errors.*;
-import static ru.naumen.bot.constants.Information.PASSWORD_SAVED_MESSAGE;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
-import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD;
 
 /**
  * Хэндлер сохранения пароля
@@ -25,12 +23,36 @@ public class SaveHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final Logger log = LoggerFactory.getLogger(SaveHandler.class);
-    private final List<Integer> params = List.of(1, 2);
+
+    /**
+     * Сообщение о сохранении пароля
+     */
+    private static final String PASSWORD_SAVED_MESSAGE = "Пароль успешно сохранён";
+
+    /**
+     * Сообщение с запросом на ввод пароля
+     */
+    private static final String ENTER_PASSWORD_REQUEST = "Введите пароль";
 
     /**
      * Длина команды сохранения, если не передано описание
      */
     private static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
+
+    /**
+     * Сообщение, когда пользователь не создан
+     */
+    private static final String USER_NOT_FOUND = "Пользователь не найден";
+
+    /**
+     * Сообщение, когда не удалось зашифровать пароль
+     */
+    private static final String ENCRYPT_ERROR = "Ошибка шифрования пароля";
+
+    /**
+     * Возможные количества параметров команды
+     */
+    private final List<Integer> params = List.of(1, 2);
 
     public SaveHandler(PasswordService passwordService, UserStateCache userStateCache) {
         this.passwordService = passwordService;
@@ -42,10 +64,10 @@ public class SaveHandler implements CommandHandler {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.SAVE_STEP_1);
 
-            return new Response(ENTER_PASSWORD);
+            return new Response(ENTER_PASSWORD_REQUEST);
         }
 
-        if (!isValid(splitCommand)) {
+        if (!isValidCommand(splitCommand)) {
             return new Response(INCORRECT_COMMAND_RESPONSE);
         }
 
@@ -73,8 +95,13 @@ public class SaveHandler implements CommandHandler {
         }
     }
 
-    @Override
-    public boolean isValid(String[] command) {
-        return params.contains(command.length - 1);
+    /**
+     * Валидирует команду
+     *
+     * @param splitCommand команда, разделённая по пробелам
+     * @return true, если команда валидна
+     */
+    private boolean isValidCommand(String[] splitCommand) {
+        return params.contains(splitCommand.length - COMMAND_WITHOUT_PARAMS_LENGTH);
     }
 }

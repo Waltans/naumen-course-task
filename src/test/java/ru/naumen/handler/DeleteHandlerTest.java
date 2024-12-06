@@ -15,7 +15,6 @@ import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,7 +46,7 @@ class DeleteHandlerTest {
     @Test
     void testDeletePassword_CorrectIndex() {
         String[] command = {"/del", "2"};
-        User user = new User(12345L, new ArrayList<>());
+        User user = new User(12345L, List.of());
         List<UserPassword> userPasswords = List.of(
                 new UserPassword("uuid", "desc", "pass", user, LocalDate.now()),
                 new UserPassword("uuid2", "desc", "pass", user, LocalDate.now()));
@@ -69,7 +68,7 @@ class DeleteHandlerTest {
     @Test
     void testDeletePassword_InvalidIndex() {
         String[] command = {"/del", "5"};
-        User user = new User(12345L, new ArrayList<>());
+        User user = new User(12345L, List.of());
         List<UserPassword> userPasswords = List.of(new UserPassword("desc", "pass", user));
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
@@ -82,16 +81,41 @@ class DeleteHandlerTest {
     }
 
     /**
+     * Тест удаления пароля с не числовым индексом
+     */
+    @Test
+    void testDeletePassword_NotNumberIndex() {
+        String[] command = {"/del", "q"};
+        Response response = deleteHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Индекс должен быть числом", response.message());
+        Mockito.verify(passwordService, Mockito.never())
+                .updatePassword(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+    }
+
+    /**
      * Тест удаления, если команда введена с кнопки
      */
     @Test
     void testDeletePassword_WithoutParams() {
         String[] command = {"Удалить"};
         Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
 
         Response response = deleteHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Введите индекс пароля", response.message());
+    }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testDeletePassword_InvalidCommand() {
+        String[] command = {"/del", "1", "2", "3"};
+
+        Response response = deleteHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 }

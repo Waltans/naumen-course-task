@@ -49,4 +49,16 @@ class HelpHandlerTest {
         Assertions.assertEquals(expectedResult, response.message());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testHelp_InvalidCommand() {
+        String[] command = {"/help", "1", "3", "1"};
+
+        Response response = helpHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
+    }
 }

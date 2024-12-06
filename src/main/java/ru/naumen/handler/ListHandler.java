@@ -10,8 +10,10 @@ import ru.naumen.service.PasswordService;
 
 import java.util.List;
 
+import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
 import static ru.naumen.bot.constants.Errors.NO_PASSWORDS_MESSAGE;
 import static ru.naumen.bot.constants.Information.PASSWORD_LIST_FORMAT;
+import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 
 /**
  * Хэндлер получения списка паролей
@@ -30,6 +32,10 @@ public class ListHandler implements CommandHandler {
 
     @Override
     public Response handle(String[] splitCommand, long userId) {
+        if (!isValidCommand(splitCommand)) {
+            return new Response(INCORRECT_COMMAND_RESPONSE);
+        }
+
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
         if (userPasswords.isEmpty()) {
@@ -48,8 +54,13 @@ public class ListHandler implements CommandHandler {
         return new Response(stringBuilder.toString());
     }
 
-    @Override
-    public boolean isValid(String[] command) {
-        return true;
+    /**
+     * Валидирует команду
+     *
+     * @param splitCommand команда, разделённая по пробелам
+     * @return true, если команда валидна
+     */
+    private boolean isValidCommand(String[] splitCommand) {
+        return splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH;
     }
 }

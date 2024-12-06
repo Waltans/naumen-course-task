@@ -14,7 +14,6 @@ import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -65,7 +64,7 @@ class FindHandlerTest {
     @Test
     void testFindPasswords_WithNoResults() {
         String[] command = {"/find", "no"};
-        Mockito.when(passwordService.getUserPasswordsWithPartialDescription(12345L, "no")).thenReturn(new ArrayList<>());
+        Mockito.when(passwordService.getUserPasswordsWithPartialDescription(12345L, "no")).thenReturn(List.of());
 
         Response response = findHandler.handle(command, 12345L);
 
@@ -79,10 +78,22 @@ class FindHandlerTest {
     void testFindPasswords_WithoutParams() {
         String[] command = {"Искать"};
         Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
 
         Response response = findHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Введите поисковый запрос", response.message());
+    }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testFindPasswords_InvalidCommand() {
+        String[] command = {"/find", "1", "3", "1"};
+
+        Response response = findHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 }

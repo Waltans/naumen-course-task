@@ -3,7 +3,6 @@ package ru.naumen.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -79,17 +78,12 @@ public class UserPassword {
         return lastModifyDate;
     }
 
-
     public void setDescription(String description) {
         this.description = description;
     }
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     /**
@@ -103,10 +97,17 @@ public class UserPassword {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         UserPassword that = (UserPassword) o;
-        return Objects.equals(uuid, that.uuid) && Objects.equals(description, that.description) && Objects.equals(password, that.password) && Objects.equals(user, that.user);
+        return Objects.equals(uuid, that.uuid)
+                && Objects.equals(description, that.description)
+                && Objects.equals(password, that.password)
+                && Objects.equals(user, that.user);
     }
 
     @Override

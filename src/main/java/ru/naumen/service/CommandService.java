@@ -33,11 +33,11 @@ public class CommandService {
      * Название бина (сама команда формата "/command") -> хэндлер
      */
     private final Map<String, CommandHandler> commandHandlers;
+
     /**
      * Ввод, соответствующий команде -> сама команда
      */
     private final Map<String, Command> commandMap = new HashMap<>();
-
 
     public CommandService(UserStateCache userStateCache,
                           NonCommandHandler nonCommandHandler, KeyboardCreator keyboardCreator,
@@ -46,11 +46,11 @@ public class CommandService {
         this.nonCommandHandler = nonCommandHandler;
         this.keyboardCreator = keyboardCreator;
         this.commandHandlers = commandHandlers;
+
         for (Command cmd : Command.values()) {
             commandMap.put(cmd.getCommand(), cmd);
             commandMap.put(cmd.getKeyboardLabel(), cmd);
         }
-
     }
 
     /**
@@ -83,29 +83,27 @@ public class CommandService {
     }
 
     /**
-     * Метод по получению клавиатуры
+     * Получает клавиатуру
      *
      * @param userId - id пользователя
-     * @return - клавиатуру
      */
-    public List<KeyboardRow> getKeyboards(Integer userId) {
+    public List<KeyboardRow> getKeyboards(long userId) {
         State state = userStateCache.getUserState(userId);
 
         return switch (state) {
             case NONE -> keyboardCreator.createMainKeyboard();
-            case GENERATION_STEP_2, EDIT_STEP_3 -> keyboardCreator.createComplexityKeyboard();
-            case SORT_STEP_1 -> keyboardCreator.createSortKeyboard();
-            case IN_LIST -> keyboardCreator.createListKeyboard();
+            case GENERATION_STEP_2, EDIT_STEP_3 -> keyboardCreator.createSelectComplexityKeyboard();
+            case SORT_STEP_1 -> keyboardCreator.createSelectSortTypeKeyboard();
+            case IN_LIST -> keyboardCreator.createInListKeyboard();
             default -> List.of();
         };
     }
 
     /**
-     * Обработка сообщение, которое не является командой
+     * Обработка сообщения, которое не является командой
      *
      * @param splitCommand - входящее сообщение разделенное пробелами
      * @param userId       - ID пользователя
-     * @return Состояние пользователя и ответ
      */
     private Response performNotCommandMessage(String[] splitCommand, long userId) {
         if (splitCommand.length > 1) {

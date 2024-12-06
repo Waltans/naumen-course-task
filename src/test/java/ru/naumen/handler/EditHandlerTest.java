@@ -17,7 +17,6 @@ import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -99,13 +98,26 @@ class EditHandlerTest {
     }
 
     /**
+     * Тест обновления пароля с не числовым индексом
+     */
+    @Test
+    void testUpdatePassword_NotNumberIndex() {
+        String[] command = {"/edit", "q", "12", "3"};
+        Response response = editHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Индекс должен быть числом", response.message());
+        Mockito.verify(passwordService, Mockito.never())
+                .updatePassword(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+    }
+
+    /**
      * Тест обновления, если команда введена с кнопки
      */
     @Test
     void testUpdatePassword_WithoutParams() {
         String[] command = {"Изменить"};
         Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
 
         Response response = editHandler.handle(command, 12345L);
 
@@ -122,7 +134,7 @@ class EditHandlerTest {
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(passwordService.isValidPasswordIndex(1, 12345L)).thenReturn(true);
-        Mockito.when(passwordService.findPasswordByUuid(Mockito.any())).thenReturn(userPasswords.getFirst());
+        Mockito.when(passwordService.findPasswordByUuid(Mockito.any())).thenReturn(userPasswords.get(0));
         Mockito.when(passwordService.generatePassword(5, "4")).thenThrow(PasswordLengthException.class);
 
         Response response = editHandler.handle(command, 12345L);
@@ -130,5 +142,17 @@ class EditHandlerTest {
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
         Mockito.verify(passwordService, Mockito.never())
                 .updatePassword(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+    }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testEditPassword_InvalidCommand() {
+        String[] command = {"/edit", "1"};
+
+        Response response = editHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 }

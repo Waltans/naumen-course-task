@@ -10,8 +10,7 @@ import ru.naumen.service.PasswordService;
 import java.util.List;
 import java.util.Map;
 
-import static ru.naumen.bot.constants.Errors.FAILURE;
-import static ru.naumen.bot.constants.Errors.PASSWORD_NOT_FOUND_MESSAGE;
+import static ru.naumen.bot.constants.Errors.*;
 import static ru.naumen.bot.constants.Requests.*;
 
 /**
@@ -21,6 +20,16 @@ import static ru.naumen.bot.constants.Requests.*;
 public class NonCommandHandler {
     private final UserStateCache userStateCache;
     private final PasswordService passwordService;
+
+    /**
+     * Ответ с запросом на выбор сложности пароля
+     */
+    private static final String ENTER_PASSWORD_COMPLEXITY_REQUEST = "Выберите сложность пароля";
+
+    /**
+     * Ответ с ошибкой
+     */
+    private static final String FAILURE = "Что-то пошло не так :( ";
 
     /**
      * Хэндлеры команд
@@ -43,7 +52,6 @@ public class NonCommandHandler {
      * @param userId     - ID пользователя
      * @param nextState  - следующее состояние
      * @param response   - ответ в случае завершения
-     * @return ответ и состояние пользователя
      */
     public Response getComplexity(String complexity, long userId,
                                   State nextState, String response) {
@@ -67,13 +75,12 @@ public class NonCommandHandler {
      * @param length    - сообщение содержащее длину
      * @param userId    - ID пользователя
      * @param nextState - следующее состояние
-     * @return ответ и состояние пользователя
      */
     public Response getPasswordLength(String length, long userId, State nextState) {
         userStateCache.setState(userId, nextState);
         userStateCache.addParam(userId, length);
 
-        return new Response(ENTER_PASSWORD_COMPLEXITY);
+        return new Response(ENTER_PASSWORD_COMPLEXITY_REQUEST);
     }
 
     /**
@@ -82,8 +89,6 @@ public class NonCommandHandler {
      * @param description - входящая команда
      * @param userId      -ID пользователя
      * @param nextState   - следующее состояние
-     * @param response    - ответ в случае завершения
-     * @return ответ и состояние пользователя
      */
     public Response getDescription(String description, long userId, State nextState, String response) {
         userStateCache.addParam(userId, description);
@@ -115,7 +120,6 @@ public class NonCommandHandler {
      * @param password  - пароль пользователя
      * @param userId    - ID пользователя
      * @param nextState - следующее состояние пользователя
-     * @return ответ и состояние пользователя
      */
     public Response getPassword(String password, long userId, State nextState) {
         userStateCache.addParam(userId, password);
@@ -129,17 +133,21 @@ public class NonCommandHandler {
      *
      * @param index  - пришедшее сообщение
      * @param userId - ID пользователя
-     * @return ответ и состояние пользователя
      */
     public Response getIndexPassword(String index, long userId) {
         userStateCache.addParam(userId, index);
         State currentState = userStateCache.getUserState(userId);
 
-        if (!passwordService.isValidPasswordIndex(Integer.parseInt(index), userId)) {
-            userStateCache.setState(userId, State.NONE);
-            userStateCache.clearParamsForUser(userId);
+        try {
+            if (!passwordService.isValidPasswordIndex(Integer.parseInt(index), userId)) {
+                userStateCache.setState(userId, State.IN_LIST);
+                userStateCache.clearParamsForUser(userId);
 
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index));
+                return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index));
+            }
+        } catch (NumberFormatException e) {
+            userStateCache.setState(userId, State.IN_LIST);
+            return new Response(INDEX_ERROR_MESSAGE);
         }
 
         if (currentState.equals(State.EDIT_STEP_1)) {
@@ -161,7 +169,6 @@ public class NonCommandHandler {
      *
      * @param sortType тип сортировки
      * @param userId   id пользователя
-     * @return ответ и состояние пользователя
      */
     public Response getSortType(String sortType, Long userId) {
         State currentState = userStateCache.getUserState(userId);
@@ -180,7 +187,6 @@ public class NonCommandHandler {
      *
      * @param searchRequest поисковый запрос
      * @param userId        id пользователя
-     * @return ответ и состояние пользователя
      */
     public Response getSearchRequest(String searchRequest, Long userId) {
         State currentState = userStateCache.getUserState(userId);

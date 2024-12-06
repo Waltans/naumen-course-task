@@ -73,4 +73,16 @@ class ListHandlerTest {
 
         Assertions.assertEquals(expectedMessage, response.message());
     }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testList_InvalidCommand() {
+        String[] command = {"/list", "1", "3", "1"};
+
+        Response response = listHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
+    }
 }

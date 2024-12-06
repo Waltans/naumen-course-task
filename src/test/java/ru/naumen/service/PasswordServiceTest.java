@@ -11,7 +11,6 @@ import ru.naumen.model.UserPassword;
 import ru.naumen.repository.UserPasswordRepository;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -131,18 +130,29 @@ class PasswordServiceTest {
     }
 
     /**
-     * Тест подсчёта паролей
+     * Тест валидации индекса пароля при валидном индексе
      */
     @Test
-    void testCountUserPasswords() {
+    void testIsValidPasswordIndex() {
         long userId = 12345L;
         List<UserPassword> passwords = List.of(new UserPassword(), new UserPassword());
 
         Mockito.when(userPasswordRepository.countByUserId(userId)).thenReturn(passwords.size());
 
-        int result = passwordService.countPasswordsByUserId(userId);
+        Assertions.assertTrue(passwordService.isValidPasswordIndex(2, 12345L));
+    }
 
-        Assertions.assertEquals(2, result);
+    /**
+     * Тест валидации индекса пароля при невалидном индексе
+     */
+    @Test
+    void testIsInvalidPasswordIndex() {
+        long userId = 12345L;
+        List<UserPassword> passwords = List.of(new UserPassword(), new UserPassword());
+
+        Mockito.when(userPasswordRepository.countByUserId(userId)).thenReturn(passwords.size());
+
+        Assertions.assertFalse(passwordService.isValidPasswordIndex(3, 12345L));
     }
 
     /**
@@ -152,7 +162,7 @@ class PasswordServiceTest {
     void testFindPasswordByUuid() throws PasswordNotFoundException {
         String passUuid = UUID.randomUUID().toString();
 
-        User user = new User(12345L, new ArrayList<>());
+        User user = new User(12345L, List.of());
         UserPassword password = new UserPassword(passUuid, "desc", "pass", user, LocalDate.of(2010, 1, 1));
 
         Mockito.when(userPasswordRepository.findByUuid(passUuid)).thenReturn(password);
@@ -182,7 +192,7 @@ class PasswordServiceTest {
     @Test
     void testUpdatePassword() {
         String passUuid = UUID.randomUUID().toString();
-        User user = new User(12345L, new ArrayList<>());
+        User user = new User(12345L, List.of());
         UserPassword pass = new UserPassword(passUuid, "site", "pass", user, LocalDate.of(2010, 1, 1));
 
         String newPass = "newPass";
@@ -253,5 +263,31 @@ class PasswordServiceTest {
         String password2 = passwordService.generatePassword(length, complexity);
 
         Assertions.assertNotEquals(password1, password2);
+    }
+
+    /**
+     * Тест генерации паролей при невалидной сложности
+     */
+    @Test
+    void testGeneratePasswordInvalidComplexity() {
+        int length = 10;
+        String complexity = "4";
+
+        Exception e =  Assertions.assertThrows(ComplexityFormatException.class, () ->
+                passwordService.generatePassword(length, complexity));
+        Assertions.assertEquals("Complexity should be between 1 and 3", e.getMessage());
+    }
+
+    /**
+     * Тест генерации паролей при невалидной длине
+     */
+    @Test
+    void testGeneratePasswordInvalidLength() {
+        int length = 7;
+        String complexity = "3";
+
+        Exception e =  Assertions.assertThrows(PasswordLengthException.class, () ->
+                passwordService.generatePassword(length, complexity));
+        Assertions.assertEquals("Password length should be between 8 and 128", e.getMessage());
     }
 }

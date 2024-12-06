@@ -9,9 +9,7 @@ import ru.naumen.service.PasswordService;
 
 import java.util.List;
 
-import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
-import static ru.naumen.bot.constants.Errors.PASSWORD_NOT_FOUND_MESSAGE;
-import static ru.naumen.bot.constants.Information.PASSWORD_DELETED_MESSAGE;
+import static ru.naumen.bot.constants.Errors.*;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_INDEX;
 
@@ -22,7 +20,16 @@ import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_INDEX;
 public class DeleteHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
-    private final List<Integer> params = List.of(1);
+
+    /**
+     * Сообщение об удалении пароля
+     */
+    private static final String PASSWORD_DELETED_MESSAGE = "Удалён пароль для сайта %s";
+
+    /**
+     * Количество параметров команды
+     */
+    private static final int PARAMS_COUNT = 1;
 
     public DeleteHandler(PasswordService passwordService, UserStateCache userStateCache) {
         this.passwordService = passwordService;
@@ -37,15 +44,22 @@ public class DeleteHandler implements CommandHandler {
             return new Response(ENTER_PASSWORD_INDEX);
         }
 
-        if (!isValid(splitCommand)) {
+        if (!isValidCommand(splitCommand)) {
             return new Response(INCORRECT_COMMAND_RESPONSE);
         }
 
-        int passwordIndex = Integer.parseInt(splitCommand[1]);
+        int passwordIndex;
+        try {
+            passwordIndex = Integer.parseInt(splitCommand[1]);
+        } catch (NumberFormatException e) {
+            userStateCache.setState(userId, State.IN_LIST);
+            return new Response(INDEX_ERROR_MESSAGE);
+        }
+
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
         if (!passwordService.isValidPasswordIndex(passwordIndex, userId)) {
-            userStateCache.setState(userId, State.NONE);
+            userStateCache.setState(userId, State.IN_LIST);
             return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex));
         }
 
@@ -61,8 +75,13 @@ public class DeleteHandler implements CommandHandler {
         return new Response(String.format(PASSWORD_DELETED_MESSAGE, description));
     }
 
-    @Override
-    public boolean isValid(String[] command) {
-        return params.contains(command.length - 1);
+    /**
+     * Валидирует команду
+     *
+     * @param splitCommand команда, разделённая по пробелам
+     * @return true, если команда валидна
+     */
+    private boolean isValidCommand(String[] splitCommand) {
+        return (splitCommand.length - COMMAND_WITHOUT_PARAMS_LENGTH) == PARAMS_COUNT;
     }
 }

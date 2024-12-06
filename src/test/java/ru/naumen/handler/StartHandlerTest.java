@@ -53,4 +53,16 @@ class StartHandlerTest {
         Assertions.assertEquals(expectedResult, response.message());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testStart_InvalidCommand() {
+        String[] command = {"/start", "1", "3", "1"};
+
+        Response response = startHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
+    }
 }

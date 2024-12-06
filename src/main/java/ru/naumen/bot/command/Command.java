@@ -1,7 +1,7 @@
 package ru.naumen.bot.command;
 
 /**
- * Команды, их подпись на клавиатуре и количество допустимых параметров для каждой команды
+ * Команды, их подпись на клавиатуре
  */
 public enum Command {
     /**
@@ -74,11 +74,10 @@ public enum Command {
     }
 
     /**
-     * Конструктор для команды, ее подписи на клавиатуре и количества параметров
+     * Конструктор для команды, ее подписи на клавиатуре
      *
      * @param command          Текст команды
      * @param keyboardLabel    Описание команды
-     * @param validParamCounts допустимое количество парметров
      */
     Command(String command, String keyboardLabel) {
         this.command = command;
