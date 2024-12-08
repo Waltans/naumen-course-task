@@ -3,7 +3,6 @@ package ru.naumen.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.repository.UserRepository;
@@ -25,14 +24,12 @@ public class UserService {
      * Создаёт пользователя и сохраняет в БД, если его ещё нет
      *
      * @param id ID пользователя
-     * @param name       имя пользоваетля
      */
-    @Transactional
-    public void createUserIfUserNotExists(long id, String name) {
+    public void createUserIfUserNotExists(long id) {
         if (userRepository.existsById(id)) {
             log.trace("Пользователь с Id {} уже существует", id);
         } else {
-            User user = new User(name, id);
+            User user = new User(id);
 
             userRepository.save(user);
             log.info("Создан пользователь с id {}", id);
@@ -44,7 +41,6 @@ public class UserService {
      *
      * @param id ID пользователя
      */
-    @Transactional(readOnly = true)
     public User getUserById(long id) throws UserNotFoundException {
         User user = userRepository.findById(id);
 

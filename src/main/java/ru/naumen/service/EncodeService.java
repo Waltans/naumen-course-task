@@ -1,7 +1,5 @@
 package ru.naumen.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.naumen.exception.DecryptException;
@@ -18,7 +16,6 @@ import java.util.Base64;
 public class EncodeService {
 
     private static final String ALGORITHM = "AES";
-    private final Logger log = LoggerFactory.getLogger(EncodeService.class);
 
     private final String secretKey;
 

@@ -3,17 +3,15 @@ package ru.naumen.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.naumen.exception.DecryptException;
-import ru.naumen.exception.EncryptException;
-import ru.naumen.exception.PasswordNotFoundException;
-import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.exception.*;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
 import ru.naumen.repository.UserPasswordRepository;
 
 import java.security.SecureRandom;
 import java.util.List;
+
+import static ru.naumen.bot.constants.Parameters.*;
 
 /**
  * Класс для работы с паролями
@@ -31,6 +29,15 @@ public class PasswordService {
     private static final String DIGITS = "0123456789";
     private static final String SPECIAL_CHARACTERS = "!@#$%^&*()-_=+<>";
 
+    /**
+     * Минимальная длина пароля
+     */
+    private static final int MINIMUM_PASSWORD_LENGTH = 8;
+
+    /**
+     * Максимальная длина пароля
+     */
+    private static final int MAXIMUM_PASSWORD_LENGTH = 128;
 
     public PasswordService(EncodeService encodeService, UserService userService, UserPasswordRepository userPasswordRepository) {
         this.encodeService = encodeService;
@@ -45,7 +52,6 @@ public class PasswordService {
      * @param description описание пароля
      * @param userId      ID пользователя
      */
-    @Transactional
     public void createUserPassword(String password, String description, long userId)
             throws UserNotFoundException, EncryptException {
         String encodedPassword = encodeService.encryptData(password);
@@ -61,9 +67,36 @@ public class PasswordService {
      *
      * @param userId ID пользователя
      */
-    @Transactional(readOnly = true)
     public List<UserPassword> getUserPasswords(long userId) {
         return userPasswordRepository.findByUserId(userId);
+    }
+
+    /**
+     * Ищет пароли у конкретного пользователя
+     *
+     * @param userId        ID пользователя
+     * @param searchRequest поисковый запрос пароля (частичное описание без учёта регистра)
+     */
+    public List<UserPassword> getUserPasswordsWithPartialDescription(long userId, String searchRequest) {
+        return userPasswordRepository.findByDescriptionContainsIgnoreCaseAndUserId(searchRequest, userId);
+    }
+
+    /**
+     * Ищет пароли у конкретного пользователя
+     *
+     * @param userId ID пользователя
+     * @return список с отсортированными паролями или пустой список, если паролей у пользователя нет
+     */
+    public List<UserPassword> getUserPasswordsSorted(long userId, SortType sortType) throws IncorrectSortTypeException {
+        switch (sortType) {
+            case BY_DATE -> {
+                return userPasswordRepository.findByUserIdOrderByLastModifyDate(userId);
+            }
+            case BY_DESCRIPTION -> {
+                return userPasswordRepository.findByUserIdOrderByDescriptionAsc(userId);
+            }
+            default -> throw new IncorrectSortTypeException("Некорректный тип сортировки!");
+        }
     }
 
     /**
@@ -71,7 +104,6 @@ public class PasswordService {
      *
      * @param uuid uuid
      */
-    @Transactional
     public void deletePassword(String uuid) {
         if (userPasswordRepository.existsByUuid(uuid)) {
             userPasswordRepository.deleteByUuid(uuid);
@@ -86,7 +118,7 @@ public class PasswordService {
      * @param description описание (если передаётся null, то не обновляется)
      * @param password    пароль
      */
-    public void updatePassword(String uuid, String description, String password) throws EncryptException {
+    public void updatePassword(String uuid, String description, String password) {
         if (userPasswordRepository.existsByUuid(uuid)) {
             UserPassword userPassword = userPasswordRepository.findByUuid(uuid);
 
@@ -105,7 +137,7 @@ public class PasswordService {
      * Ищет пароль по UUID
      *
      * @param uuid uuid
-     * @return найденный пароль
+     * @throws PasswordNotFoundException если пароль не найден
      */
     public UserPassword findPasswordByUuid(String uuid) throws PasswordNotFoundException {
         UserPassword password = userPasswordRepository.findByUuid(uuid);
@@ -116,12 +148,17 @@ public class PasswordService {
     }
 
     /**
-     * Подсчитывает количество паролей пользователя
+     * Проверяет валидность индекса пароля
      *
-     * @param userId id пользователя
+     * @param passwordIndex - индекс
+     * @param userId        - ID пользователя
+     * @return true, если индекс валиден
      */
-    public int countPasswordsByUserId(long userId) {
-        return userPasswordRepository.countByUserId(userId);
+    public boolean isValidPasswordIndex(int passwordIndex, long userId) {
+        int countPasswords = userPasswordRepository.countByUserId(userId);
+
+        return passwordIndex <= countPasswords
+                && passwordIndex >= 1;
     }
 
     /**
@@ -131,23 +168,29 @@ public class PasswordService {
      * @param length     длина
      * @return пароль
      */
-    public String generatePassword(int length, int complexity) {
+    public String generatePassword(int length, String complexity) throws PasswordLengthException, ComplexityFormatException {
+        int complexityValue = parseComplexity(complexity);
+
+        if (!isValidLength(length)) {
+            throw new PasswordLengthException("Password length should be between 8 and 128");
+        }
+
         StringBuilder password = new StringBuilder(length);
         String characterSet = LOWERCASE;
 
-        if (complexity >= 2) {
+        if (complexityValue >= 2) {
             characterSet += DIGITS + UPPERCASE;
         }
-        if (complexity == 3) {
+        if (complexityValue == 3) {
             characterSet += SPECIAL_CHARACTERS;
         }
 
-        if (complexity >= 2) {
+        if (complexityValue >= 2) {
             password.append(getRandomCharacter(DIGITS));
             password.append(getRandomCharacter(UPPERCASE));
             password.append(getRandomCharacter(LOWERCASE));
         }
-        if (complexity == 3) {
+        if (complexityValue == 3) {
             password.append(getRandomCharacter(DIGITS));
             password.append(getRandomCharacter(SPECIAL_CHARACTERS));
             password.append(getRandomCharacter(UPPERCASE));
@@ -168,5 +211,53 @@ public class PasswordService {
      */
     private char getRandomCharacter(String characters) {
         return characters.charAt(random.nextInt(characters.length()));
+    }
+
+    /**
+     * Метод парсит сложность в число
+     *
+     * @param complexity - сложность в виде строки
+     * @return - число обозначающее сложность
+     * @throws ComplexityFormatException - ошибка, что число не может быть конвертировано
+     */
+    private int parseComplexity(String complexity)
+            throws ComplexityFormatException {
+
+        if (!isValidComplexity(complexity)) {
+            throw new ComplexityFormatException("Complexity should be between 1 and 3");
+        }
+
+        return switch (complexity) {
+            case "1", COMPLEXITY_EASY -> 1;
+            case "2", COMPLEXITY_MEDIUM -> 2;
+            case "3", COMPLEXITY_HARD -> 3;
+            default -> throw new IllegalArgumentException("Некорректно задана сложность!");
+        };
+    }
+
+    /**
+     * Проверяем корректность введённой длины пароля
+     *
+     * @param length - длина пароля
+     * @return корректна ли длина
+     */
+    private boolean isValidLength(int length) {
+        return length >= MINIMUM_PASSWORD_LENGTH
+                && length <= MAXIMUM_PASSWORD_LENGTH;
+    }
+
+    /**
+     * Метод проверяет что указана правильная сложность (от 1 до 3)
+     *
+     * @param complexity - сложность пароля
+     * @return корректна ли сложность
+     */
+    private boolean isValidComplexity(String complexity) {
+        return complexity.equals("1")
+                || complexity.equals("2")
+                || complexity.equals("3")
+                || complexity.equals(COMPLEXITY_EASY)
+                || complexity.equals(COMPLEXITY_MEDIUM)
+                || complexity.equals(COMPLEXITY_HARD);
     }
 }

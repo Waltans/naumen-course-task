@@ -1,18 +1,19 @@
 package ru.naumen.bot;
 
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-import ru.naumen.service.CommandService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import ru.naumen.service.CommandService;
 
 /**
  * Телеграм бот
@@ -25,8 +26,8 @@ class TelegramBot extends TelegramLongPollingBot {
     private final String botName;
 
     public TelegramBot(@Value("${bot.token}") String botToken,
-                       CommandService commandService,
-                       @Value("${bot.name}") String botName) {
+                       @Value("${bot.name}") String botName,
+                       CommandService commandService) {
         super(botToken);
         this.commandService = commandService;
         this.botName = botName;
@@ -47,8 +48,7 @@ class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     * Обрабатывает полученное сообщение, создаёт нового пользователя,
-     * если он впервые взаимодействует с ботом
+     * Обрабатывает полученное сообщение
      *
      * @param update обновление
      */
@@ -58,9 +58,8 @@ class TelegramBot extends TelegramLongPollingBot {
             String messageText = update.getMessage().getText();
             String chatId = update.getMessage().getChatId().toString();
             long userId = update.getMessage().getFrom().getId();
-            String username = update.getMessage().getFrom().getUserName();
 
-            String response = commandService.performCommand(messageText, userId, username);
+            Response response = commandService.performCommand(messageText, userId);
             sendMessageToChat(response, chatId);
         }
     }
@@ -68,13 +67,22 @@ class TelegramBot extends TelegramLongPollingBot {
     /**
      * Отправляет сообщение в чат
      *
-     * @param message - сообщение
-     * @param id - id чата, куда отправляем сообщение
+     * @param response - сообщение
+     * @param id       - id чата, куда отправляем сообщение
      */
-    private void sendMessageToChat(String message, String id) {
+    private void sendMessageToChat(Response response, String id) {
         SendMessage tgMessage = new SendMessage();
-        tgMessage.setText(message);
+        tgMessage.setText(response.message());
         tgMessage.setChatId(id);
+
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        tgMessage.setReplyMarkup(replyKeyboardMarkup);
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(true);
+
+        replyKeyboardMarkup.setKeyboard(response.keyboard().keyboardRows());
+
         try {
             execute(tgMessage);
         } catch (TelegramApiException e) {

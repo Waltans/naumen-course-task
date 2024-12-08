@@ -1,13 +1,12 @@
-package ru.naumen;
+package ru.naumen.service;
 
-import ru.naumen.exception.UserNotFoundException;
-import ru.naumen.model.User;
-import ru.naumen.repository.UserRepository;
-import ru.naumen.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.model.User;
+import ru.naumen.repository.UserRepository;
 
 /**
  * Класс модульных тестов для UserService
@@ -34,11 +33,22 @@ class UserServiceTest {
     @Test
     void testCreateUserIfUserNotExists() {
         long id = 12345L;
-        String name = "TestUser";
 
-        userService.createUserIfUserNotExists(id, name);
+        userService.createUserIfUserNotExists(id);
 
         Mockito.verify(userRepository, Mockito.times(1)).save(ArgumentMatchers.any(User.class));
+    }
+
+    /**
+     * Тест создания объекта пользователя если он уже есть
+     */
+    @Test
+    void testCreateUserIfUserExists() {
+        long id = 12345L;
+        Mockito.when(userRepository.existsById(id)).thenReturn(true);
+        userService.createUserIfUserNotExists(id);
+
+        Mockito.verify(userRepository, Mockito.never()).save(ArgumentMatchers.any(User.class));
     }
 
     /**
@@ -47,9 +57,7 @@ class UserServiceTest {
     @Test
     void testGetUserById_UserExists() throws UserNotFoundException {
         long id = 12345L;
-        User user = new User();
-        user.setId(id);
-        user.setUsername("TestUser");
+        User user = new User(id);
 
         Mockito.when(userRepository.findById(id)).thenReturn(user);
 

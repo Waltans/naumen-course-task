@@ -2,6 +2,7 @@ package ru.naumen.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.util.Objects;
 
 /**
@@ -37,11 +38,18 @@ public class UserPassword {
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private User user;
 
-    public UserPassword(String uuid, String description, String password, User user) {
+    /**
+     * Дата последнего изменения пароля
+     */
+    @Column(name = "date", nullable = false, unique = false)
+    private LocalDate lastModifyDate;
+
+    public UserPassword(String uuid, String description, String password, User user, LocalDate lastModifyDate) {
         this.uuid = uuid;
         this.description = description;
         this.password = password;
         this.user = user;
+        this.lastModifyDate = lastModifyDate;
     }
 
     public UserPassword() {
@@ -66,6 +74,10 @@ public class UserPassword {
         return password;
     }
 
+    public LocalDate getLastModifyDate() {
+        return lastModifyDate;
+    }
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -74,16 +86,28 @@ public class UserPassword {
         this.password = password;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    /**
+     * Устанавливает дату последнего обновления пароля при его сохранении в базу данных
+     */
+    @PrePersist
+    @PreUpdate
+    private void setLastModifyDate() {
+        this.lastModifyDate = LocalDate.now();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         UserPassword that = (UserPassword) o;
-        return Objects.equals(uuid, that.uuid) && Objects.equals(description, that.description) && Objects.equals(password, that.password) && Objects.equals(user, that.user);
+        return Objects.equals(uuid, that.uuid)
+                && Objects.equals(description, that.description)
+                && Objects.equals(password, that.password)
+                && Objects.equals(user, that.user);
     }
 
     @Override

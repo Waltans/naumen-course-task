@@ -13,16 +13,10 @@ import java.util.Objects;
 public class User {
 
     /**
-     * Имя пользователя
-     */
-    @Column(name = "username", nullable = false)
-    private String username;
-
-    /**
      * Идентификатор пользователя
      */
     @Id
-    @Column(name = "telegram_id", nullable = false)
+    @Column(name = "id", nullable = false)
     private long id;
 
     /**
@@ -31,8 +25,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserPassword> userPasswords;
 
-    public User(String username, long id, List<UserPassword> userPasswords) {
-        this.username = username;
+    public User(long id, List<UserPassword> userPasswords) {
         this.id = id;
         this.userPasswords = userPasswords;
     }
@@ -41,25 +34,12 @@ public class User {
 
     }
 
-    public User(String username, long id) {
-        this.username = username;
+    public User(long id) {
         this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     public List<UserPassword> getPasswords() {
         return userPasswords;
-    }
-
-    public void setPasswords(UserPassword userPassword) {
-        this.userPasswords.add(userPassword);
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public long getId() {
@@ -72,8 +52,12 @@ public class User {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         User user = (User) o;
         return id == user.id;
     }

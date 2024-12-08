@@ -39,4 +39,24 @@ public interface UserPasswordRepository extends JpaRepository<UserPassword, Long
      * @return Количество паролей пользователя
      */
     int countByUserId(long userId);
+
+    /**
+     * Находит список паролей для пользователя с указанным id и по описанию.
+     * Описание может быть передано не полностью, регистр не учитывается
+     * @param userId Id пользователя
+     * @param searchRequest поисковый запрос пароля
+     */
+    List<UserPassword> findByDescriptionContainsIgnoreCaseAndUserId(String searchRequest, long userId);
+
+    /**
+     * Находит список паролей для пользователя с указанным id, отсортированный по описанию
+     * @param userId Id пользователя
+     */
+    List<UserPassword> findByUserIdOrderByDescriptionAsc(long userId);
+
+    /**
+     * Находит список паролей для пользователя с указанным id, отсортированный по дате
+     * @param userId Id пользователя
+     */
+    List<UserPassword> findByUserIdOrderByLastModifyDate(long userId);
 }

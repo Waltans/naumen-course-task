@@ -1,6 +1,5 @@
-package ru.naumen;
+package ru.naumen.service;
 
-import ru.naumen.service.EncodeService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,7 +12,7 @@ public class EncodeServiceTest {
     private EncodeService encodeService;
 
     /**
-     * Задаёт поле с ключом шифрования
+     * Задаёт перед каждым тестом поле с ключом шифрования
      */
     @BeforeEach
     void setUp() {
