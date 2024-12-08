@@ -3,8 +3,8 @@ package ru.naumen.handler;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.command.Command;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 
@@ -42,8 +42,10 @@ public class NonCommandHandler {
     private final KeyboardCreator keyboardCreator;
 
 
-    public NonCommandHandler(UserStateCache userStateCache, PasswordService passwordService,
-                             Map<String, CommandHandler> commandHandlers, KeyboardCreator keyboardCreator) {
+    public NonCommandHandler(UserStateCache userStateCache,
+                             PasswordService passwordService,
+                             Map<String, CommandHandler> commandHandlers,
+                             KeyboardCreator keyboardCreator) {
         this.userStateCache = userStateCache;
         this.passwordService = passwordService;
         this.commandHandlers = commandHandlers;

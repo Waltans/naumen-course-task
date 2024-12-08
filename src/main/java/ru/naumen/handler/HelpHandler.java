@@ -2,8 +2,8 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 
 import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
@@ -19,7 +19,8 @@ public class HelpHandler implements CommandHandler {
     private final UserStateCache userStateCache;
     private final KeyboardCreator keyboardCreator;
 
-    public HelpHandler(UserStateCache userStateCache, KeyboardCreator keyboardCreator) {
+    public HelpHandler(UserStateCache userStateCache,
+                       KeyboardCreator keyboardCreator) {
         this.userStateCache = userStateCache;
         this.keyboardCreator = keyboardCreator;
     }

@@ -2,8 +2,8 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
@@ -26,7 +26,10 @@ public class ListHandler implements CommandHandler {
     private final UserStateCache userStateCache;
     private final KeyboardCreator keyboardCreator;
 
-    public ListHandler(EncodeService encodeService, PasswordService passwordService, UserStateCache userStateCache, KeyboardCreator keyboardCreator) {
+    public ListHandler(EncodeService encodeService,
+                       PasswordService passwordService,
+                       UserStateCache userStateCache,
+                       KeyboardCreator keyboardCreator) {
         this.encodeService = encodeService;
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;

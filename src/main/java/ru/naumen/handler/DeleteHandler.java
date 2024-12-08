@@ -2,8 +2,8 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
@@ -33,7 +33,9 @@ public class DeleteHandler implements CommandHandler {
      */
     private static final int PARAMS_COUNT = 1;
 
-    public DeleteHandler(PasswordService passwordService, UserStateCache userStateCache, KeyboardCreator keyboardCreator) {
+    public DeleteHandler(PasswordService passwordService,
+                         UserStateCache userStateCache,
+                         KeyboardCreator keyboardCreator) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
         this.keyboardCreator = keyboardCreator;

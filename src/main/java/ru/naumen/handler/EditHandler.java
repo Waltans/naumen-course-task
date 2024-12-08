@@ -4,11 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.ComplexityFormatException;
 import ru.naumen.exception.PasswordLengthException;
 import ru.naumen.exception.PasswordNotFoundException;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
@@ -44,7 +44,9 @@ public class EditHandler implements CommandHandler {
      */
     private static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
 
-    public EditHandler(PasswordService passwordService, UserStateCache userStateCache, KeyboardCreator keyboardCreator) {
+    public EditHandler(PasswordService passwordService,
+                       UserStateCache userStateCache,
+                       KeyboardCreator keyboardCreator) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
         this.keyboardCreator = keyboardCreator;
