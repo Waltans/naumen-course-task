@@ -2,9 +2,9 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.IncorrectSortTypeException;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
@@ -33,7 +33,10 @@ public class SortHandler implements CommandHandler {
     private static final String CHOOSE_SORT_TYPE_REQUEST = "Отсортировать пароли по:";
     private final KeyboardCreator keyboardCreator;
 
-    public SortHandler(PasswordService passwordService, UserStateCache userStateCache, EncodeService encodeService, KeyboardCreator keyboardCreator) {
+    public SortHandler(PasswordService passwordService,
+                       UserStateCache userStateCache,
+                       EncodeService encodeService,
+                       KeyboardCreator keyboardCreator) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
         this.encodeService = encodeService;
