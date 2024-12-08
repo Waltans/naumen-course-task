@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Клавиатура
  *
- * @param keyboardRows
+ * @param keyboardRows - строки клавиатуры
  */
 public record Keyboard(List<KeyboardRow> keyboardRows) {
 
