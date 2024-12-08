@@ -56,7 +56,9 @@ public class SaveHandler implements CommandHandler {
     private final List<Integer> params = List.of(1, 2);
     private final KeyboardCreator keyboardCreator;
 
-    public SaveHandler(PasswordService passwordService, UserStateCache userStateCache, KeyboardCreator keyboardCreator) {
+    public SaveHandler(PasswordService passwordService,
+                       UserStateCache userStateCache,
+                       KeyboardCreator keyboardCreator) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
         this.keyboardCreator = keyboardCreator;
