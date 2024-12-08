@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.keyboards.KeyboardCreator;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.ComplexityFormatException;
 import ru.naumen.exception.PasswordLengthException;

@@ -2,10 +2,10 @@ package ru.naumen.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.naumen.bot.Keyboard;
+import ru.naumen.keyboard.Keyboard;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.command.Command;
-import ru.naumen.bot.keyboards.KeyboardCreator;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.handler.CommandHandler;
 import ru.naumen.handler.NonCommandHandler;

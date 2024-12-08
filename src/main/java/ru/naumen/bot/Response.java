@@ -1,5 +1,7 @@
 package ru.naumen.bot;
 
+import ru.naumen.keyboard.Keyboard;
+
 /**
  * Ответ бота
  *

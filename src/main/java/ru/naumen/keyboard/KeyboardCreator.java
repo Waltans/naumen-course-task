@@ -1,9 +1,8 @@
-package ru.naumen.bot.keyboards;
+package ru.naumen.keyboard;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-import ru.naumen.bot.Keyboard;
 import ru.naumen.bot.command.Command;
 
 import java.util.ArrayList;

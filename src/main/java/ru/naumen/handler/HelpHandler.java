@@ -2,7 +2,7 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.keyboards.KeyboardCreator;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
 

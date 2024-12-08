@@ -1,4 +1,4 @@
-package ru.naumen.bot;
+package ru.naumen.keyboard;
 
 
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
