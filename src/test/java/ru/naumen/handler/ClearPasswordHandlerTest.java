@@ -72,12 +72,12 @@ class ClearPasswordHandlerTest {
         when(userService.getUserById(userId)).thenReturn(user);
         when(encodeService.decryptData(user.getCodePhrase())).thenReturn("code");
 
-        when(passwordService.deletePasswordByStartWord(userId, "de")).thenReturn(0);
+        when(passwordService.deletePasswordByStartWord(userId, "de")).thenReturn(1);
 
         Response response = clearPasswordHandler.handle(splitCommand, userId);
 
         assertEquals(State.NONE, response.botState());
-        assertEquals("Удалено 0 паролей", response.message());
+        assertEquals("Удален 1 пароль", response.message());
         verify(userStateCache).clearParamsForUser(userId);
         verify(userStateCache).setState(userId, State.NONE);
         verify(passwordService).deletePasswordByStartWord(userId, "de");

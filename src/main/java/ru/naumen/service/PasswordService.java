@@ -152,6 +152,16 @@ public class PasswordService {
         return password;
     }
 
+    public List<UserPassword> findAllPasswordUser(long userId) {
+        return userPasswordRepository.findByUserId(userId);
+    }
+
+    public int deleteAllUserPassword(long userId) {
+        List<UserPassword> passwords = findAllPasswordUser(userId);
+        userPasswordRepository.deleteAll(passwords);
+        return passwords.size();
+    }
+
     /**
      * Подсчитывает количество паролей пользователя
      *
@@ -232,7 +242,7 @@ public class PasswordService {
      * Удаляем пароли пользователя начинающиеся с phrase
      *
      * @param userId - ID пользователя
-     * @param phrase   - слово для удаления
+     * @param phrase - слово для удаления
      * @return количество удаленных паролей
      */
     @Transactional

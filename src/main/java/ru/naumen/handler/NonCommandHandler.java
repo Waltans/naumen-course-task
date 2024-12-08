@@ -278,6 +278,11 @@ public class NonCommandHandler {
             userStateCache.addParam(userId, phrase);
             int userPasswordsSize = passwordService.findCountPasswordsStartedFrom(userId, phrase);
             String matchForm = getMatchForm(userPasswordsSize);
+            if (phrase.equalsIgnoreCase(ALL)) {
+                userPasswordsSize = passwordService.countPasswordsByUserId(userId);
+                matchForm = getMatchForm(userPasswordsSize);
+                return new Response(String.format(ENTER_AGREEMENT_ALL, userPasswordsSize, matchForm), CLEAR_3);
+            }
 
             return new Response(String.format(ENTER_AGREEMENT, userPasswordsSize, matchForm, phrase), CLEAR_3);
         }
