@@ -2,13 +2,12 @@ package ru.naumen.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.naumen.keyboard.Keyboard;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.command.Command;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.handler.CommandHandler;
 import ru.naumen.handler.NonCommandHandler;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 
 import java.util.HashMap;
@@ -79,23 +78,6 @@ public class CommandService {
                     return handler.handle(splitCommand, userId);
                 })
                 .orElseGet(() -> performNotCommandMessage(splitCommand, userId));
-    }
-
-    /**
-     * Получает клавиатуру
-     *
-     * @param userId - id пользователя
-     */
-    public Keyboard getKeyboards(long userId) {
-        State state = userStateCache.getUserState(userId);
-
-        return switch (state) {
-            case NONE -> keyboardCreator.createMainKeyboard();
-            case GENERATION_STEP_2, EDIT_STEP_3 -> keyboardCreator.createSelectComplexityKeyboard();
-            case SORT_STEP_1 -> keyboardCreator.createSelectSortTypeKeyboard();
-            case IN_LIST -> keyboardCreator.createInListKeyboard();
-            default -> keyboardCreator.createEmptyKeyboard();
-        };
     }
 
     /**
