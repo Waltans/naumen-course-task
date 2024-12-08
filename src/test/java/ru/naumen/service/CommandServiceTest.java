@@ -530,24 +530,31 @@ class CommandServiceTest {
         Response secondStep = commandService.performCommand("password", 12345L);
 
         Mockito.when(nonCommandHandler.getDescription("description", 12345L, State.SAVE_STEP_3, null))
-                .thenReturn(new Response("Через сколько дней напомнить о смене пароля? (0 - не ставить напоминание)", State.SAVE_STEP_3));
+                .thenReturn(new Response("Установить напоминание о смене пароля? Стандартное значение 30 дней, сохранить?", State.SAVE_STEP_3));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SAVE_STEP_2);
         Response thirdStep = commandService.performCommand("description", 12345L);
 
+        Mockito.when(nonCommandHandler.getAgreement("Нет", 12345L))
+                .thenReturn(new Response("Через сколько дней напомнить о смене пароля? (0 - не ставить напоминание)", State.SAVE_STEP_4));
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SAVE_STEP_3);
+        Response fourthStep = commandService.performCommand("Нет", 12345L);
+
         Mockito.when(nonCommandHandler.getRemindDays("3", 12345L, State.NONE))
                 .thenReturn(new Response("Пароль успешно сохранён", State.NONE));
-        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SAVE_STEP_3);
-        Response fourthStep = commandService.performCommand("3", 12345L);
+        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SAVE_STEP_4);
+        Response fifthStep = commandService.performCommand("3", 12345L);
 
 
         Assertions.assertEquals("Введите пароль", firstStep.message());
         Assertions.assertEquals(State.SAVE_STEP_1, firstStep.botState());
         Assertions.assertEquals("Введите описание пароля", secondStep.message());
         Assertions.assertEquals(State.SAVE_STEP_2, secondStep.botState());
-        Assertions.assertEquals("Через сколько дней напомнить о смене пароля? (0 - не ставить напоминание)", thirdStep.message());
+        Assertions.assertEquals("Установить напоминание о смене пароля? Стандартное значение 30 дней, сохранить?", thirdStep.message());
         Assertions.assertEquals(State.SAVE_STEP_3, thirdStep.botState());
-        Assertions.assertEquals("Пароль успешно сохранён", fourthStep.message());
-        Assertions.assertEquals(State.NONE, fourthStep.botState());
+        Assertions.assertEquals("Через сколько дней напомнить о смене пароля? (0 - не ставить напоминание)", fourthStep.message());
+        Assertions.assertEquals(State.SAVE_STEP_4, fourthStep.botState());
+        Assertions.assertEquals("Пароль успешно сохранён", fifthStep.message());
+        Assertions.assertEquals(State.NONE, fifthStep.botState());
     }
 
     /**
