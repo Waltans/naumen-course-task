@@ -48,8 +48,13 @@ public class ClearPasswordHandler implements CommandHandler {
                 User user = userService.getUserById(userId);
                 String codePhrase = encodeService.decryptData(user.getCodePhrase());
                 if (codePhrase.equals(splitCommand[1])) {
-                    int countDeletedPassword = passwordService
-                            .deletePasswordByStartWord(userId, splitCommand[2]);
+                    int countDeletedPassword;
+                    if (splitCommand[2].equalsIgnoreCase(ALL)) {
+                        countDeletedPassword = passwordService.deleteAllUserPassword(userId);
+                    } else {
+                        countDeletedPassword = passwordService
+                                .deletePasswordByStartWord(userId, splitCommand[2]);
+                    }
                     userStateCache.clearParamsForUser(userId);
                     userStateCache.setState(userId, NONE);
                     String passwordForm = getPasswordForm(countDeletedPassword);

@@ -58,7 +58,9 @@ public class Constants {
     public static final String ADD_CODE_PHRASE = "Введите кодовое слово";
     public static final String ENTER_CLEAR_PASSWORD = "Начало слова с которого вы хотите удалить пароли(ALL - если удалить все)";
     public static final String ENTER_AGREEMENT = "Найдено %d %s, вы точно хотите удалить все пароли, описание которых начинается на %s";
+    public static final String ENTER_AGREEMENT_ALL = "Найдено %d %s, вы точно хотите удалить все пароли";
     public static final String ENTER_CODE = "У вас не установлено кодовое слово";
+    public static final String ALL = "ALL";
     public static final String CANT_RUN_OPERATION = "Невозможно запустить операцию";
     public static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
     public static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
