@@ -5,5 +5,8 @@ package ru.naumen.bot;
  *
  * @param message сообщение с ответом
  */
-public record Response(String message) {
+public record Response(
+        String message,
+        Keyboard keyboard
+) {
 }

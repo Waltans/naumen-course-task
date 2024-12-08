@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
+import ru.naumen.bot.keyboards.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.service.UserService;
 
@@ -18,6 +19,9 @@ class StartHandlerTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private KeyboardCreator keyboardCreator;
 
     @Mock
     private UserStateCache userStateCache;

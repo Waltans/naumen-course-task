@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
+import ru.naumen.bot.keyboards.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
@@ -28,6 +29,9 @@ class ListHandlerTest {
 
     @Mock
     private UserStateCache userStateCache;
+
+    @Mock
+    private KeyboardCreator keyboardCreator;
 
     @InjectMocks
     private ListHandler listHandler;

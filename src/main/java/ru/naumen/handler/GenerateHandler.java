@@ -2,6 +2,7 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
+import ru.naumen.bot.keyboards.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.ComplexityFormatException;
 import ru.naumen.exception.PasswordLengthException;
@@ -29,21 +30,26 @@ public class GenerateHandler implements CommandHandler {
      * Количество параметров команды
      */
     private static final int PARAMS_COUNT = 2;
+    private final KeyboardCreator keyboardCreator;
 
-    public GenerateHandler(PasswordService passwordService, UserStateCache userStateCache) {
+    public GenerateHandler(PasswordService passwordService, UserStateCache userStateCache, KeyboardCreator keyboardCreator) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
+        this.keyboardCreator = keyboardCreator;
     }
 
     @Override
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.GENERATION_STEP_1);
-            return new Response(ENTER_PASSWORD_LENGTH);
+
+            return new Response(ENTER_PASSWORD_LENGTH, keyboardCreator.createEmptyKeyboard());
         }
 
         if (!isValidCommand(splitCommand)) {
-            return new Response(INCORRECT_COMMAND_RESPONSE);
+            userStateCache.setState(userId, State.NONE);
+
+            return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
         }
 
         try {
@@ -54,17 +60,20 @@ public class GenerateHandler implements CommandHandler {
             userStateCache.setState(userId, State.NONE);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(String.format(PASSWORD_GENERATED_MESSAGE, password));
+            return new Response(
+                    String.format(PASSWORD_GENERATED_MESSAGE, password),
+                    keyboardCreator.createMainKeyboard()
+            );
         } catch (PasswordLengthException | NumberFormatException e) {
             userStateCache.setState(userId, State.NONE);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(LENGTH_ERROR_MESSAGE);
+            return new Response(LENGTH_ERROR_MESSAGE, keyboardCreator.createMainKeyboard());
         } catch (ComplexityFormatException e) {
             userStateCache.setState(userId, State.NONE);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(COMPLEXITY_ERROR_MESSAGE);
+            return new Response(COMPLEXITY_ERROR_MESSAGE, keyboardCreator.createMainKeyboard());
         }
     }
 

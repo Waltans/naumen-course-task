@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
+import ru.naumen.bot.keyboards.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.ComplexityFormatException;
 import ru.naumen.exception.PasswordLengthException;
@@ -26,6 +27,9 @@ class EditHandlerTest {
 
     @Mock
     private PasswordService passwordService;
+
+    @Mock
+    private KeyboardCreator keyboardCreator;
 
     @Mock
     private UserStateCache userStateCache;

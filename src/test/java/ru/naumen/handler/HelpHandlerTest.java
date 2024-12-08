@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
+import ru.naumen.bot.keyboards.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 
 /**
@@ -20,6 +21,9 @@ class HelpHandlerTest {
 
     @InjectMocks
     private HelpHandler helpHandler;
+
+    @Mock
+    private KeyboardCreator keyboardCreator;
 
     /**
      * Перед каждым тестом инициализирует моки

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
+import ru.naumen.bot.keyboards.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.UserNotFoundException;
@@ -12,7 +13,7 @@ import ru.naumen.service.PasswordService;
 
 import java.util.List;
 
-import static ru.naumen.bot.constants.Errors.*;
+import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 
 /**
@@ -53,10 +54,12 @@ public class SaveHandler implements CommandHandler {
      * Возможные количества параметров команды
      */
     private final List<Integer> params = List.of(1, 2);
+    private final KeyboardCreator keyboardCreator;
 
-    public SaveHandler(PasswordService passwordService, UserStateCache userStateCache) {
+    public SaveHandler(PasswordService passwordService, UserStateCache userStateCache, KeyboardCreator keyboardCreator) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
+        this.keyboardCreator = keyboardCreator;
     }
 
     @Override
@@ -64,11 +67,14 @@ public class SaveHandler implements CommandHandler {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.SAVE_STEP_1);
 
-            return new Response(ENTER_PASSWORD_REQUEST);
+            return new Response(ENTER_PASSWORD_REQUEST, keyboardCreator.createEmptyKeyboard());
         }
 
         if (!isValidCommand(splitCommand)) {
-            return new Response(INCORRECT_COMMAND_RESPONSE);
+            userStateCache.setState(userId, State.NONE);
+            userStateCache.clearParamsForUser(userId);
+
+            return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
         }
 
         try {
@@ -80,18 +86,19 @@ public class SaveHandler implements CommandHandler {
                 passwordService.createUserPassword(password, description, userId);
             }
             userStateCache.clearParamsForUser(userId);
+            userStateCache.setState(userId, State.NONE);
 
-            return new Response(PASSWORD_SAVED_MESSAGE);
+            return new Response(PASSWORD_SAVED_MESSAGE, keyboardCreator.createMainKeyboard());
         } catch (UserNotFoundException e) {
             log.error("Ошибка при сохранении пароля - не найден пользователь", e);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(USER_NOT_FOUND);
+            return new Response(USER_NOT_FOUND, keyboardCreator.createMainKeyboard());
         } catch (EncryptException e) {
             log.error("Ошибка шифрования при сохранении пароля", e);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(ENCRYPT_ERROR);
+            return new Response(ENCRYPT_ERROR, keyboardCreator.createMainKeyboard());
         }
     }
 

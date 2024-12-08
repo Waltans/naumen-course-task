@@ -2,6 +2,7 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
+import ru.naumen.bot.keyboards.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.IncorrectSortTypeException;
 import ru.naumen.model.State;
@@ -30,17 +31,22 @@ public class SortHandler implements CommandHandler {
      * Сообщение с запросом на выбор типа сортировки
      */
     private static final String CHOOSE_SORT_TYPE_REQUEST = "Отсортировать пароли по:";
+    private final KeyboardCreator keyboardCreator;
 
-    public SortHandler(PasswordService passwordService, UserStateCache userStateCache, EncodeService encodeService) {
+    public SortHandler(PasswordService passwordService, UserStateCache userStateCache, EncodeService encodeService, KeyboardCreator keyboardCreator) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
         this.encodeService = encodeService;
+        this.keyboardCreator = keyboardCreator;
     }
 
     @Override
     public Response handle(String[] splitCommand, long userId) {
         if (!isValidCommand(splitCommand)) {
-            return new Response(INCORRECT_COMMAND_RESPONSE);
+            userStateCache.setState(userId, State.NONE);
+            userStateCache.clearParamsForUser(userId);
+
+            return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createSelectSortTypeKeyboard());
         }
 
         State currentState = userStateCache.getUserState(userId);
@@ -54,13 +60,13 @@ public class SortHandler implements CommandHandler {
                     case BY_DESCRIPTION ->
                             sortedPasswords = passwordService.getUserPasswordsSorted(userId, SortType.BY_DESCRIPTION);
                     default -> {
-                        return new Response(INCORRECT_COMMAND_RESPONSE);
+                        return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
                     }
                 }
 
                 if (sortedPasswords.isEmpty()) {
                     userStateCache.setState(userId, State.NONE);
-                    return new Response(NO_PASSWORDS_MESSAGE);
+                    return new Response(NO_PASSWORDS_MESSAGE, keyboardCreator.createMainKeyboard());
                 }
 
                 StringBuilder stringBuilder = new StringBuilder();
@@ -73,15 +79,15 @@ public class SortHandler implements CommandHandler {
                 userStateCache.setState(userId, State.NONE);
                 userStateCache.clearParamsForUser(userId);
 
-                return new Response(stringBuilder.toString());
+                return new Response(stringBuilder.toString(), keyboardCreator.createMainKeyboard());
             } catch (IncorrectSortTypeException e) {
                 userStateCache.setState(userId, State.IN_LIST);
-                return new Response(INCORRECT_COMMAND_RESPONSE);
+                return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createInListKeyboard());
             }
 
         } else {
             userStateCache.setState(userId, State.SORT_STEP_1);
-            return new Response(CHOOSE_SORT_TYPE_REQUEST);
+            return new Response(CHOOSE_SORT_TYPE_REQUEST, keyboardCreator.createSelectSortTypeKeyboard());
         }
     }
 

@@ -2,7 +2,7 @@ package ru.naumen.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import ru.naumen.bot.Keyboard;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.command.Command;
 import ru.naumen.bot.keyboards.KeyboardCreator;
@@ -12,7 +12,6 @@ import ru.naumen.handler.NonCommandHandler;
 import ru.naumen.model.State;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -87,7 +86,7 @@ public class CommandService {
      *
      * @param userId - id пользователя
      */
-    public List<KeyboardRow> getKeyboards(long userId) {
+    public Keyboard getKeyboards(long userId) {
         State state = userStateCache.getUserState(userId);
 
         return switch (state) {
@@ -95,7 +94,7 @@ public class CommandService {
             case GENERATION_STEP_2, EDIT_STEP_3 -> keyboardCreator.createSelectComplexityKeyboard();
             case SORT_STEP_1 -> keyboardCreator.createSelectSortTypeKeyboard();
             case IN_LIST -> keyboardCreator.createInListKeyboard();
-            default -> List.of();
+            default -> keyboardCreator.createEmptyKeyboard();
         };
     }
 
@@ -107,7 +106,7 @@ public class CommandService {
      */
     private Response performNotCommandMessage(String[] splitCommand, long userId) {
         if (splitCommand.length > 1) {
-            return new Response(INCORRECT_COMMAND_RESPONSE);
+            return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
         }
         final String command = splitCommand[0];
 
@@ -122,7 +121,7 @@ public class CommandService {
                     nonCommandHandler.getComplexity(command, userId, State.EDIT_STEP_4, ENTER_PASSWORD_DESCRIPTION);
             case SORT_STEP_1 -> nonCommandHandler.getSortType(command, userId);
             case FIND_STEP_1 -> nonCommandHandler.getSearchRequest(command, userId);
-            default -> new Response(INCORRECT_COMMAND_RESPONSE);
+            default -> new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
         };
     }
 }
