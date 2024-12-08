@@ -8,8 +8,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.service.UserService;
 
 /**
@@ -84,6 +84,11 @@ class StartHandlerTest {
                  - /remind [passwordID] [days] - для того чтобы поставить напоминание через сколько обновить пароль
                  - /help - Справка.
                 """;
+        Response response = startHandler.handle(command, 12345L);
+
+        Assertions.assertEquals(expectedResult, response.message());
+        Mockito.verify(userStateCache).clearParamsForUser(12345L);
+    }
     void testStart_InvalidCommand() {
         String[] command = {"/start", "1", "3", "1"};
 

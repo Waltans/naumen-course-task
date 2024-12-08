@@ -60,8 +60,7 @@ public class User {
                 getCodeModifyDate().isBefore(LocalDate.now().minusDays(30))) {
             setCodeModifyDate();
             this.codePhrase = codePhrase;
-        }
-        else {
+        } else {
             throw new UserCodePhraseException("Невозможно сменить кодовое слово");
         }
     }

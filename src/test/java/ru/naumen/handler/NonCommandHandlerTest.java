@@ -6,14 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import ru.naumen.keyboard.Keyboard;
-import ru.naumen.bot.Command;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
+import ru.naumen.bot.command.Command;
 import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.Keyboard;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
-import ru.naumen.model.State;
-import ru.naumen.service.PasswordService;
 import ru.naumen.service.PasswordService;
 
 import java.util.List;
@@ -54,8 +52,6 @@ class NonCommandHandlerTest {
     private ClearPasswordHandler clearPasswordHandler;
     @Mock
     private RemindHandler remindHandler;
-    @Mock
-    private PasswordService passwordService;
 
     private NonCommandHandler nonCommandHandler;
 
@@ -74,7 +70,10 @@ class NonCommandHandlerTest {
                 "/del", deleteHandler,
                 "/save", saveHandler,
                 "/sort", sortHandler,
-                "/find", findHandler
+                "/find", findHandler,
+                "/remind", remindHandler,
+                "/clear", clearPasswordHandler,
+                "/code", addCodePhraseHandler
         );
 
         nonCommandHandler = new NonCommandHandler(
@@ -90,15 +89,13 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetComplexity() {
-        Response response = nonCommandHandler.getComplexity("3", 12345L, State.SAVE_STEP_2, "complexity entered");
-        Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
+        Response response = nonCommandHandler
+                .getComplexity("3", 12345L, State.SAVE_STEP_2, "complexity entered");
 
-        Response response = nonCommandHandler.getComplexity("3", 12345L, SAVE_STEP_3, "complexity entered");
 
         Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("3"));
 
         Mockito.verify(userStateCache).addParam(12345L, "3");
-        Assertions.assertEquals(SAVE_STEP_3, response.botState());
         Mockito.verify(userStateCache).addParam(12345L, "3");
         Assertions.assertEquals("complexity entered", response.message());
     }
@@ -108,8 +105,6 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetPasswordLength() {
-        Mockito.when(validationService.isValidLength(8)).thenReturn(true);
-
         Response response = nonCommandHandler.getPasswordLength("8", 12345L, State.SAVE_STEP_1);
 
         Assertions.assertEquals("Выберите сложность пароля", response.message());
@@ -123,10 +118,11 @@ class NonCommandHandlerTest {
     void testGetDescriptionWhenSave() {
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SAVE_STEP_2);
         Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("pass"));
-        Mockito.when(saveHandler.handle(splitCommand, 12345L))
+        Mockito.when(saveHandler.handle(Mockito.any(), Mockito.eq(12345L)))
                 .thenReturn(new Response("pass saved", new Keyboard(List.of())));
 
-        Response response = nonCommandHandler.getDescription("desc", 12345L, State.NONE, null);
+        Response response = nonCommandHandler.getDescription(
+                "desc", 12345L, State.NONE, null);
 
         Assertions.assertEquals("Установить напоминание о смене пароля? Стандартное значение 30 дней, сохранить?", response.message());
     }
@@ -175,13 +171,14 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetIndexPasswordWhenRemind() {
-        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(REMIND_STEP_1);
-        Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
+        Mockito.when(userStateCache.getUserState(Mockito.eq(12345L)))
+                .thenReturn(REMIND_STEP_1);
+        Mockito.when(passwordService.isValidPasswordIndex(Mockito.eq(1), Mockito.eq(12345L)))
+                .thenReturn(true);
 
         Response response = nonCommandHandler.getIndexPassword("1", 12345L);
 
         Assertions.assertEquals("Через сколько дней напомнить о смене пароля?", response.message());
-        Assertions.assertEquals(REMIND_STEP_2, response.botState());
     }
 
     /**
@@ -235,21 +232,22 @@ class NonCommandHandlerTest {
      */
     @Test
     void testGetRemindDaysWhenRemind() {
-        Mockito.when(userStateCache.getUserState(12345L)).thenReturn(REMIND_STEP_1);
-        Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("1"));
-        Mockito.when(validationService.isValidDays(5)).thenReturn(true);
+        long userId = 12345L;
+
+        Mockito.when(userStateCache.getUserState(userId)).thenReturn(REMIND_STEP_1);
+        Mockito.when(userStateCache.getUserParams(userId)).thenReturn(List.of("1"));
 
         String[] splitCommand = {"/remind", "1", "5"};
-        Mockito.when(remindHandler.handle(splitCommand, 12345L))
-                .thenReturn(new Response("reminder set", NONE));
+        Mockito.when(remindHandler.handle(Mockito.eq(splitCommand), Mockito.eq(userId)))
+                .thenReturn(new Response("reminder set", new Keyboard(List.of())));
 
-        Response response = nonCommandHandler.getRemindDays("5", 12345L, REMIND_STEP_2);
+        Response response = nonCommandHandler.getRemindDays("5", userId, REMIND_STEP_2);
 
         Assertions.assertEquals("reminder set", response.message());
-        Assertions.assertEquals(NONE, response.botState());
-        Mockito.verify(userStateCache).addParam(12345L, "5");
-        Mockito.verify(userStateCache).setState(12345L, REMIND_STEP_2);
+        Mockito.verify(userStateCache).addParam(userId, "5");
+        Mockito.verify(userStateCache).setState(userId, REMIND_STEP_2);
     }
+
 
     /**
      * Тест метода получения дней до напоминания при сохранении
@@ -258,16 +256,14 @@ class NonCommandHandlerTest {
     void testGetRemindDaysWhenSave() {
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(SAVE_STEP_4);
         Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("111", "desc"));
-        Mockito.when(validationService.isValidDays(10)).thenReturn(true);
 
         String[] splitCommand = {"/save", "111", "desc", "10"};
         Mockito.when(saveHandler.handle(splitCommand, 12345L))
-                .thenReturn(new Response("password saved", NONE));
+                .thenReturn(new Response("password saved", new Keyboard(List.of())));
 
         Response response = nonCommandHandler.getRemindDays("10", 12345L, NONE);
 
         Assertions.assertEquals("password saved", response.message());
-        Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(userStateCache).setState(12345L, NONE);
     }
 
@@ -286,7 +282,6 @@ class NonCommandHandlerTest {
 
         Response actualResponse = nonCommandHandler.getPhraseForClear(phrase, userId);
 
-        Assertions.assertEquals(CLEAR_3, actualResponse.botState());
         Assertions.assertEquals("Найдено 0 совпадений, вы точно хотите удалить все пароли, описание которых начинается на testPhrase", actualResponse.message());
     }
 
@@ -297,17 +292,21 @@ class NonCommandHandlerTest {
     void clear_success() {
         long userId = 12345L;
         String phrase = "code";
-        List<String> userParams = List.of("/clear", "code");
+        List<String> userParams = List.of(phrase, "qwe");
 
-        Mockito.when(userStateCache.getUserState(userId)).thenReturn(CLEAR_3);
+        Mockito.when(userStateCache.getUserState(userId)).thenReturn(State.CLEAR_3);
         Mockito.when(userStateCache.getUserParams(userId)).thenReturn(userParams);
-        Mockito.when(clearPasswordHandler.handle(new String[]{Command.CLEAR, userParams.get(0), phrase}, userId))
-                .thenReturn(new Response("Success", NONE));
+        Mockito.when(clearPasswordHandler.handle(
+                        Mockito.eq(new String[]{Command.CLEAR.getCommand(), phrase, "qwe"}),
+                        Mockito.eq(userId)))
+                .thenReturn(new Response("Success", new Keyboard(List.of())));
 
         Response response = nonCommandHandler.getAgreement("да", userId);
+
+        Assertions.assertNotNull(response, "Response should not be null");
         Assertions.assertEquals("Success", response.message());
-        Assertions.assertEquals(NONE, response.botState());
     }
+
 
     /**
      * Тест, что команда работает корректно, если пользователь отказывается от отчистки паролей
@@ -322,7 +321,6 @@ class NonCommandHandlerTest {
 
         Response response = nonCommandHandler.getAgreement("нет", userId);
         Assertions.assertEquals("Пароли не будут очищены", response.message());
-        Assertions.assertEquals(NONE, response.botState());
     }
 
     /**
@@ -338,7 +336,6 @@ class NonCommandHandlerTest {
         Response actualResponse = nonCommandHandler.getPhraseForClear(phrase, userId);
 
         Assertions.assertEquals("Что-то пошло не так :( ", actualResponse.message());
-        Assertions.assertEquals(SAVE_STEP_1, actualResponse.botState());
         Mockito.verify(userStateCache).clearParamsForUser(userId);
     }
 
@@ -352,14 +349,14 @@ class NonCommandHandlerTest {
 
         Mockito.when(userStateCache.getUserState(userId)).thenReturn(CODE_PHRASE_1);
         Mockito.when(addCodePhraseHandler.handle(
-                        new String[]{Command.ADD_CODE, codeWord}, userId))
-                .thenReturn(new Response("Success", NONE));
+                        new String[]{Command.ADD_CODE.getCommand(), codeWord}, userId))
+                .thenReturn(new Response("Success", new Keyboard(List.of())));
 
         Response actualResponse = nonCommandHandler.getCodeWord(codeWord, userId);
 
         Assertions.assertEquals("Success", actualResponse.message());
-        Assertions.assertEquals(NONE, actualResponse.botState());
-        Mockito.verify(addCodePhraseHandler).handle(new String[]{Command.ADD_CODE, codeWord}, userId);
+
+        Mockito.verify(addCodePhraseHandler).handle(new String[]{Command.ADD_CODE.getCommand(), codeWord}, userId);
     }
 
     /**
@@ -374,7 +371,6 @@ class NonCommandHandlerTest {
 
         Response actualResponse = nonCommandHandler.getCodeWord(codeWord, userId);
 
-        Assertions.assertEquals(CLEAR_2, actualResponse.botState());
         Assertions.assertEquals("Начало слова с которого вы хотите удалить пароли(ALL - если удалить все)",
                 actualResponse.message());
         Mockito.verify(userStateCache).addParam(userId, codeWord);
@@ -394,7 +390,6 @@ class NonCommandHandlerTest {
         Response actualResponse = nonCommandHandler.getCodeWord(codeWord, userId);
 
         Assertions.assertEquals("Что-то пошло не так :( ", actualResponse.message());
-        Assertions.assertEquals(SAVE_STEP_1, actualResponse.botState());
         Mockito.verify(userStateCache).clearParamsForUser(userId);
     }
 }

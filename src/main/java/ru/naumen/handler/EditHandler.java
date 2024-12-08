@@ -87,26 +87,10 @@ public class EditHandler implements CommandHandler {
 
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        if (!validationService.isValidPasswordIndex(userId, passwordIndex)) {
-            userStateCache.setState(userId, NONE);
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
-        }
-
-        int length = Integer.parseInt(splitCommand[2]);
-        String complexity = splitCommand[3];
-
-        if (!validationService.isValidLength(length)) {
-            return new Response(LENGTH_ERROR_MESSAGE, NONE);
-        }
-        if (!validationService.isValidComplexity(complexity)) {
-            return new Response(COMPLEXITY_ERROR_MESSAGE, NONE);
-        }
-
         // Пользователь получает список начиная с 1
         int passwordIndexInSystem = passwordIndex - 1;
 
         String uuid = userPasswords.get(passwordIndexInSystem).getUuid();
-        UserPassword passwordByUuid;
         try {
             int length = Integer.parseInt(splitCommand[2]);
             String complexity = splitCommand[3];

@@ -3,19 +3,20 @@ package ru.naumen.handler;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.command.Command;
+import ru.naumen.bot.constants.Schedules;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
-import ru.naumen.service.PasswordService;
 import ru.naumen.service.PasswordService;
 
 import java.util.List;
 import java.util.Map;
 
-import static ru.naumen.bot.constants.Errors.INDEX_ERROR_MESSAGE;
-import static ru.naumen.bot.constants.Errors.PASSWORD_NOT_FOUND_MESSAGE;
+import static ru.naumen.bot.constants.Errors.*;
+import static ru.naumen.bot.constants.Parameters.CLEAR_ALL_PARAM;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_DESCRIPTION;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_LENGTH;
+import static ru.naumen.model.State.*;
 
 /**
  * Хэндлер сообщений, не являющихся командой
@@ -34,6 +35,17 @@ public class NonCommandHandler {
      * Ответ с ошибкой
      */
     private static final String FAILURE = "Что-то пошло не так :( ";
+    private static final String ENTER_AGREEMENT =
+            "Найдено %d %s, вы точно хотите удалить все пароли, описание которых начинается на %s";
+
+    private static final String ENTER_CLEAR_PASSWORD =
+            "Начало слова с которого вы хотите удалить пароли(ALL - если удалить все)";
+
+    private static final String ENTER_AGREEMENT_ALL = "Найдено %d %s, вы точно хотите удалить все пароли";
+
+    private static final String ENTER_REMIND_DAYS = "Через сколько дней напомнить о смене пароля?";
+    private static final String DONT_AGREE = "Пароли не будут очищены";
+
 
     /**
      * Хэндлеры команд
@@ -104,10 +116,10 @@ public class NonCommandHandler {
         userStateCache.setState(userId, nextState);
 
         if (currentState.equals(State.SAVE_STEP_2)) {
-            String[] splitCommand = {Command.SAVE.getCommand(), userStateCache.getUserParams(userId).get(0), description};
+            userStateCache.addParam(userId, description);
+            userStateCache.setState(userId, nextState);
 
-            CommandHandler handler = commandHandlers.get(Command.SAVE.getCommand());
-            return handler.handle(splitCommand, userId);
+            return new Response(Schedules.ENTER_REMIND_DAYS_ON_SAVE, keyboardCreator.createAgreementKeyboard());
         } else if (currentState.equals(State.EDIT_STEP_4)) {
             String[] splitCommand = {Command.EDIT.getCommand(),
                     userStateCache.getUserParams(userId).get(0),
@@ -161,7 +173,7 @@ public class NonCommandHandler {
         if (currentState.equals(REMIND_STEP_1)) {
             userStateCache.setState(userId, REMIND_STEP_2);
 
-            return new Response(ENTER_REMIND_DAYS, REMIND_STEP_2);
+            return new Response(ENTER_REMIND_DAYS, keyboardCreator.createEmptyKeyboard());
         } else if (currentState.equals(State.EDIT_STEP_1)) {
             userStateCache.setState(userId, State.EDIT_STEP_2);
 
@@ -189,32 +201,36 @@ public class NonCommandHandler {
         if (daysToRemind.equals("0") &&
                 currentState.equals(SAVE_STEP_4)) {
             userStateCache.setState(userId, nextState);
-            String[] splitCommand = new String[]{Command.SAVE,
+            String[] splitCommand = new String[]{
+                    Command.SAVE.getCommand(),
                     userStateCache.getUserParams(userId).get(0),
-                    userStateCache.getUserParams(userId).get(1)};
+                    userStateCache.getUserParams(userId).get(1)
+            };
 
-            return handlerMapper.getHandler(Command.SAVE).handle(splitCommand, userId);
+            return commandHandlers.get(Command.SAVE.getCommand()).handle(splitCommand, userId);
         }
 
-        if (!validationService.isValidDays(Integer.parseInt(daysToRemind))) {
+        if (!isValidDays(Integer.parseInt(daysToRemind))) {
             userStateCache.setState(userId, currentState);
-            return new Response(DAYS_ERROR_MESSAGE, currentState);
+            return new Response(DAYS_ERROR_MESSAGE, keyboardCreator.createEmptyKeyboard());
         }
 
         userStateCache.setState(userId, nextState);
         userStateCache.addParam(userId, daysToRemind);
         if (currentState.equals(SAVE_STEP_4)) {
-            String[] splitCommand = new String[]{Command.SAVE,
+            String[] splitCommand = new String[]{
+                    Command.SAVE.getCommand(),
                     userStateCache.getUserParams(userId).get(0),
                     userStateCache.getUserParams(userId).get(1),
                     daysToRemind};
 
-            return handlerMapper.getHandler(Command.SAVE).handle(splitCommand, userId);
+            return commandHandlers.get(Command.SAVE.getCommand()).handle(splitCommand, userId);
         }
-        String[] splitCommand = new String[]{Command.REMIND,
+        String[] splitCommand = new String[]{
+                Command.REMIND.getCommand(),
                 userStateCache.getUserParams(userId).get(0), daysToRemind};
 
-        return handlerMapper.getHandler(Command.REMIND).handle(splitCommand, userId);
+        return commandHandlers.get(Command.REMIND.getCommand()).handle(splitCommand, userId);
     }
 
     /**
@@ -227,19 +243,19 @@ public class NonCommandHandler {
     public Response getCodeWord(String codeWord, long userId) {
         State currentState = userStateCache.getUserState(userId);
         if (currentState.equals(CODE_PHRASE_1)) {
-            return handlerMapper.getHandler(Command.ADD_CODE)
-                    .handle(new String[]{Command.ADD_CODE, codeWord}, userId);
+            return commandHandlers.get(Command.ADD_CODE.getCommand())
+                    .handle(new String[]{Command.ADD_CODE.getCommand(), codeWord}, userId);
         }
 
         if (currentState.equals(CLEAR_1)) {
             userStateCache.addParam(userId, codeWord);
             userStateCache.setState(userId, CLEAR_2);
 
-            return new Response(ENTER_CLEAR_PASSWORD, CLEAR_2);
+            return new Response(ENTER_CLEAR_PASSWORD, keyboardCreator.createEmptyKeyboard());
         }
 
         userStateCache.clearParamsForUser(userId);
-        return new Response(FAILURE, currentState);
+        return new Response(FAILURE, keyboardCreator.createMainKeyboard());
     }
 
 
@@ -293,17 +309,21 @@ public class NonCommandHandler {
             userStateCache.addParam(userId, phrase);
             int userPasswordsSize = passwordService.findCountPasswordsStartedFrom(userId, phrase);
             String matchForm = getMatchForm(userPasswordsSize);
-            if (phrase.equalsIgnoreCase(ALL)) {
-                userPasswordsSize = passwordService.countPasswordsByUserId(userId);
+            if (phrase.equalsIgnoreCase(CLEAR_ALL_PARAM)) {
+                userPasswordsSize = passwordService.findAllPasswordUser(userId).size();
                 matchForm = getMatchForm(userPasswordsSize);
-                return new Response(String.format(ENTER_AGREEMENT_ALL, userPasswordsSize, matchForm), CLEAR_3);
+                return new Response(
+                        String.format(ENTER_AGREEMENT_ALL, userPasswordsSize, matchForm),
+                        keyboardCreator.createAgreementKeyboard());
             }
 
-            return new Response(String.format(ENTER_AGREEMENT, userPasswordsSize, matchForm, phrase), CLEAR_3);
+            return new Response(
+                    String.format(ENTER_AGREEMENT, userPasswordsSize, matchForm, phrase),
+                    keyboardCreator.createAgreementKeyboard());
         }
 
         userStateCache.clearParamsForUser(userId);
-        return new Response(FAILURE, currentState);
+        return new Response(FAILURE, keyboardCreator.createMainKeyboard());
     }
 
     /**
@@ -318,21 +338,25 @@ public class NonCommandHandler {
 
         if (currentState.equals(CLEAR_3) && agreement.equalsIgnoreCase("да")) {
             List<String> userParams = userStateCache.getUserParams(userId);
-            return handlerMapper.getHandler(Command.CLEAR)
-                    .handle(new String[]{Command.CLEAR, userParams.get(0), userParams.get(1)}, userId);
+            return commandHandlers.get(Command.CLEAR.getCommand())
+                    .handle(new String[]{Command.CLEAR.getCommand(),
+                            userParams.get(0), userParams.get(1)
+                    }, userId);
         } else if (currentState.equals(SAVE_STEP_3) && agreement.equalsIgnoreCase("да")) {
             List<String> userParams = userStateCache.getUserParams(userId);
-            return handlerMapper.getHandler(Command.SAVE)
-                    .handle(new String[]{Command.SAVE, userParams.get(0), userParams.get(1), "30"}, userId);
+            return commandHandlers.get(Command.SAVE.getCommand())
+                    .handle(new String[]{Command.SAVE.getCommand(), userParams.get(0), userParams.get(1), "30"}, userId);
         } else {
             if (currentState.equals(SAVE_STEP_3)) {
                 userStateCache.setState(userId, SAVE_STEP_4);
-                return new Response(ENTER_REMIND_DAYS_ON_SAVE_NOT_AGREE, SAVE_STEP_4);
+                return new Response(
+                        Schedules.ENTER_REMIND_DAYS_ON_SAVE_NOT_AGREE,
+                        keyboardCreator.createEmptyKeyboard());
             }
             userStateCache.clearParamsForUser(userId);
             userStateCache.setState(userId, NONE);
 
-            return new Response(DONT_AGREE, NONE);
+            return new Response(DONT_AGREE, keyboardCreator.createMainKeyboard());
         }
     }
 
@@ -354,5 +378,9 @@ public class NonCommandHandler {
             case 2, 3, 4 -> "совпадения";
             default -> "совпадений";
         };
+    }
+
+    private boolean isValidDays(int daysToRemind) {
+        return daysToRemind >= 3 && daysToRemind <= 90;
     }
 }

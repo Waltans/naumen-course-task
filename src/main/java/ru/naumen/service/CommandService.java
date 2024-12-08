@@ -96,7 +96,7 @@ public class CommandService {
             case GENERATION_STEP_1 -> nonCommandHandler.getPasswordLength(command, userId, State.GENERATION_STEP_2);
             case GENERATION_STEP_2 -> nonCommandHandler.getComplexity(command, userId, State.NONE, null);
             case SAVE_STEP_1 -> nonCommandHandler.getPassword(command, userId, State.SAVE_STEP_2);
-            case SAVE_STEP_2 -> nonCommandHandler.getDescription(command, userId, SAVE_STEP_3, null);
+            case SAVE_STEP_2 -> nonCommandHandler.getDescription(command, userId, State.SAVE_STEP_3, null);
             case EDIT_STEP_4 -> nonCommandHandler.getDescription(command, userId, State.NONE, null);
             case EDIT_STEP_1, DELETE_STEP_1, REMIND_STEP_1 -> nonCommandHandler.getIndexPassword(command, userId);
             case EDIT_STEP_2 -> nonCommandHandler.getPasswordLength(command, userId, State.EDIT_STEP_3);
@@ -104,7 +104,7 @@ public class CommandService {
                     nonCommandHandler.getComplexity(command, userId, State.EDIT_STEP_4, ENTER_PASSWORD_DESCRIPTION);
             case SORT_STEP_1 -> nonCommandHandler.getSortType(command, userId);
             case FIND_STEP_1 -> nonCommandHandler.getSearchRequest(command, userId);
-            case REMIND_STEP_2, SAVE_STEP_4 -> nonCommandHandler.getRemindDays(command, userId, NONE);
+            case REMIND_STEP_2, SAVE_STEP_4 -> nonCommandHandler.getRemindDays(command, userId, State.NONE);
             case CODE_PHRASE_1, CLEAR_1 -> nonCommandHandler.getCodeWord(command, userId);
             case CLEAR_2 -> nonCommandHandler.getPhraseForClear(command, userId);
             case CLEAR_3, SAVE_STEP_3 -> nonCommandHandler.getAgreement(command, userId);

@@ -9,13 +9,13 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.RemindScheduler;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
-import ru.naumen.service.ValidationService;
 
 import java.util.List;
-import static ru.naumen.model.State.NONE;
+
 import static ru.naumen.model.State.REMIND_STEP_1;
 
 /**
@@ -30,10 +30,10 @@ class RemindHandlerTest {
     private UserStateCache userStateCache;
 
     @Mock
-    private ValidationService validationService;
+    private PasswordService passwordService;
 
     @Mock
-    private PasswordService passwordService;
+    private KeyboardCreator keyboardCreator;
 
     @InjectMocks
     private RemindHandler remindHandler;
@@ -48,20 +48,17 @@ class RemindHandlerTest {
      */
     @Test
     void testRemind_ValidParams() {
-        String[] command = {"/remind", "1", "1"};
+        String[] command = {"/remind", "1", "3"};
         List<UserPassword> userPasswords = List.of(
                 new UserPassword("uuid", "desc", "pass", null, null)
         );
-
-        Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
-        Mockito.when(validationService.isValidDays(1)).thenReturn(true);
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
-
+        Mockito.when(passwordService.isValidPasswordIndex(1, 12345L)).thenReturn(true);
         Response response = remindHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Напоминание для пароля desc установлено", response.message());
-        Assertions.assertEquals(NONE, response.botState());
-        Mockito.verify(remindScheduler).scheduleRemind("Напоминание: обновите пароль для desc", 12345L, "uuid", 86_400_000L);
+        Mockito.verify(remindScheduler).scheduleRemind("Напоминание: обновите пароль для desc",
+                12345L, "uuid", 259_200_000L);
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
@@ -72,12 +69,9 @@ class RemindHandlerTest {
     void testHandle_InvalidPasswordIndex() {
         String[] command = {"/remind", "10", "7"};
 
-        Mockito.when(validationService.isValidPasswordIndex(12345L, 10)).thenReturn(false);
-
         Response response = remindHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Не найден пароль с id 10", response.message());
-        Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
@@ -88,13 +82,10 @@ class RemindHandlerTest {
     void testRemind_InvalidDays() {
         String[] command = {"Напомнить", "1", "-5"};
 
-        Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
-        Mockito.when(validationService.isValidDays(-5)).thenReturn(false);
-
+        Mockito.when(passwordService.isValidPasswordIndex(1, 12345L)).thenReturn(true);
         Response response = remindHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Напоминание можно установить на срок от 3 до 90 дней", response.message());
-        Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
@@ -108,7 +99,6 @@ class RemindHandlerTest {
         Response response = remindHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Введите индекс пароля", response.message());
-        Assertions.assertEquals(REMIND_STEP_1, response.botState());
         Mockito.verify(userStateCache).setState(12345L, REMIND_STEP_1);
     }
 }

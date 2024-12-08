@@ -5,13 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.RemindScheduler;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
+import ru.naumen.bot.constants.Errors;
+import ru.naumen.bot.constants.Schedules;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
-import ru.naumen.service.ValidationService;
 
 import java.util.List;
 
@@ -26,7 +27,6 @@ public class SaveHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final RemindScheduler remindScheduler;
-    private final ValidationService validationService;
     private final Logger log = LoggerFactory.getLogger(SaveHandler.class);
 
     /**
@@ -44,6 +44,8 @@ public class SaveHandler implements CommandHandler {
      */
     private static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
 
+    private static final int SAVE_COMMAND_LENGTH_WITH_REMIND = 4;
+
     /**
      * Сообщение, когда пользователь не создан
      */
@@ -57,7 +59,7 @@ public class SaveHandler implements CommandHandler {
     /**
      * Возможные количества параметров команды
      */
-    private final List<Integer> params = List.of(1, 2);
+    private final List<Integer> params = List.of(1, 2, 3);
     private final KeyboardCreator keyboardCreator;
 
     public SaveHandler(PasswordService passwordService,
@@ -93,13 +95,15 @@ public class SaveHandler implements CommandHandler {
                 String description = splitCommand[2];
                 int daysToRemind = Integer.parseInt(splitCommand[3]);
 
-                if (!validationService.isValidDays(daysToRemind)) {
-                    return new Response(DAYS_ERROR_MESSAGE, NONE);
+                if (!isValidDays(daysToRemind)) {
+                    return new Response(Errors.DAYS_ERROR_MESSAGE, keyboardCreator.createEmptyKeyboard());
                 }
 
-                long millisToRemind = daysToRemind * MILLIS_IN_A_DAY;
+                long millisToRemind = daysToRemind * Schedules.MILLIS_IN_A_DAY;
                 String passwordUuid = passwordService.createUserPassword(password, description, userId);
-                remindScheduler.scheduleRemind(String.format(REMIND_MESSAGE_PASSWORD, description), userId, passwordUuid, millisToRemind);
+                remindScheduler.scheduleRemind(
+                        String.format(Schedules.REMIND_MESSAGE_PASSWORD, description),
+                        userId, passwordUuid, millisToRemind);
             } else {
                 String description = splitCommand[2];
                 passwordService.createUserPassword(password, description, userId);
@@ -119,6 +123,10 @@ public class SaveHandler implements CommandHandler {
 
             return new Response(ENCRYPT_ERROR, keyboardCreator.createMainKeyboard());
         }
+    }
+
+    private boolean isValidDays(int daysToRemind) {
+        return daysToRemind >= 3 && daysToRemind <= 90;
     }
 
     /**

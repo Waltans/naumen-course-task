@@ -8,10 +8,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.ComplexityFormatException;
 import ru.naumen.exception.PasswordLengthException;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 
@@ -91,10 +91,9 @@ class GenerateHandlerTest {
         String[] command = {"/generate", "15", "4"};
         String expectedResponse = """
                 Сложность должна быть от 1 до 3, где:
-                "1 - простой пароль;
-                "2 - пароль средней сложности;
-                "3 - сложный пароль.
-                """;
+                1 - простой пароль;
+                2 - пароль средней сложности;
+                3 - сложный пароль.""";
 
         Mockito.when(passwordService.generatePassword(15, "4")).thenThrow(ComplexityFormatException.class);
 

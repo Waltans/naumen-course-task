@@ -1,9 +1,9 @@
 package ru.naumen.service;
 
-import ch.qos.logback.core.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.naumen.exception.UserCodePhraseException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.repository.UserRepository;
@@ -62,19 +62,20 @@ public class UserService {
      * @param codeWord - кодовое слово
      * @throws UserNotFoundException - ошибка, в случае, если не удалось засеттить кодовое слово пользователю
      */
-    public void addCodeWordForUser(long userId, String codeWord) throws UserNotFoundException, UserCodePhraseException {
+    public void addCodeWordForUser(long userId, String codeWord)
+            throws UserNotFoundException, UserCodePhraseException {
         User user = getUserById(userId);
         try {
             user.setCodePhrase(encodeService.encryptData(codeWord));
             userRepository.save(user);
         } catch (UserCodePhraseException e) {
-
             throw new UserCodePhraseException("Невозможно установить кодовое слово для пользователя");
         }
     }
 
     /**
      * Получаем пользователя и проверяем, есть ли у него кодовое слово
+     *
      * @param userId - ID пользователя
      * @return - true, если есть кодовое слово, false - если его нет
      * @throws UserNotFoundException - ошибка, если пользователь не найден

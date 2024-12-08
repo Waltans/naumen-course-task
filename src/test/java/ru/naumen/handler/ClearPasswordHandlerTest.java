@@ -6,9 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.DecryptException;
 import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.model.User;
 import ru.naumen.service.EncodeService;
@@ -36,13 +37,20 @@ class ClearPasswordHandlerTest {
     @Mock
     private EncodeService encodeService;
     @Mock
+    private KeyboardCreator keyboardCreator;
+    @Mock
     private User user;
 
     private final long userId = 12345L;
 
     @BeforeEach
     void setUp() {
-        clearPasswordHandler = new ClearPasswordHandler(userStateCache, userService, passwordService, encodeService);
+        clearPasswordHandler = new ClearPasswordHandler(
+                userStateCache,
+                userService,
+                passwordService,
+                encodeService,
+                keyboardCreator);
     }
 
     /**
@@ -55,7 +63,6 @@ class ClearPasswordHandlerTest {
         Response response = clearPasswordHandler.handle(splitCommand, userId);
 
         assertEquals("Введите кодовое слово", response.message());
-        assertEquals(State.CLEAR_1, response.botState());
         verify(userStateCache).setState(userId, State.CLEAR_1);
     }
 
@@ -76,7 +83,6 @@ class ClearPasswordHandlerTest {
 
         Response response = clearPasswordHandler.handle(splitCommand, userId);
 
-        assertEquals(State.NONE, response.botState());
         assertEquals("Удален 1 пароль", response.message());
         verify(userStateCache).clearParamsForUser(userId);
         verify(userStateCache).setState(userId, State.NONE);
@@ -98,7 +104,6 @@ class ClearPasswordHandlerTest {
 
         Response response = clearPasswordHandler.handle(splitCommand, userId);
 
-        assertEquals(State.NONE, response.botState());
         assertEquals("Невозможно запустить операцию", response.message());
         verify(userStateCache).clearParamsForUser(userId);
         verify(userStateCache).setState(userId, State.NONE);
@@ -118,7 +123,6 @@ class ClearPasswordHandlerTest {
 
         Response response = clearPasswordHandler.handle(splitCommand, userId);
 
-        assertEquals(State.NONE, response.botState());
         assertEquals("Пользователь не найден", response.message());
         verify(userStateCache).clearParamsForUser(userId);
     }
@@ -135,11 +139,13 @@ class ClearPasswordHandlerTest {
 
         when(userService.isExistCodeWord(userId)).thenReturn(true);
         when(userService.getUserById(userId)).thenReturn(user);
-        when(encodeService.decryptData(user.getCodePhrase())).thenThrow(new DecryptException("Decrypt error", new RuntimeException()));
+        when(encodeService.decryptData(user.getCodePhrase()))
+                .thenThrow(new DecryptException("Decrypt error",
+                        new RuntimeException()
+                ));
 
         Response response = clearPasswordHandler.handle(splitCommand, userId);
 
-        assertEquals(State.NONE, response.botState());
         assertEquals("Ошибка при дешифровании кодового слова", response.message());
         verify(userStateCache).clearParamsForUser(userId);
         verify(userStateCache).setState(userId, State.NONE);

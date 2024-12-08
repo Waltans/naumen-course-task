@@ -3,9 +3,6 @@ package ru.naumen.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 import ru.naumen.exception.*;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
@@ -166,7 +163,6 @@ public class PasswordService {
      * Проверяет валидность индекса пароля
      *
      * @param passwordIndex - индекс
-     *
      * @param userId        - ID пользователя
      * @return true, если индекс валиден
      */
@@ -297,7 +293,6 @@ public class PasswordService {
      * @param phrase - слово для удаления
      * @return количество удаленных паролей
      */
-    @Transactional
     public int deletePasswordByStartWord(long userId, String phrase) {
         List<UserPassword> passwords = userPasswordRepository
                 .findAllByUserIdAndDescriptionStartingWithIgnoreCase(userId, phrase);

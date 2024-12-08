@@ -71,7 +71,7 @@ public interface UserPasswordRepository extends JpaRepository<UserPassword, Long
     /**
      * Ищет все пароли пользователя начинающихся с searchRequest
      *
-     * @param userId - ID пользователя
+     * @param userId        - ID пользователя
      * @param searchRequest - слово, с которого начинается поиск
      */
     List<UserPassword> findAllByUserIdAndDescriptionStartingWithIgnoreCase(long userId, String searchRequest);
