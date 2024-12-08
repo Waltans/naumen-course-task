@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.IncorrectSortTypeException;
 import ru.naumen.model.State;
@@ -32,6 +33,9 @@ class SortHandlerTest {
 
     @Mock
     private EncodeService encodeService;
+
+    @Mock
+    private KeyboardCreator keyboardCreator;
 
     @InjectMocks
     private SortHandler sortHandler;

@@ -8,6 +8,7 @@ import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.ComplexityFormatException;
 import ru.naumen.exception.PasswordLengthException;
 import ru.naumen.exception.PasswordNotFoundException;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
@@ -26,6 +27,7 @@ public class EditHandler implements CommandHandler {
     private final Logger log = LoggerFactory.getLogger(EditHandler.class);
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
+    private final KeyboardCreator keyboardCreator;
 
     /**
      * Сообщение об обновлении пароля
@@ -42,20 +44,27 @@ public class EditHandler implements CommandHandler {
      */
     private static final int EDIT_COMMAND_LENGTH_HAS_DESCRIPTION = 5;
 
-    public EditHandler(PasswordService passwordService, UserStateCache userStateCache) {
+    public EditHandler(PasswordService passwordService,
+                       UserStateCache userStateCache,
+                       KeyboardCreator keyboardCreator) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
+        this.keyboardCreator = keyboardCreator;
     }
 
     @Override
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.EDIT_STEP_1);
-            return new Response(ENTER_PASSWORD_INDEX);
+
+            return new Response(ENTER_PASSWORD_INDEX, keyboardCreator.createEmptyKeyboard());
         }
 
         if (!isValidCommand(splitCommand)) {
-            return new Response(INCORRECT_COMMAND_RESPONSE);
+            userStateCache.setState(userId, State.NONE);
+            userStateCache.clearParamsForUser(userId);
+
+            return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
         }
 
         int passwordIndex;
@@ -63,12 +72,17 @@ public class EditHandler implements CommandHandler {
             passwordIndex = Integer.parseInt(splitCommand[1]);
         } catch (NumberFormatException e) {
             userStateCache.setState(userId, State.IN_LIST);
-            return new Response(INDEX_ERROR_MESSAGE);
+
+            return new Response(INDEX_ERROR_MESSAGE, keyboardCreator.createInListKeyboard());
         }
 
         if (!passwordService.isValidPasswordIndex(passwordIndex, userId)) {
             userStateCache.setState(userId, State.IN_LIST);
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex));
+
+            return new Response(String.format(
+                    PASSWORD_NOT_FOUND_MESSAGE, passwordIndex),
+                    keyboardCreator.createInListKeyboard()
+            );
         }
 
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
@@ -89,22 +103,28 @@ public class EditHandler implements CommandHandler {
             userStateCache.setState(userId, State.NONE);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(String.format(PASSWORD_UPDATED_MESSAGE, description, newPassword));
+            return new Response(
+                    String.format(PASSWORD_UPDATED_MESSAGE, description, newPassword),
+                    keyboardCreator.createMainKeyboard()
+            );
         } catch (PasswordLengthException | NumberFormatException e) {
             userStateCache.setState(userId, State.NONE);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(LENGTH_ERROR_MESSAGE);
+            return new Response(LENGTH_ERROR_MESSAGE, keyboardCreator.createMainKeyboard());
         } catch (ComplexityFormatException e) {
             userStateCache.setState(userId, State.NONE);
             userStateCache.clearParamsForUser(userId);
 
-            return new Response(COMPLEXITY_ERROR_MESSAGE);
+            return new Response(COMPLEXITY_ERROR_MESSAGE, keyboardCreator.createMainKeyboard());
         } catch (PasswordNotFoundException e) {
             log.error(e.getMessage());
             userStateCache.setState(userId, State.NONE);
 
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex));
+            return new Response(
+                    String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex),
+                    keyboardCreator.createMainKeyboard()
+            );
         }
     }
 

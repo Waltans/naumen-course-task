@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
@@ -32,6 +33,9 @@ class FindHandlerTest {
 
     @InjectMocks
     private FindHandler findHandler;
+
+    @Mock
+    private KeyboardCreator keyboardCreator;
 
     /**
      * Инициализирует моки перед каждым тестом

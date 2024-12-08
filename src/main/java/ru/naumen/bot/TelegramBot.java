@@ -81,8 +81,7 @@ class TelegramBot extends TelegramLongPollingBot {
         replyKeyboardMarkup.setResizeKeyboard(true);
         replyKeyboardMarkup.setOneTimeKeyboard(true);
 
-        replyKeyboardMarkup.setKeyboard(
-                commandService.getKeyboards(Long.parseLong(id)));
+        replyKeyboardMarkup.setKeyboard(response.keyboard().keyboardRows());
 
         try {
             execute(tgMessage);

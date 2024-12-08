@@ -3,6 +3,7 @@ package ru.naumen.handler;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
 import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
@@ -20,6 +21,7 @@ import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_INDEX;
 public class DeleteHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
+    private final KeyboardCreator keyboardCreator;
 
     /**
      * Сообщение об удалении пароля
@@ -31,9 +33,12 @@ public class DeleteHandler implements CommandHandler {
      */
     private static final int PARAMS_COUNT = 1;
 
-    public DeleteHandler(PasswordService passwordService, UserStateCache userStateCache) {
+    public DeleteHandler(PasswordService passwordService,
+                         UserStateCache userStateCache,
+                         KeyboardCreator keyboardCreator) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
+        this.keyboardCreator = keyboardCreator;
     }
 
     @Override
@@ -41,11 +46,14 @@ public class DeleteHandler implements CommandHandler {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.DELETE_STEP_1);
 
-            return new Response(ENTER_PASSWORD_INDEX);
+            return new Response(ENTER_PASSWORD_INDEX, keyboardCreator.createEmptyKeyboard());
         }
 
         if (!isValidCommand(splitCommand)) {
-            return new Response(INCORRECT_COMMAND_RESPONSE);
+            userStateCache.setState(userId, State.NONE);
+            userStateCache.clearParamsForUser(userId);
+
+            return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
         }
 
         int passwordIndex;
@@ -53,14 +61,19 @@ public class DeleteHandler implements CommandHandler {
             passwordIndex = Integer.parseInt(splitCommand[1]);
         } catch (NumberFormatException e) {
             userStateCache.setState(userId, State.IN_LIST);
-            return new Response(INDEX_ERROR_MESSAGE);
+
+            return new Response(INDEX_ERROR_MESSAGE, keyboardCreator.createInListKeyboard());
         }
 
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
         if (!passwordService.isValidPasswordIndex(passwordIndex, userId)) {
             userStateCache.setState(userId, State.IN_LIST);
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex));
+
+            return new Response(
+                    String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex),
+                    keyboardCreator.createInListKeyboard()
+            );
         }
 
         // Пользователь получает список начиная с 1
@@ -72,7 +85,10 @@ public class DeleteHandler implements CommandHandler {
         userStateCache.setState(userId, State.NONE);
         userStateCache.clearParamsForUser(userId);
 
-        return new Response(String.format(PASSWORD_DELETED_MESSAGE, description));
+        return new Response(
+                String.format(PASSWORD_DELETED_MESSAGE, description),
+                keyboardCreator.createMainKeyboard()
+        );
     }
 
     /**

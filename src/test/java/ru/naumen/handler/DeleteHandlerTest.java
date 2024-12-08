@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.model.User;
@@ -27,6 +28,9 @@ class DeleteHandlerTest {
 
     @Mock
     private UserStateCache userStateCache;
+
+    @Mock
+    private KeyboardCreator keyboardCreator;
 
     @InjectMocks
     private DeleteHandler deleteHandler;

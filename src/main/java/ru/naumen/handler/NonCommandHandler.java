@@ -4,14 +4,17 @@ import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.command.Command;
 import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 
 import java.util.List;
 import java.util.Map;
 
-import static ru.naumen.bot.constants.Errors.*;
-import static ru.naumen.bot.constants.Requests.*;
+import static ru.naumen.bot.constants.Errors.INDEX_ERROR_MESSAGE;
+import static ru.naumen.bot.constants.Errors.PASSWORD_NOT_FOUND_MESSAGE;
+import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_DESCRIPTION;
+import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_LENGTH;
 
 /**
  * Хэндлер сообщений, не являющихся командой
@@ -36,13 +39,17 @@ public class NonCommandHandler {
      * Название бина (сама команда формата "/command") -> хэндлер
      */
     private final Map<String, CommandHandler> commandHandlers;
+    private final KeyboardCreator keyboardCreator;
 
 
-    public NonCommandHandler(UserStateCache userStateCache, PasswordService passwordService,
-                             Map<String, CommandHandler> commandHandlers) {
+    public NonCommandHandler(UserStateCache userStateCache,
+                             PasswordService passwordService,
+                             Map<String, CommandHandler> commandHandlers,
+                             KeyboardCreator keyboardCreator) {
         this.userStateCache = userStateCache;
         this.passwordService = passwordService;
         this.commandHandlers = commandHandlers;
+        this.keyboardCreator = keyboardCreator;
     }
 
     /**
@@ -66,7 +73,7 @@ public class NonCommandHandler {
             return handler.handle(splitCommand, userId);
         }
 
-        return new Response(response);
+        return new Response(response, keyboardCreator.createEmptyKeyboard());
     }
 
     /**
@@ -80,7 +87,7 @@ public class NonCommandHandler {
         userStateCache.setState(userId, nextState);
         userStateCache.addParam(userId, length);
 
-        return new Response(ENTER_PASSWORD_COMPLEXITY_REQUEST);
+        return new Response(ENTER_PASSWORD_COMPLEXITY_REQUEST, keyboardCreator.createSelectComplexityKeyboard());
     }
 
     /**
@@ -111,7 +118,7 @@ public class NonCommandHandler {
             return handler.handle(splitCommand, userId);
         }
 
-        return new Response(response);
+        return new Response(response, keyboardCreator.createEmptyKeyboard());
     }
 
     /**
@@ -125,7 +132,7 @@ public class NonCommandHandler {
         userStateCache.addParam(userId, password);
         userStateCache.setState(userId, nextState);
 
-        return new Response(ENTER_PASSWORD_DESCRIPTION);
+        return new Response(ENTER_PASSWORD_DESCRIPTION, keyboardCreator.createEmptyKeyboard());
     }
 
     /**
@@ -143,17 +150,17 @@ public class NonCommandHandler {
                 userStateCache.setState(userId, State.IN_LIST);
                 userStateCache.clearParamsForUser(userId);
 
-                return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index));
+                return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index), keyboardCreator.createInListKeyboard());
             }
         } catch (NumberFormatException e) {
             userStateCache.setState(userId, State.IN_LIST);
-            return new Response(INDEX_ERROR_MESSAGE);
+            return new Response(INDEX_ERROR_MESSAGE, keyboardCreator.createInListKeyboard());
         }
 
         if (currentState.equals(State.EDIT_STEP_1)) {
             userStateCache.setState(userId, State.EDIT_STEP_2);
 
-            return new Response(ENTER_PASSWORD_LENGTH);
+            return new Response(ENTER_PASSWORD_LENGTH, keyboardCreator.createEmptyKeyboard());
         } else if (currentState.equals(State.DELETE_STEP_1)) {
             String[] splitCommand = new String[]{Command.DELETE.getCommand(), index};
 
@@ -161,7 +168,7 @@ public class NonCommandHandler {
             return handler.handle(splitCommand, userId);
         }
 
-        return new Response(ENTER_PASSWORD_LENGTH);
+        return new Response(ENTER_PASSWORD_LENGTH, keyboardCreator.createEmptyKeyboard());
     }
 
     /**
@@ -179,7 +186,7 @@ public class NonCommandHandler {
         }
 
         userStateCache.clearParamsForUser(userId);
-        return new Response(FAILURE);
+        return new Response(FAILURE, keyboardCreator.createMainKeyboard());
     }
 
     /**
@@ -197,6 +204,6 @@ public class NonCommandHandler {
         }
 
         userStateCache.clearParamsForUser(userId);
-        return new Response(FAILURE);
+        return new Response(FAILURE, keyboardCreator.createMainKeyboard());
     }
 }

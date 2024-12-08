@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import ru.naumen.keyboard.Keyboard;
 import ru.naumen.bot.Response;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
@@ -39,6 +41,8 @@ class NonCommandHandlerTest {
 
     @Mock
     private PasswordService passwordService;
+    @Mock
+    private KeyboardCreator keyboardCreator;
 
     private NonCommandHandler nonCommandHandler;
 
@@ -63,7 +67,8 @@ class NonCommandHandlerTest {
         nonCommandHandler = new NonCommandHandler(
                 userStateCache,
                 passwordService,
-                commandHandlers
+                commandHandlers,
+                keyboardCreator
         );
     }
 
@@ -76,7 +81,7 @@ class NonCommandHandlerTest {
 
         Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("3"));
 
-        Mockito.verify(userStateCache).addParam(12345L,"3");
+        Mockito.verify(userStateCache).addParam(12345L, "3");
         Assertions.assertEquals("complexity entered", response.message());
     }
 
@@ -100,7 +105,7 @@ class NonCommandHandlerTest {
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SAVE_STEP_2);
         Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("pass"));
         Mockito.when(saveHandler.handle(splitCommand, 12345L))
-                .thenReturn(new Response("pass saved"));
+                .thenReturn(new Response("pass saved", new Keyboard(List.of())));
 
         Response response = nonCommandHandler.getDescription("desc", 12345L, State.NONE, null);
 
@@ -116,7 +121,7 @@ class NonCommandHandlerTest {
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.EDIT_STEP_4);
         Mockito.when(userStateCache.getUserParams(12345L)).thenReturn(List.of("1", "12", "3"));
         Mockito.when(editHandler.handle(splitCommand, 12345L))
-                .thenReturn(new Response("pass updated"));
+                .thenReturn(new Response("pass updated", new Keyboard(List.of())));
 
         Response response = nonCommandHandler.getDescription("desc", 12345L, State.NONE, null);
 
@@ -155,7 +160,7 @@ class NonCommandHandlerTest {
 
         String[] splitCommand = {"/del", "1"};
         Mockito.when(deleteHandler.handle(splitCommand, 12345L))
-                .thenReturn(new Response("pass deleted"));
+                .thenReturn(new Response("pass deleted", new Keyboard(List.of())));
         Mockito.when(passwordService.isValidPasswordIndex(1, 12345L)).thenReturn(true);
         Response response = nonCommandHandler.getIndexPassword("1", 12345L);
 
@@ -169,7 +174,8 @@ class NonCommandHandlerTest {
     void testGetSortType() {
         String[] splitCommand = {"Дате"};
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SORT_STEP_1);
-        Mockito.when(sortHandler.handle(splitCommand, 12345L)).thenReturn(new Response("sorted"));
+        Mockito.when(sortHandler.handle(splitCommand, 12345L))
+                .thenReturn(new Response("sorted", new Keyboard(List.of())));
 
         Response response = nonCommandHandler.getSortType("Дате", 12345L);
 
@@ -183,7 +189,8 @@ class NonCommandHandlerTest {
     void testGetSearchRequest() {
         String[] splitCommand = {"/find", "query"};
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.FIND_STEP_1);
-        Mockito.when(findHandler.handle(splitCommand, 12345L)).thenReturn(new Response("found"));
+        Mockito.when(findHandler.handle(splitCommand, 12345L))
+                .thenReturn(new Response("found", new Keyboard(List.of())));
 
         Response response = nonCommandHandler.getSearchRequest("query", 12345L);
 

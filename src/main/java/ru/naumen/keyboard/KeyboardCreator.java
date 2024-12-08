@@ -1,4 +1,4 @@
-package ru.naumen.bot.keyboards;
+package ru.naumen.keyboard;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
@@ -23,7 +23,7 @@ public class KeyboardCreator {
      * Средний (COMPLEXITY_MEDIUM),
      * Сложный (COMPLEXITY_HARD)
      */
-    public List<KeyboardRow> createSelectComplexityKeyboard() {
+    public Keyboard createSelectComplexityKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
@@ -33,14 +33,14 @@ public class KeyboardCreator {
 
         keyboardRows.add(keyboardRowFirst);
 
-        return keyboardRows;
+        return new Keyboard(keyboardRows);
     }
 
     /**
      * Создаёт клавиатуру с выбором типа сортировки
      * Можно выбрать по дате (BY_DATE) и описанию (BY_DESCRIPTION)
      */
-    public List<KeyboardRow> createSelectSortTypeKeyboard() {
+    public Keyboard createSelectSortTypeKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
@@ -49,7 +49,7 @@ public class KeyboardCreator {
 
         keyboardRows.add(keyboardRowFirst);
 
-        return keyboardRows;
+        return new Keyboard(keyboardRows);
     }
 
     /**
@@ -61,7 +61,7 @@ public class KeyboardCreator {
      * SORT - отсортировать пароли
      * FIND - поиск паролей по описанию
      */
-    public List<KeyboardRow> createInListKeyboard() {
+    public Keyboard createInListKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
@@ -76,7 +76,7 @@ public class KeyboardCreator {
         keyboardRows.add(keyboardRowFirst);
         keyboardRows.add(keyboardRowSecond);
 
-        return keyboardRows;
+        return new Keyboard(keyboardRows);
     }
 
     /**
@@ -87,7 +87,7 @@ public class KeyboardCreator {
      * LIST - список паролей и переход к менеджеру (управление сохранёнными паролями)
      * HELP - справка по работе бота
      */
-    public List<KeyboardRow> createMainKeyboard() {
+    public Keyboard createMainKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
 
         KeyboardRow keyboardRowFirst = new KeyboardRow();
@@ -97,6 +97,15 @@ public class KeyboardCreator {
         keyboardRowFirst.add(new KeyboardButton(Command.HELP.getKeyboardLabel()));
 
         keyboardRows.add(keyboardRowFirst);
-        return keyboardRows;
+        return new Keyboard(keyboardRows);
+    }
+
+    /**
+     * Создает пустую клавиатуру
+     *
+     * @return - клавиатуру
+     */
+    public Keyboard createEmptyKeyboard() {
+        return new Keyboard(List.of());
     }
 }

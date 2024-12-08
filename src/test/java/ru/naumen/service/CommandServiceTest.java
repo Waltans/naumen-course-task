@@ -6,8 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import ru.naumen.keyboard.Keyboard;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.keyboards.KeyboardCreator;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.handler.*;
 import ru.naumen.model.State;
@@ -86,7 +87,8 @@ class CommandServiceTest {
                 userStateCache,
                 nonCommandHandler,
                 keyboardCreator,
-                commandHandlers);
+                commandHandlers
+        );
     }
 
     /**
@@ -95,7 +97,8 @@ class CommandServiceTest {
     @Test
     void testPerformCommandGenerate() {
         Mockito.when(generateHandler.handle(new String[]{"/generate", "12", "3"}, 12345L))
-                .thenReturn(new Response("Сгенерирован пароль: generatedPassword"));
+                .thenReturn(new Response("Сгенерирован пароль: generatedPassword",
+                        new Keyboard(List.of())));
 
         Response response = commandService.performCommand("/generate 12 3", 12345L);
         Assertions.assertEquals("Сгенерирован пароль: generatedPassword", response.message());
@@ -107,7 +110,8 @@ class CommandServiceTest {
     @Test
     void testPerformCommandGenerateLowLength() {
         Mockito.when(generateHandler.handle(new String[]{"/generate", "4", "3"}, 12345L))
-                .thenReturn(new Response("Длина пароля должна быть от 8 до 128 символов!"));
+                .thenReturn(new Response("Длина пароля должна быть от 8 до 128 символов!",
+                        new Keyboard(List.of())));
         Response response = commandService.performCommand("/generate 4 3", 12345L);
 
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
@@ -119,7 +123,10 @@ class CommandServiceTest {
     @Test
     void testPerformCommandGenerateHighLength() {
         Mockito.when(generateHandler.handle(new String[]{"/generate", "129", "3"}, 12345L))
-                .thenReturn(new Response("Длина пароля должна быть от 8 до 128 символов!"));
+                .thenReturn(
+                        new Response("Длина пароля должна быть от 8 до 128 символов!",
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/generate 129 3", 12345L);
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
@@ -135,7 +142,10 @@ class CommandServiceTest {
                 "2 - пароль средней сложности;\n" +
                 "3 - сложный пароль.";
         Mockito.when(generateHandler.handle(new String[]{"/generate", "15", "4"}, 12345L))
-                .thenReturn(new Response(expectedResponse));
+                .thenReturn(
+                        new Response(expectedResponse,
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/generate 15 4", 12345L);
         Assertions.assertEquals(expectedResponse, response.message());
@@ -147,7 +157,10 @@ class CommandServiceTest {
     @Test
     void testPerformCommandSaveWithDescription() {
         Mockito.when(saveHandler.handle(new String[]{"/save", "pass", "desc"}, 12345L))
-                .thenReturn(new Response("Пароль успешно сохранён"));
+                .thenReturn(
+                        new Response("Пароль успешно сохранён",
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/save pass desc", 12345L);
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
@@ -159,7 +172,10 @@ class CommandServiceTest {
     @Test
     void testPerformCommandSaveWithoutDescription() {
         Mockito.when(saveHandler.handle(new String[]{"/save", "pass"}, 12345L))
-                .thenReturn(new Response("Пароль успешно сохранён"));
+                .thenReturn(
+                        new Response("Пароль успешно сохранён",
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/save pass", 12345L);
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
@@ -181,7 +197,10 @@ class CommandServiceTest {
         Mockito.when(encodeService.decryptData("pass1")).thenReturn("dec1");
         Mockito.when(encodeService.decryptData("pass2")).thenReturn("dec2");
         Mockito.when(listHandler.handle(new String[]{"/list"}, 12345L))
-                .thenReturn(new Response(expectedMessage));
+                .thenReturn(
+                        new Response(expectedMessage,
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/list", 12345L);
         Assertions.assertEquals(expectedMessage, response.message());
@@ -193,7 +212,10 @@ class CommandServiceTest {
     @Test
     void testPerformCommandDelete() {
         Mockito.when(deleteHandler.handle(new String[]{"/del", "1"}, 12345L))
-                .thenReturn(new Response("Удалён пароль для сайта site"));
+                .thenReturn(
+                        new Response("Удалён пароль для сайта site",
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/del 1", 12345L);
         Assertions.assertEquals("Удалён пароль для сайта site", response.message());
@@ -205,7 +227,10 @@ class CommandServiceTest {
     @Test
     void testPerformCommandDeleteInvalidId() {
         Mockito.when(deleteHandler.handle(new String[]{"/del", "2"}, 12345L))
-                .thenReturn(new Response("Не найден пароль с id 2"));
+                .thenReturn(
+                        new Response("Не найден пароль с id 2",
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/del 2", 12345L);
         Assertions.assertEquals("Не найден пароль с id 2", response.message());
@@ -217,7 +242,10 @@ class CommandServiceTest {
     @Test
     void testPerformCommandDeleteMinusId() {
         Mockito.when(deleteHandler.handle(new String[]{"/del", "-2"}, 12345L))
-                .thenReturn(new Response("Не найден пароль с id -2"));
+                .thenReturn(
+                        new Response("Не найден пароль с id -2",
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/del -2", 12345L);
         Assertions.assertEquals("Не найден пароль с id -2", response.message());
@@ -229,7 +257,10 @@ class CommandServiceTest {
     @Test
     void testPerformCommandEditValid() {
         Mockito.when(editHandler.handle(new String[]{"/edit", "1", "12", "2", "updDesc"}, 12345L))
-                .thenReturn(new Response("Обновлён пароль для updDesc: newPass"));
+                .thenReturn(
+                        new Response("Обновлён пароль для updDesc: newPass",
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/edit 1 12 2 updDesc", 12345L);
 
@@ -242,7 +273,10 @@ class CommandServiceTest {
     @Test
     void testPerformCommandEditValidWithoutDescription() {
         Mockito.when(editHandler.handle(new String[]{"/edit", "1", "12", "2"}, 12345L))
-                .thenReturn(new Response("Обновлён пароль для site: newPass"));
+                .thenReturn(
+                        new Response("Обновлён пароль для site: newPass",
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/edit 1 12 2", 12345L);
 
@@ -255,7 +289,10 @@ class CommandServiceTest {
     @Test
     void testPerformCommandEditInvalidLength() {
         Mockito.when(editHandler.handle(new String[]{"/edit", "1", "129", "2"}, 12345L))
-                .thenReturn(new Response("Длина пароля должна быть от 8 до 128 символов!"));
+                .thenReturn(
+                        new Response("Длина пароля должна быть от 8 до 128 символов!",
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/edit 1 129 2", 12345L);
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
@@ -272,7 +309,10 @@ class CommandServiceTest {
                 "3 - сложный пароль.";
 
         Mockito.when(editHandler.handle(new String[]{"/edit", "1", "12", "4"}, 12345L))
-                .thenReturn(new Response(expectedResponse));
+                .thenReturn(
+                        new Response(expectedResponse,
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/edit 1 12 4", 12345L);
 
@@ -285,7 +325,10 @@ class CommandServiceTest {
     @Test
     void testPerformCommandEditPasswordNotFound() {
         Mockito.when(editHandler.handle(new String[]{"/edit", "2", "10", "2"}, 12345L))
-                .thenReturn(new Response("Не найден пароль с id 2"));
+                .thenReturn(
+                        new Response("Не найден пароль с id 2",
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/edit 2 10 2", 12345L);
         Assertions.assertEquals("Не найден пароль с id 2", response.message());
@@ -316,7 +359,10 @@ class CommandServiceTest {
                 "- /help - Справка.";
 
         Mockito.when(helpHandler.handle(new String[]{"/help"}, 12345L))
-                .thenReturn(new Response(expectedResponse));
+                .thenReturn(
+                        new Response(expectedResponse,
+                                new Keyboard(List.of())
+                        ));
 
         Response response = commandService.performCommand("/help", 12345L);
         Assertions.assertEquals(expectedResponse, response.message());
@@ -339,16 +385,25 @@ class CommandServiceTest {
     void testPerformCommandGenerateKeyboard() {
 
         Mockito.when(generateHandler.handle(new String[]{"Генерировать"}, 12345L))
-                .thenReturn(new Response("Введите длину пароля"));
+                .thenReturn(
+                        new Response("Введите длину пароля",
+                                new Keyboard(List.of())
+                        ));
         Response firstStep = commandService.performCommand("Генерировать", 12345L);
 
         Mockito.when(nonCommandHandler.getPasswordLength("20", 12345L, State.GENERATION_STEP_2))
-                .thenReturn(new Response("Выберите сложность пароля"));
+                .thenReturn(
+                        new Response("Выберите сложность пароля",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.GENERATION_STEP_1);
         Response secondStep = commandService.performCommand("20", 12345L);
 
         Mockito.when(nonCommandHandler.getComplexity("3", 12345L, State.NONE, null))
-                .thenReturn(new Response("Сгенерирован пароль:"));
+                .thenReturn(
+                        new Response("Сгенерирован пароль:",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.GENERATION_STEP_2);
         Response thirdStep = commandService.performCommand("3", 12345L);
 
@@ -363,11 +418,17 @@ class CommandServiceTest {
     @Test
     void testPerformCommandGenerateKeyboard_lengthUnCorrect() {
         Mockito.when(generateHandler.handle(new String[]{"Генерировать"}, 12345L))
-                .thenReturn(new Response("Введите длину пароля"));
+                .thenReturn(
+                        new Response("Введите длину пароля",
+                                new Keyboard(List.of())
+                        ));
         Response firstStep = commandService.performCommand("Генерировать", 12345L);
 
         Mockito.when(nonCommandHandler.getPasswordLength("200", 12345L, State.GENERATION_STEP_2))
-                .thenReturn(new Response("Длина пароля должна быть от 8 до 128 символов!"));
+                .thenReturn(
+                        new Response("Длина пароля должна быть от 8 до 128 символов!",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.GENERATION_STEP_1);
         Response secondStep = commandService.performCommand("200", 12345L);
 
@@ -387,16 +448,25 @@ class CommandServiceTest {
                 3 - сложный пароль.""";
 
         Mockito.when(generateHandler.handle(new String[]{"Генерировать"}, 12345L))
-                .thenReturn(new Response("Введите длину пароля"));
+                .thenReturn(
+                        new Response("Введите длину пароля",
+                                new Keyboard(List.of())
+                        ));
         Response firstStep = commandService.performCommand("Генерировать", 12345L);
 
         Mockito.when(nonCommandHandler.getPasswordLength("20", 12345L, State.GENERATION_STEP_2))
-                .thenReturn(new Response("Выберите сложность пароля"));
+                .thenReturn(
+                        new Response("Выберите сложность пароля",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.GENERATION_STEP_1);
         Response secondStep = commandService.performCommand("20", 12345L);
 
         Mockito.when(nonCommandHandler.getComplexity("4", 12345L, State.NONE, null))
-                .thenReturn(new Response(expectedMessage));
+                .thenReturn(
+                        new Response(expectedMessage,
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.GENERATION_STEP_2);
         Response thirdStep = commandService.performCommand("4", 12345L);
 
@@ -411,16 +481,25 @@ class CommandServiceTest {
     @Test
     void testPerformCommandSaveKeyboard() {
         Mockito.when(saveHandler.handle(new String[]{"Сохранить"}, 12345L))
-                .thenReturn(new Response("Введите пароль"));
+                .thenReturn(
+                        new Response("Введите пароль",
+                                new Keyboard(List.of())
+                        ));
         Response firstStep = commandService.performCommand("Сохранить", 12345L);
 
         Mockito.when(nonCommandHandler.getPassword("password", 12345L, State.SAVE_STEP_2))
-                .thenReturn(new Response("Введите описание пароля"));
+                .thenReturn(
+                        new Response("Введите описание пароля",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SAVE_STEP_1);
         Response secondStep = commandService.performCommand("password", 12345L);
 
         Mockito.when(nonCommandHandler.getDescription("description", 12345L, State.NONE, null))
-                .thenReturn(new Response("Пароль успешно сохранён"));
+                .thenReturn(
+                        new Response("Пароль успешно сохранён",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SAVE_STEP_2);
         Response thirdStep = commandService.performCommand("description", 12345L);
 
@@ -435,26 +514,41 @@ class CommandServiceTest {
     @Test
     void testPerformCommandEditKeyboard() {
         Mockito.when(editHandler.handle(new String[]{"Изменить"}, 12345L))
-                .thenReturn(new Response("Введите индекс пароля"));
+                .thenReturn(
+                        new Response("Введите индекс пароля",
+                                new Keyboard(List.of())
+                        ));
         Response firstStep = commandService.performCommand("Изменить", 12345L);
 
         Mockito.when(nonCommandHandler.getIndexPassword("1", 12345L))
-                .thenReturn(new Response("Введите длину пароля"));
+                .thenReturn(
+                        new Response("Введите длину пароля",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.EDIT_STEP_1);
         Response secondStep = commandService.performCommand("1", 12345L);
 
         Mockito.when(nonCommandHandler.getPasswordLength("20", 12345L, State.EDIT_STEP_3))
-                .thenReturn(new Response("Выберите сложность пароля"));
+                .thenReturn(
+                        new Response("Выберите сложность пароля",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.EDIT_STEP_2);
         Response thirdStep = commandService.performCommand("20", 12345L);
 
         Mockito.when(nonCommandHandler.getComplexity("2", 12345L, State.EDIT_STEP_4, "Введите описание пароля"))
-                .thenReturn(new Response("Введите описание пароля"));
+                .thenReturn(
+                        new Response("Введите описание пароля",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.EDIT_STEP_3);
         Response fourStep = commandService.performCommand("2", 12345L);
 
         Mockito.when(nonCommandHandler.getDescription("description", 12345L, State.NONE, null))
-                .thenReturn(new Response("Обновлён пароль для description"));
+                .thenReturn(
+                        new Response("Обновлён пароль для description",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.EDIT_STEP_4);
         Response fiveStep = commandService.performCommand("description", 12345L);
 
@@ -471,11 +565,17 @@ class CommandServiceTest {
     @Test
     void testPerformCommandDeleteKeyboard() {
         Mockito.when(deleteHandler.handle(new String[]{"Удалить"}, 12345L))
-                .thenReturn(new Response("Введите индекс пароля"));
+                .thenReturn(
+                        new Response("Введите индекс пароля",
+                                new Keyboard(List.of())
+                        ));
         Response firstStep = commandService.performCommand("Удалить", 12345L);
 
         Mockito.when(nonCommandHandler.getIndexPassword("1", 12345L))
-                .thenReturn(new Response("Удалён пароль для сайта description"));
+                .thenReturn(
+                        new Response("Удалён пароль для сайта description",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.DELETE_STEP_1);
         Response secondStep = commandService.performCommand("1", 12345L);
 
@@ -489,11 +589,17 @@ class CommandServiceTest {
     @Test
     void testPerformCommandSortKeyboard() {
         Mockito.when(sortHandler.handle(new String[]{"Сортировать"}, 12345L))
-                .thenReturn(new Response("Отсортировать по:"));
+                .thenReturn(
+                        new Response("Отсортировать по:",
+                                new Keyboard(List.of())
+                        ));
         Response firstStep = commandService.performCommand("Сортировать", 12345L);
 
         Mockito.when(nonCommandHandler.getSortType("Дате", 12345L))
-                .thenReturn(new Response("Отсортированные пароли"));
+                .thenReturn(
+                        new Response("Отсортированные пароли",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.SORT_STEP_1);
         Response secondStep = commandService.performCommand("Дате", 12345L);
 
@@ -507,11 +613,17 @@ class CommandServiceTest {
     @Test
     void testPerformCommandFindKeyboard() {
         Mockito.when(findHandler.handle(new String[]{"Искать"}, 12345L))
-                .thenReturn(new Response("Введите поисковый запрос"));
+                .thenReturn(
+                        new Response("Введите поисковый запрос",
+                                new Keyboard(List.of())
+                        ));
         Response firstStep = commandService.performCommand("Искать", 12345L);
 
         Mockito.when(nonCommandHandler.getSearchRequest("запрос", 12345L))
-                .thenReturn(new Response("Найденные пароли"));
+                .thenReturn(
+                        new Response("Найденные пароли",
+                                new Keyboard(List.of())
+                        ));
         Mockito.when(userStateCache.getUserState(12345L)).thenReturn(State.FIND_STEP_1);
         Response secondStep = commandService.performCommand("запрос", 12345L);
 

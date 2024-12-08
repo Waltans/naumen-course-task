@@ -2,6 +2,7 @@ package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
@@ -22,6 +23,7 @@ public class FindHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final EncodeService encodeService;
+    private final KeyboardCreator keyboardCreator;
 
     /**
      * Сообщение с запросом на ввод поискового запроса
@@ -38,21 +40,28 @@ public class FindHandler implements CommandHandler {
      */
     private static final int PARAMS_COUNT = 1;
 
-    public FindHandler(PasswordService passwordService, UserStateCache userStateCache, EncodeService encodeService) {
+    public FindHandler(PasswordService passwordService,
+                       UserStateCache userStateCache,
+                       EncodeService encodeService,
+                       KeyboardCreator keyboardCreator) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
         this.encodeService = encodeService;
+        this.keyboardCreator = keyboardCreator;
     }
 
     @Override
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.FIND_STEP_1);
-            return new Response(ENTER_SEARCH_REQUEST);
+            return new Response(ENTER_SEARCH_REQUEST, keyboardCreator.createEmptyKeyboard());
         }
 
         if (!isValidCommand(splitCommand)) {
-            return new Response(INCORRECT_COMMAND_RESPONSE);
+            userStateCache.setState(userId, State.NONE);
+            userStateCache.clearParamsForUser(userId);
+
+            return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createEmptyKeyboard());
         }
 
         String searchRequest = splitCommand[1];
@@ -60,8 +69,9 @@ public class FindHandler implements CommandHandler {
 
         if (foundPasswords.isEmpty()) {
             userStateCache.setState(userId, State.NONE);
+            userStateCache.clearParamsForUser(userId);
 
-            return new Response(NO_PASSWORDS_FOUND);
+            return new Response(NO_PASSWORDS_FOUND, keyboardCreator.createMainKeyboard());
         }
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -74,7 +84,7 @@ public class FindHandler implements CommandHandler {
         userStateCache.setState(userId, State.NONE);
         userStateCache.clearParamsForUser(userId);
 
-        return new Response(stringBuilder.toString());
+        return new Response(stringBuilder.toString(), keyboardCreator.createMainKeyboard());
     }
 
     /**

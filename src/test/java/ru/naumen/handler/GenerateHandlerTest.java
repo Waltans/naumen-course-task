@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.ComplexityFormatException;
 import ru.naumen.exception.PasswordLengthException;
@@ -29,6 +30,9 @@ class GenerateHandlerTest {
 
     @InjectMocks
     private GenerateHandler generateHandler;
+
+    @Mock
+    private KeyboardCreator keyboardCreator;
 
 
     /**
