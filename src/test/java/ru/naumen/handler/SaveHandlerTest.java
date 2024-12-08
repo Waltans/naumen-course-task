@@ -9,11 +9,14 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.RemindScheduler;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.ValidationService;
 
+import java.util.List;
 import java.util.ArrayList;
 
 import static ru.naumen.bot.Constants.ENTER_PASSWORD;
@@ -40,7 +43,12 @@ class SaveHandlerTest {
     @InjectMocks
     private SaveHandler saveHandler;
 
+    @Mock
+    private KeyboardCreator keyboardCreator;
 
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -52,13 +60,12 @@ class SaveHandlerTest {
     @Test
     void testSavePassword_WithoutParams() {
         String[] command = {"Сохранить"};
-        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
 
         Response response = saveHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Введите пароль", response.message());
-        Assertions.assertEquals(SAVE_STEP_1, response.botState());
     }
 
     /**
@@ -67,13 +74,12 @@ class SaveHandlerTest {
     @Test
     void testSavePassword_NoDescription() throws UserNotFoundException {
         String[] command = {"/save", "password"};
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
 
         Response response = saveHandler.handle(command, 12345L);
 
         Mockito.verify(passwordService).createUserPassword("password", "Неизвестно", 12345L);
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
-        Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
@@ -83,7 +89,7 @@ class SaveHandlerTest {
     @Test
     void testSavePassword_WithDescription() throws UserNotFoundException {
         String[] command = {"/save", "pass", "desc"};
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
 
         Response response = saveHandler.handle(command, 12345L);
 
@@ -110,5 +116,17 @@ class SaveHandlerTest {
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
         Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
+    }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testSavePassword_InvalidCommand() {
+        String[] command = {"/save", "1", "3", "1"};
+
+        Response response = saveHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 }

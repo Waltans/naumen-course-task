@@ -12,7 +12,7 @@ public class EncodeServiceTest {
     private EncodeService encodeService;
 
     /**
-     * Задаёт поле с ключом шифрования
+     * Задаёт перед каждым тестом поле с ключом шифрования
      */
     @BeforeEach
     void setUp() {

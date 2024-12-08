@@ -18,7 +18,7 @@ public class User {
      * Идентификатор пользователя
      */
     @Id
-    @Column(name = "telegram_id", nullable = false)
+    @Column(name = "id", nullable = false)
     private long id;
 
     /**
@@ -83,10 +83,6 @@ public class User {
         return userPasswords;
     }
 
-    public void setPasswords(UserPassword userPassword) {
-        this.userPasswords.add(userPassword);
-    }
-
     public long getId() {
         return id;
     }
@@ -97,8 +93,12 @@ public class User {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         User user = (User) o;
         return id == user.id;
     }

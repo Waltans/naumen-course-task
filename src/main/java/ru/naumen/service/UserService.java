@@ -4,8 +4,6 @@ import ch.qos.logback.core.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.naumen.exception.UserCodePhraseException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.repository.UserRepository;
@@ -30,7 +28,6 @@ public class UserService {
      *
      * @param id ID пользователя
      */
-    @Transactional
     public void createUserIfUserNotExists(long id) {
         if (userRepository.existsById(id)) {
             log.trace("Пользователь с Id {} уже существует", id);
@@ -47,7 +44,6 @@ public class UserService {
      *
      * @param id ID пользователя
      */
-    @Transactional(readOnly = true)
     public User getUserById(long id) throws UserNotFoundException {
         User user = userRepository.findById(id);
 

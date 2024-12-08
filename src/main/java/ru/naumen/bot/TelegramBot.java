@@ -32,8 +32,8 @@ class TelegramBot extends TelegramLongPollingBot {
     private final String botName;
 
     public TelegramBot(@Value("${bot.token}") String botToken,
-                       CommandService commandService,
-                       @Value("${bot.name}") String botName) {
+                       @Value("${bot.name}") String botName,
+                       CommandService commandService) {
         super(botToken);
         this.commandService = commandService;
         this.botName = botName;
@@ -44,22 +44,13 @@ class TelegramBot extends TelegramLongPollingBot {
      */
     @EventListener({ContextRefreshedEvent.class})
     public void initialize() {
-        try{
+        try {
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
             telegramBotsApi.registerBot(this);
         } catch (TelegramApiException e) {
             log.error("Error initializing Bot", e);
             System.exit(1);
         }
-    }
-
-    /**
-     * Отправляет сообщение с напоминанием при публикации события
-     * @param event событие
-     */
-    @EventListener
-    public void onReminderEvent(ReminderEvent event) {
-        sendMessageToChat(new Response(event.getMessage(), State.NONE), event.getUserId());
     }
 
     /**
@@ -96,135 +87,13 @@ class TelegramBot extends TelegramLongPollingBot {
         replyKeyboardMarkup.setResizeKeyboard(true);
         replyKeyboardMarkup.setOneTimeKeyboard(true);
 
-        if (response.botState().equals(State.NONE)) {
-            List<KeyboardRow> keyboardRows = mainKeyboard();
-            replyKeyboardMarkup.setKeyboard(keyboardRows);
-        } else if (response.botState().equals(State.GENERATION_STEP_2)
-                || response.botState().equals(State.EDIT_STEP_3)) {
-            List<KeyboardRow> keyboardRows = complexityKeyBoard();
-            replyKeyboardMarkup.setKeyboard(keyboardRows);
-        } else if (response.botState().equals(State.SORT_STEP_1)) {
-            List<KeyboardRow> keyboardRows = sortKeyBoard();
-            replyKeyboardMarkup.setKeyboard(keyboardRows);
-        } else if (response.botState().equals(State.IN_LIST)) {
-            List<KeyboardRow> keyboardRows = listKeyBoard();
-            replyKeyboardMarkup.setKeyboard(keyboardRows);
-        } else if (response.botState().equals(State.CLEAR_3)
-                || response.botState().equals(State.SAVE_STEP_3)) {
-            List<KeyboardRow> keyboardRows = createAgreementKeyboard();
-            replyKeyboardMarkup.setKeyboard(keyboardRows);
-        } else {
-            replyKeyboardMarkup.setKeyboard(List.of());
-        }
+        replyKeyboardMarkup.setKeyboard(response.keyboard().keyboardRows());
 
         try {
             execute(tgMessage);
         } catch (TelegramApiException e) {
             log.error("Message could not be sent", e);
         }
-    }
-
-    /**
-     * Клавиатура с выбором сложности
-     * Варианты:
-     * Простой (COMPLEXITY_EASY)
-     * Средний (COMPLEXITY_MEDIUM),
-     * Сложный (COMPLEXITY_HARD)
-     */
-    private List<KeyboardRow> complexityKeyBoard() {
-        List<KeyboardRow> keyboardRows = new ArrayList<>();
-
-        KeyboardRow keyboardRowFirst = new KeyboardRow();
-        keyboardRowFirst.add(new KeyboardButton(Command.COMPLEXITY_EASY));
-        keyboardRowFirst.add(new KeyboardButton(Command.COMPLEXITY_MEDIUM));
-        keyboardRowFirst.add(new KeyboardButton(Command.COMPLEXITY_HARD));
-
-        keyboardRows.add(keyboardRowFirst);
-
-        return keyboardRows;
-    }
-
-    /**
-     * Клавиатура с выбором типа сортировки
-     * Можно выбрать по дате (BY_DATE) и описанию (BY_DESCRIPTION)
-     */
-    private List<KeyboardRow> sortKeyBoard() {
-        List<KeyboardRow> keyboardRows = new ArrayList<>();
-
-        KeyboardRow keyboardRowFirst = new KeyboardRow();
-        keyboardRowFirst.add(new KeyboardButton(Command.BY_DATE));
-        keyboardRowFirst.add(new KeyboardButton(Command.BY_DESCRIPTION));
-
-        keyboardRows.add(keyboardRowFirst);
-
-        return keyboardRows;
-    }
-
-    /**
-     * Клавиатура в менеджере паролей
-     * Кнопки:
-     * MENU_KEYBOARD - возврат в главное меню
-     * DELETE_KEYBOARD - начать процедуру удаления пароля
-     * EDIT_KEYBOARD - начать процедуру изменения пароля
-     * SORT_KEYBOARD - отсортировать пароли
-     * FIND_KEYBOARD - поиск паролей по описанию
-     * REMIND_KEYBOARD - начать процедуру установки напоминания о смене пароля
-     */
-    private List<KeyboardRow> listKeyBoard() {
-        List<KeyboardRow> keyboardRows = new ArrayList<>();
-
-        KeyboardRow keyboardRowFirst = new KeyboardRow();
-        keyboardRowFirst.add(new KeyboardButton(Command.MENU_KEYBOARD));
-        keyboardRowFirst.add(new KeyboardButton(Command.DELETE_KEYBOARD));
-        keyboardRowFirst.add(new KeyboardButton(Command.EDIT_KEYBOARD));
-
-        KeyboardRow keyboardRowSecond = new KeyboardRow();
-        keyboardRowSecond.add(new KeyboardButton(Command.SORT_KEYBOARD));
-        keyboardRowSecond.add(new KeyboardButton(Command.FIND_KEYBOARD));
-        keyboardRowSecond.add(new KeyboardButton(Command.REMIND_KEYBOARD));
-
-        keyboardRows.add(keyboardRowFirst);
-        keyboardRows.add(keyboardRowSecond);
-
-        return keyboardRows;
-    }
-
-    /**
-     * Клавиатура основная
-     * Кнопки:
-     * GENERATE_KEYBOARD - начать процедуру генерации пароля
-     * SAVE_KEYBOARD - начать процедуру сохранения пароля
-     * LIST_KEYBOARD - список паролей и переход к менеджеру (управление сохранёнными паролями)
-     * HELP_KEYBOARD - справка по работе бота
-     */
-    private List<KeyboardRow> mainKeyboard() {
-        List<KeyboardRow> keyboardRows = new ArrayList<>();
-
-        KeyboardRow keyboardRowFirst = new KeyboardRow();
-        keyboardRowFirst.add(new KeyboardButton(Command.GENERATE_KEYBOARD));
-        keyboardRowFirst.add(new KeyboardButton(Command.SAVE_KEYBOARD));
-        keyboardRowFirst.add(new KeyboardButton(Command.LIST_KEYBOARD));
-        keyboardRowFirst.add(new KeyboardButton(Command.HELP_KEYBOARD));
-
-        keyboardRows.add(keyboardRowFirst);
-        return keyboardRows;
-    }
-
-    /**
-     * Клавиатура да/нет
-     * Кнопки:
-     * да - выполнить действие
-     * нет - отменить действие
-     */
-    private List<KeyboardRow> createAgreementKeyboard() {
-        List<KeyboardRow> keyboardRows = new ArrayList<>();
-
-        KeyboardRow keyboardRowFirst = new KeyboardRow();
-        keyboardRowFirst.add(new KeyboardButton("Да"));
-        keyboardRowFirst.add(new KeyboardButton("Нет"));
-
-        keyboardRows.add(keyboardRowFirst);
-        return keyboardRows;
     }
 
     @Override

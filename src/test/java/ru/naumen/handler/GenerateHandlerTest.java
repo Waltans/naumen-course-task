@@ -8,14 +8,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
+import ru.naumen.cache.UserStateCache;
+import ru.naumen.exception.ComplexityFormatException;
+import ru.naumen.exception.PasswordLengthException;
+import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
-import ru.naumen.service.ValidationService;
 
-import java.util.ArrayList;
-
-import static ru.naumen.model.State.GENERATION_STEP_1;
-import static ru.naumen.model.State.NONE;
+import java.util.List;
 
 /**
  * Класс модульных тестов для GenerateHandler
@@ -28,13 +28,16 @@ class GenerateHandlerTest {
     @Mock
     private UserStateCache userStateCache;
 
-    @Mock
-    private ValidationService validationService;
-
     @InjectMocks
     private GenerateHandler generateHandler;
 
+    @Mock
+    private KeyboardCreator keyboardCreator;
 
+
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -44,17 +47,13 @@ class GenerateHandlerTest {
      * Тест генерации с корректными параметрами длины и сложности
      */
     @Test
-    void testGeneratePassword_CorrectParameters() {
-        Mockito.when(validationService.areNumbersGenerationCommandParams(Mockito.any(String[].class))).thenReturn(true);
+    void testGeneratePassword_CorrectParameters() throws PasswordLengthException, ComplexityFormatException {
         Mockito.when(passwordService.generatePassword(12, "3")).thenReturn("generatedPassword");
-        Mockito.when(validationService.isValidLength(12)).thenReturn(true);
-        Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
 
         String[] command = {"/generate", "12", "3"};
         Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Сгенерирован пароль: generatedPassword", response.message());
-        Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
@@ -62,43 +61,33 @@ class GenerateHandlerTest {
      * Тест генерации, если длина пароля ниже минимального значения
      */
     @Test
-    void testGeneratePassword_LowLength() {
-        Mockito.when(validationService.areNumbersGenerationCommandParams(Mockito.any(String[].class))).thenReturn(true);
-        Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
-        Mockito.when(validationService.isValidLength(4)).thenReturn(false);
-
+    void testGeneratePassword_LowLength() throws PasswordLengthException, ComplexityFormatException {
         String[] command = {"/generate", "4", "3"};
 
+        Mockito.when(passwordService.generatePassword(4, "3")).thenThrow(PasswordLengthException.class);
         Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
-        Assertions.assertEquals(NONE, response.botState());
     }
 
     /**
      * Тест генерации, если длина пароля превышает максимальное значение
      */
     @Test
-    void testGeneratePassword_HighLength() {
-        Mockito.when(validationService.areNumbersGenerationCommandParams(Mockito.any(String[].class))).thenReturn(true);
-        Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
-        Mockito.when(validationService.isValidLength(129)).thenReturn(false);
-
+    void testGeneratePassword_HighLength() throws PasswordLengthException, ComplexityFormatException {
         String[] command = {"/generate", "129", "3"};
 
+        Mockito.when(passwordService.generatePassword(129, "3")).thenThrow(PasswordLengthException.class);
         Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
-        Assertions.assertEquals(NONE, response.botState());
     }
 
     /**
      * Тест генерации, если указана некорректная сложность
      */
     @Test
-    void testGeneratePassword_InvalidComplexity() {
-        Mockito.when(validationService.areNumbersGenerationCommandParams(Mockito.any(String[].class))).thenReturn(true);
-
+    void testGeneratePassword_InvalidComplexity() throws PasswordLengthException, ComplexityFormatException {
         String[] command = {"/generate", "15", "4"};
         String expectedResponse = """
                 Сложность должна быть от 1 до 3, где:
@@ -107,11 +96,12 @@ class GenerateHandlerTest {
                 "3 - сложный пароль.
                 """;
 
+        Mockito.when(passwordService.generatePassword(15, "4")).thenThrow(ComplexityFormatException.class);
 
         Response response = generateHandler.handle(command, 12345L);
 
+
         Assertions.assertEquals(expectedResponse, response.message());
-        Assertions.assertEquals(NONE, response.botState());
     }
 
     /**
@@ -122,11 +112,22 @@ class GenerateHandlerTest {
         String[] command = {"Генерировать"};
         String expectedResponse = "Введите длину пароля";
 
-        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
         Response response = generateHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResponse, response.message());
-        Assertions.assertEquals(GENERATION_STEP_1, response.botState());
+    }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testGeneratePassword_InvalidCommand() {
+        String[] command = {"/generate", "1", "3", "1"};
+
+        Response response = generateHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 }

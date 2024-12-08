@@ -1,17 +1,21 @@
 package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
-import ru.naumen.bot.Command;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.bot.command.Command;
+import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
-import ru.naumen.service.ValidationService;
+import ru.naumen.service.PasswordService;
 
 import java.util.List;
+import java.util.Map;
 
-import static ru.naumen.bot.Constants.*;
-import static ru.naumen.model.State.*;
+import static ru.naumen.bot.constants.Errors.INDEX_ERROR_MESSAGE;
+import static ru.naumen.bot.constants.Errors.PASSWORD_NOT_FOUND_MESSAGE;
+import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_DESCRIPTION;
+import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_LENGTH;
 
 /**
  * Хэндлер сообщений, не являющихся командой
@@ -19,15 +23,34 @@ import static ru.naumen.model.State.*;
 @Component
 public class NonCommandHandler {
     private final UserStateCache userStateCache;
-    private final ValidationService validationService;
-    private final HandlerMapper handlerMapper;
     private final PasswordService passwordService;
 
-    public NonCommandHandler(UserStateCache userStateCache, ValidationService validationService, HandlerMapper handlerMapper, PasswordService passwordService) {
+    /**
+     * Ответ с запросом на выбор сложности пароля
+     */
+    private static final String ENTER_PASSWORD_COMPLEXITY_REQUEST = "Выберите сложность пароля";
+
+    /**
+     * Ответ с ошибкой
+     */
+    private static final String FAILURE = "Что-то пошло не так :( ";
+
+    /**
+     * Хэндлеры команд
+     * Название бина (сама команда формата "/command") -> хэндлер
+     */
+    private final Map<String, CommandHandler> commandHandlers;
+    private final KeyboardCreator keyboardCreator;
+
+
+    public NonCommandHandler(UserStateCache userStateCache,
+                             PasswordService passwordService,
+                             Map<String, CommandHandler> commandHandlers,
+                             KeyboardCreator keyboardCreator) {
         this.userStateCache = userStateCache;
-        this.validationService = validationService;
-        this.handlerMapper = handlerMapper;
         this.passwordService = passwordService;
+        this.commandHandlers = commandHandlers;
+        this.keyboardCreator = keyboardCreator;
     }
 
     /**
@@ -37,26 +60,21 @@ public class NonCommandHandler {
      * @param userId     - ID пользователя
      * @param nextState  - следующее состояние
      * @param response   - ответ в случае завершения
-     * @return ответ и состояние пользователя
      */
-    public Response getComplexity(String complexity, long userId, State nextState, String response) {
-        State currentState = userStateCache.getUserState(userId);
-        if (validationService.isValidComplexity(complexity)) {
-            userStateCache.addParam(userId, complexity);
-            List<String> params = userStateCache.getUserParams(userId);
+    public Response getComplexity(String complexity, long userId,
+                                  State nextState, String response) {
+        userStateCache.addParam(userId, complexity);
+        List<String> params = userStateCache.getUserParams(userId);
 
-            userStateCache.setState(userId, nextState);
-            if (nextState == NONE) {
-                String[] splitCommand = {Command.GENERATE, params.get(0), complexity};
+        userStateCache.setState(userId, nextState);
+        if (nextState == State.NONE) {
+            String[] splitCommand = {Command.GENERATE.getCommand(), params.get(0), complexity};
 
-                return handlerMapper.getHandler(Command.GENERATE).handle(splitCommand, userId);
-            }
-
-            return new Response(response, nextState);
-        } else {
-            userStateCache.setState(userId, currentState);
-            return new Response(COMPLEXITY_ERROR_MESSAGE, currentState);
+            CommandHandler handler = commandHandlers.get(Command.GENERATE.getCommand());
+            return handler.handle(splitCommand, userId);
         }
+
+        return new Response(response, keyboardCreator.createEmptyKeyboard());
     }
 
     /**
@@ -65,19 +83,12 @@ public class NonCommandHandler {
      * @param length    - сообщение содержащее длину
      * @param userId    - ID пользователя
      * @param nextState - следующее состояние
-     * @return ответ и состояние пользователя
      */
     public Response getPasswordLength(String length, long userId, State nextState) {
-        State currentState = userStateCache.getUserState(userId);
-        if (validationService.isValidLength(Integer.parseInt(length))) {
-            userStateCache.setState(userId, nextState);
-            userStateCache.addParam(userId, length);
+        userStateCache.setState(userId, nextState);
+        userStateCache.addParam(userId, length);
 
-            return new Response(ENTER_PASSWORD_COMPLEXITY, nextState);
-        } else {
-            userStateCache.setState(userId, currentState);
-            return new Response(LENGTH_ERROR_MESSAGE, currentState);
-        }
+        return new Response(ENTER_PASSWORD_COMPLEXITY_REQUEST, keyboardCreator.createSelectComplexityKeyboard());
     }
 
     /**
@@ -86,30 +97,29 @@ public class NonCommandHandler {
      * @param description - входящая команда
      * @param userId      -ID пользователя
      * @param nextState   - следующее состояние
-     * @param response    - ответ в случае завершения
-     * @return ответ и состояние пользователя
      */
     public Response getDescription(String description, long userId, State nextState, String response) {
         userStateCache.addParam(userId, description);
         State currentState = userStateCache.getUserState(userId);
         userStateCache.setState(userId, nextState);
 
-        if (currentState.equals(SAVE_STEP_2)) {
-            userStateCache.addParam(userId, description);
-            userStateCache.setState(userId, nextState);
+        if (currentState.equals(State.SAVE_STEP_2)) {
+            String[] splitCommand = {Command.SAVE.getCommand(), userStateCache.getUserParams(userId).get(0), description};
 
-            return new Response(ENTER_REMIND_DAYS_ON_SAVE, nextState);
-        } else if (currentState.equals(EDIT_STEP_4)) {
-            String[] splitCommand = {Command.EDIT,
+            CommandHandler handler = commandHandlers.get(Command.SAVE.getCommand());
+            return handler.handle(splitCommand, userId);
+        } else if (currentState.equals(State.EDIT_STEP_4)) {
+            String[] splitCommand = {Command.EDIT.getCommand(),
                     userStateCache.getUserParams(userId).get(0),
                     userStateCache.getUserParams(userId).get(1),
                     userStateCache.getUserParams(userId).get(2),
                     description};
 
-            return handlerMapper.getHandler(Command.EDIT).handle(splitCommand, userId);
+            CommandHandler handler = commandHandlers.get(Command.EDIT.getCommand());
+            return handler.handle(splitCommand, userId);
         }
 
-        return new Response(response, currentState);
+        return new Response(response, keyboardCreator.createEmptyKeyboard());
     }
 
     /**
@@ -118,13 +128,12 @@ public class NonCommandHandler {
      * @param password  - пароль пользователя
      * @param userId    - ID пользователя
      * @param nextState - следующее состояние пользователя
-     * @return ответ и состояние пользователя
      */
     public Response getPassword(String password, long userId, State nextState) {
         userStateCache.addParam(userId, password);
         userStateCache.setState(userId, nextState);
 
-        return new Response(ENTER_PASSWORD_DESCRIPTION, nextState);
+        return new Response(ENTER_PASSWORD_DESCRIPTION, keyboardCreator.createEmptyKeyboard());
     }
 
     /**
@@ -132,33 +141,39 @@ public class NonCommandHandler {
      *
      * @param index  - пришедшее сообщение
      * @param userId - ID пользователя
-     * @return ответ и состояние пользователя
      */
     public Response getIndexPassword(String index, long userId) {
         userStateCache.addParam(userId, index);
         State currentState = userStateCache.getUserState(userId);
 
-        if (!validationService.isValidPasswordIndex(userId, Integer.parseInt(index))) {
-            userStateCache.setState(userId, NONE);
-            userStateCache.clearParamsForUser(userId);
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index), NONE);
+        try {
+            if (!passwordService.isValidPasswordIndex(Integer.parseInt(index), userId)) {
+                userStateCache.setState(userId, State.IN_LIST);
+                userStateCache.clearParamsForUser(userId);
+
+                return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, index), keyboardCreator.createInListKeyboard());
+            }
+        } catch (NumberFormatException e) {
+            userStateCache.setState(userId, State.IN_LIST);
+            return new Response(INDEX_ERROR_MESSAGE, keyboardCreator.createInListKeyboard());
         }
 
         if (currentState.equals(REMIND_STEP_1)) {
             userStateCache.setState(userId, REMIND_STEP_2);
 
             return new Response(ENTER_REMIND_DAYS, REMIND_STEP_2);
-        } else if (currentState.equals(EDIT_STEP_1)) {
-            userStateCache.setState(userId, EDIT_STEP_2);
+        } else if (currentState.equals(State.EDIT_STEP_1)) {
+            userStateCache.setState(userId, State.EDIT_STEP_2);
 
-            return new Response(ENTER_PASSWORD_LENGTH, EDIT_STEP_2);
-        } else if (currentState.equals(DELETE_STEP_1)) {
-            String[] splitCommand = new String[]{Command.DELETE, index};
+            return new Response(ENTER_PASSWORD_LENGTH, keyboardCreator.createEmptyKeyboard());
+        } else if (currentState.equals(State.DELETE_STEP_1)) {
+            String[] splitCommand = new String[]{Command.DELETE.getCommand(), index};
 
-            return handlerMapper.getHandler(Command.DELETE).handle(splitCommand, userId);
+            CommandHandler handler = commandHandlers.get(Command.DELETE.getCommand());
+            return handler.handle(splitCommand, userId);
         }
 
-        return new Response(ENTER_PASSWORD_LENGTH, currentState);
+        return new Response(ENTER_PASSWORD_LENGTH, keyboardCreator.createEmptyKeyboard());
     }
 
     /**
@@ -233,17 +248,17 @@ public class NonCommandHandler {
      *
      * @param sortType тип сортировки
      * @param userId   id пользователя
-     * @return ответ и состояние пользователя
      */
     public Response getSortType(String sortType, Long userId) {
         State currentState = userStateCache.getUserState(userId);
-        if (currentState.equals(SORT_STEP_1)) {
+        if (currentState.equals(State.SORT_STEP_1)) {
             String[] splitCommand = {sortType};
-            return handlerMapper.getHandler(Command.SORT).handle(splitCommand, userId);
+            CommandHandler handler = commandHandlers.get(Command.SORT.getCommand());
+            return handler.handle(splitCommand, userId);
         }
 
         userStateCache.clearParamsForUser(userId);
-        return new Response(FAILURE, currentState);
+        return new Response(FAILURE, keyboardCreator.createMainKeyboard());
     }
 
     /**
@@ -251,17 +266,17 @@ public class NonCommandHandler {
      *
      * @param searchRequest поисковый запрос
      * @param userId        id пользователя
-     * @return ответ и состояние пользователя
      */
     public Response getSearchRequest(String searchRequest, Long userId) {
         State currentState = userStateCache.getUserState(userId);
-        if (currentState.equals(FIND_STEP_1)) {
-            String[] splitCommand = {Command.FIND, searchRequest};
-            return handlerMapper.getHandler(Command.FIND).handle(splitCommand, userId);
+        if (currentState.equals(State.FIND_STEP_1)) {
+            String[] splitCommand = {Command.FIND.getCommand(), searchRequest};
+            CommandHandler handler = commandHandlers.get(Command.FIND.getCommand());
+            return handler.handle(splitCommand, userId);
         }
 
         userStateCache.clearParamsForUser(userId);
-        return new Response(FAILURE, currentState);
+        return new Response(FAILURE, keyboardCreator.createMainKeyboard());
     }
 
     /**

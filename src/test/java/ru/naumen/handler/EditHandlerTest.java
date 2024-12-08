@@ -8,20 +8,17 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
+import ru.naumen.cache.UserStateCache;
+import ru.naumen.exception.ComplexityFormatException;
+import ru.naumen.exception.PasswordLengthException;
 import ru.naumen.exception.PasswordNotFoundException;
+import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
-import ru.naumen.service.ValidationService;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-
-import static ru.naumen.bot.Constants.ENTER_PASSWORD_INDEX;
-import static ru.naumen.bot.Constants.INCORRECT_COMMAND_RESPONSE;
-import static ru.naumen.model.State.EDIT_STEP_1;
-import static ru.naumen.model.State.NONE;
 
 /**
  * Класс модульных тестов для EditHandler
@@ -32,15 +29,18 @@ class EditHandlerTest {
     private PasswordService passwordService;
 
     @Mock
-    private UserStateCache userStateCache;
+    private KeyboardCreator keyboardCreator;
 
     @Mock
-    private ValidationService validationService;
+    private UserStateCache userStateCache;
 
     @InjectMocks
     private EditHandler editHandler;
 
 
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -50,23 +50,19 @@ class EditHandlerTest {
      * Тест обновления пароля с корректными параметрами и описанием
      */
     @Test
-    void testUpdatePassword_WithCorrectParamsAndDescription() throws PasswordNotFoundException {
+    void testUpdatePassword_WithCorrectParamsAndDescription() throws PasswordNotFoundException, PasswordLengthException, ComplexityFormatException {
         String[] command = {"/edit", "1", "12", "3", "newd"};
         UserPassword password = new UserPassword("uuid", "d", "pass", null, LocalDate.of(2010, 1, 1));
         List<UserPassword> userPasswords = List.of(password);
 
-        Mockito.when(validationService.areNumbersEditCommandParams(command)).thenReturn(true);
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
-        Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
-        Mockito.when(validationService.isValidLength(12)).thenReturn(true);
-        Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
         Mockito.when(passwordService.generatePassword(12, "3")).thenReturn("npass");
         Mockito.when(passwordService.findPasswordByUuid("uuid")).thenReturn(password);
+        Mockito.when(passwordService.isValidPasswordIndex(1, 12345L)).thenReturn(true);
 
         Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Обновлён пароль для newd: npass", response.message());
-        Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(passwordService).updatePassword("uuid", "newd", "npass");
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
@@ -75,24 +71,20 @@ class EditHandlerTest {
      * Тест обновления пароля с корректными параметрами без описания
      */
     @Test
-    void testUpdatePassword_WithCorrectParamsWithoutDescription() throws PasswordNotFoundException {
+    void testUpdatePassword_WithCorrectParamsWithoutDescription() throws PasswordNotFoundException, PasswordLengthException, ComplexityFormatException {
         String[] command = {"/edit", "1", "12", "3"};
         UserPassword password = new UserPassword("uuid", "d", "pass", null,
                 LocalDate.of(2010, 1, 1));
         List<UserPassword> userPasswords = List.of(password);
 
-        Mockito.when(validationService.areNumbersEditCommandParams(command)).thenReturn(true);
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
-        Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
-        Mockito.when(validationService.isValidLength(12)).thenReturn(true);
-        Mockito.when(validationService.isValidComplexity("3")).thenReturn(true);
         Mockito.when(passwordService.generatePassword(12, "3")).thenReturn("npass");
         Mockito.when(passwordService.findPasswordByUuid("uuid")).thenReturn(password);
+        Mockito.when(passwordService.isValidPasswordIndex(1, 12345L)).thenReturn(true);
 
         Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Обновлён пароль для d: npass", response.message());
-        Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(passwordService).updatePassword("uuid", "d", "npass");
     }
 
@@ -102,13 +94,22 @@ class EditHandlerTest {
     @Test
     void testUpdatePassword_InvalidIndex() {
         String[] command = {"/edit", "5", "12", "3"};
-        Mockito.when(validationService.areNumbersEditCommandParams(command)).thenReturn(true);
-        Mockito.when(validationService.isValidPasswordIndex(12345L, 5)).thenReturn(false);
-
         Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Не найден пароль с id 5", response.message());
-        Assertions.assertEquals(NONE, response.botState());
+        Mockito.verify(passwordService, Mockito.never())
+                .updatePassword(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+    }
+
+    /**
+     * Тест обновления пароля с не числовым индексом
+     */
+    @Test
+    void testUpdatePassword_NotNumberIndex() {
+        String[] command = {"/edit", "q", "12", "3"};
+        Response response = editHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Индекс должен быть числом", response.message());
         Mockito.verify(passwordService, Mockito.never())
                 .updatePassword(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }
@@ -119,32 +120,43 @@ class EditHandlerTest {
     @Test
     void testUpdatePassword_WithoutParams() {
         String[] command = {"Изменить"};
-        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(NONE);
-        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
 
         Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Введите индекс пароля", response.message());
-        Assertions.assertEquals(EDIT_STEP_1, response.botState());
     }
 
     /**
      * Тест обновления с некорректными параметрами длины или сложности
      */
     @Test
-    void testUpdatePassword_InvalidLengthOrComplexity() {
+    void testUpdatePassword_InvalidLengthOrComplexity() throws PasswordNotFoundException, PasswordLengthException, ComplexityFormatException {
         String[] command = {"/edit", "1", "5", "4"};
         List<UserPassword> userPasswords = List.of(new UserPassword("desc", "pass", null));
 
-        Mockito.when(validationService.areNumbersEditCommandParams(command)).thenReturn(true);
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
-        Mockito.when(validationService.isValidPasswordIndex(12345L, 1)).thenReturn(true);
+        Mockito.when(passwordService.isValidPasswordIndex(1, 12345L)).thenReturn(true);
+        Mockito.when(passwordService.findPasswordByUuid(Mockito.any())).thenReturn(userPasswords.get(0));
+        Mockito.when(passwordService.generatePassword(5, "4")).thenThrow(PasswordLengthException.class);
 
         Response response = editHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
-        Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(passwordService, Mockito.never())
                 .updatePassword(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+    }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testEditPassword_InvalidCommand() {
+        String[] command = {"/edit", "1"};
+
+        Response response = editHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 }

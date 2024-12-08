@@ -1,15 +1,21 @@
 package ru.naumen.service;
 
 import org.springframework.stereotype.Service;
-import ru.naumen.bot.Command;
+import org.springframework.transaction.annotation.Transactional;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
-import ru.naumen.handler.HandlerMapper;
+import ru.naumen.bot.command.Command;
+import ru.naumen.cache.UserStateCache;
+import ru.naumen.handler.CommandHandler;
 import ru.naumen.handler.NonCommandHandler;
+import ru.naumen.keyboard.KeyboardCreator;
+import ru.naumen.model.State;
 
-import static ru.naumen.bot.Constants.ENTER_PASSWORD_DESCRIPTION;
-import static ru.naumen.bot.Constants.INCORRECT_COMMAND_RESPONSE;
-import static ru.naumen.model.State.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
+import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_DESCRIPTION;
 
 /**
  * Класс для работы с командами бота
@@ -17,18 +23,42 @@ import static ru.naumen.model.State.*;
 @Service
 public class CommandService {
     private final UserStateCache userStateCache;
-    private final ValidationService validationService;
     private final NonCommandHandler nonCommandHandler;
-    private final HandlerMapper handlerMapper;
+    private final KeyboardCreator keyboardCreator;
+
+    /**
+     * Хэндлеры команд
+     * Название бина (сама команда формата "/command") -> хэндлер
+     */
+    private final Map<String, CommandHandler> commandHandlers;
+
+    /**
+     * Ввод, соответствующий команде -> сама команда
+     */
+    private final Map<String, Command> commandMap = new HashMap<>();
 
     public CommandService(UserStateCache userStateCache,
-                          ValidationService validationService,
-                          NonCommandHandler nonCommandHandler,
-                          HandlerMapper handlerMapper) {
+                          NonCommandHandler nonCommandHandler, KeyboardCreator keyboardCreator,
+                          Map<String, CommandHandler> commandHandlers) {
         this.userStateCache = userStateCache;
-        this.validationService = validationService;
         this.nonCommandHandler = nonCommandHandler;
-        this.handlerMapper = handlerMapper;
+        this.keyboardCreator = keyboardCreator;
+        this.commandHandlers = commandHandlers;
+
+        for (Command cmd : Command.values()) {
+            commandMap.put(cmd.getCommand(), cmd);
+            commandMap.put(cmd.getKeyboardLabel(), cmd);
+        }
+    }
+
+    /**
+     * Поиск команды по текстовому вводу
+     *
+     * @param input строка ввода (например, "/edit" или "Изменить")
+     * @return команда
+     */
+    public Optional<Command> findCommand(String input) {
+        return Optional.ofNullable(commandMap.get(input));
     }
 
     /**
@@ -38,79 +68,47 @@ public class CommandService {
      * @param userId  ID пользователя
      * @return ответ на команду и состояние пользователя
      */
+    @Transactional
     public Response performCommand(String message, long userId) {
         String[] splitCommand = message.split(" ");
 
-        if (!validationService.isValidCommand(splitCommand, userId)) {
-            return new Response(INCORRECT_COMMAND_RESPONSE, userStateCache.getUserState(userId));
-        }
-
-        return doCommand(userId, splitCommand);
+        return findCommand(splitCommand[0])
+                .map(command -> {
+                    CommandHandler handler = commandHandlers.get(command.getCommand());
+                    return handler.handle(splitCommand, userId);
+                })
+                .orElseGet(() -> performNotCommandMessage(splitCommand, userId));
     }
 
     /**
-     * Метод принимает команду и исполняет её
-     *
-     * @param userId       - ID пользователя
-     * @param splitCommand - разделенная команда
-     * @return - результат обработки команды
-     */
-    private Response doCommand(long userId, String[] splitCommand) {
-        return switch (splitCommand[0]) {
-            case Command.GENERATE, Command.GENERATE_KEYBOARD ->
-                    handlerMapper.getHandler(Command.GENERATE).handle(splitCommand, userId);
-            case Command.SAVE, Command.SAVE_KEYBOARD ->
-                    handlerMapper.getHandler(Command.SAVE).handle(splitCommand, userId);
-            case Command.LIST, Command.LIST_KEYBOARD ->
-                    handlerMapper.getHandler(Command.LIST).handle(splitCommand, userId);
-            case Command.DELETE, Command.DELETE_KEYBOARD ->
-                    handlerMapper.getHandler(Command.DELETE).handle(splitCommand, userId);
-            case Command.EDIT, Command.EDIT_KEYBOARD ->
-                    handlerMapper.getHandler(Command.EDIT).handle(splitCommand, userId);
-            case Command.HELP, Command.HELP_KEYBOARD, Command.START, Command.MENU_KEYBOARD ->
-                    handlerMapper.getHandler(Command.HELP).handle(splitCommand, userId);
-            case Command.SORT, Command.SORT_KEYBOARD ->
-                    handlerMapper.getHandler(Command.SORT).handle(splitCommand, userId);
-            case Command.FIND, Command.FIND_KEYBOARD ->
-                    handlerMapper.getHandler(Command.FIND).handle(splitCommand, userId);
-            case Command.REMIND, Command.REMIND_KEYBOARD ->
-                    handlerMapper.getHandler(Command.REMIND).handle(splitCommand, userId);
-            case Command.ADD_CODE -> handlerMapper.getHandler(Command.ADD_CODE).handle(splitCommand, userId);
-            case Command.CLEAR -> handlerMapper.getHandler(Command.CLEAR).handle(splitCommand, userId);
-
-            default -> performNotCommandMessage(splitCommand, userId);
-        };
-    }
-
-    /**
-     * Обработка сообщение, которое не является командой
+     * Обработка сообщения, которое не является командой
      *
      * @param splitCommand - входящее сообщение разделенное пробелами
      * @param userId       - ID пользователя
-     * @return Состояние пользователя и ответ
      */
     private Response performNotCommandMessage(String[] splitCommand, long userId) {
         if (splitCommand.length > 1) {
-            return new Response(INCORRECT_COMMAND_RESPONSE, NONE);
+            return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
         }
         final String command = splitCommand[0];
+
         return switch (userStateCache.getUserState(userId)) {
-            case GENERATION_STEP_1 -> nonCommandHandler.getPasswordLength(command, userId, GENERATION_STEP_2);
-            case GENERATION_STEP_2 -> nonCommandHandler.getComplexity(command, userId, NONE, null);
-            case SAVE_STEP_1 -> nonCommandHandler.getPassword(command, userId, SAVE_STEP_2);
+            case GENERATION_STEP_1 -> nonCommandHandler.getPasswordLength(command, userId, State.GENERATION_STEP_2);
+            case GENERATION_STEP_2 -> nonCommandHandler.getComplexity(command, userId, State.NONE, null);
+            case SAVE_STEP_1 -> nonCommandHandler.getPassword(command, userId, State.SAVE_STEP_2);
             case SAVE_STEP_2 -> nonCommandHandler.getDescription(command, userId, SAVE_STEP_3, null);
-            case EDIT_STEP_4 -> nonCommandHandler.getDescription(command, userId, NONE, null);
+            case EDIT_STEP_4 -> nonCommandHandler.getDescription(command, userId, State.NONE, null);
             case EDIT_STEP_1, DELETE_STEP_1, REMIND_STEP_1 -> nonCommandHandler.getIndexPassword(command, userId);
-            case EDIT_STEP_2 -> nonCommandHandler.getPasswordLength(command, userId, EDIT_STEP_3);
+            case EDIT_STEP_2 -> nonCommandHandler.getPasswordLength(command, userId, State.EDIT_STEP_3);
             case EDIT_STEP_3 ->
-                    nonCommandHandler.getComplexity(command, userId, EDIT_STEP_4, ENTER_PASSWORD_DESCRIPTION);
+                    nonCommandHandler.getComplexity(command, userId, State.EDIT_STEP_4, ENTER_PASSWORD_DESCRIPTION);
             case SORT_STEP_1 -> nonCommandHandler.getSortType(command, userId);
             case FIND_STEP_1 -> nonCommandHandler.getSearchRequest(command, userId);
             case REMIND_STEP_2, SAVE_STEP_4 -> nonCommandHandler.getRemindDays(command, userId, NONE);
             case CODE_PHRASE_1, CLEAR_1 -> nonCommandHandler.getCodeWord(command, userId);
             case CLEAR_2 -> nonCommandHandler.getPhraseForClear(command, userId);
             case CLEAR_3, SAVE_STEP_3 -> nonCommandHandler.getAgreement(command, userId);
-            default -> new Response(INCORRECT_COMMAND_RESPONSE, NONE);
+            default -> new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
         };
     }
 }

@@ -1,6 +1,14 @@
 package ru.naumen.bot;
 
-import ru.naumen.model.State;
+import ru.naumen.keyboard.Keyboard;
 
-public record Response(String message, State botState) {
+/**
+ * Ответ бота
+ *
+ * @param message сообщение с ответом
+ */
+public record Response(
+        String message,
+        Keyboard keyboard
+) {
 }

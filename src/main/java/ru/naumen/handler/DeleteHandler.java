@@ -3,48 +3,79 @@ package ru.naumen.handler;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.RemindScheduler;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
+import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
-import ru.naumen.service.ValidationService;
 
 import java.util.List;
 
-import static ru.naumen.bot.Constants.*;
-import static ru.naumen.model.State.*;
+import static ru.naumen.bot.constants.Errors.*;
+import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
+import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_INDEX;
 
 /**
  * Хэндлер удаления пароля
  */
-@Component
+@Component("/del")
 public class DeleteHandler implements CommandHandler {
-
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
-    private final ValidationService validationService;
+    private final KeyboardCreator keyboardCreator;
+
+    /**
+     * Сообщение об удалении пароля
+     */
+    private static final String PASSWORD_DELETED_MESSAGE = "Удалён пароль для сайта %s";
     private final RemindScheduler remindScheduler;
 
-    public DeleteHandler(PasswordService passwordService, UserStateCache userStateCache, ValidationService validationService, RemindScheduler remindScheduler) {
+    /**
+     * Количество параметров команды
+     */
+    private static final int PARAMS_COUNT = 1;
+
+    public DeleteHandler(PasswordService passwordService,
+                         UserStateCache userStateCache,
+                         KeyboardCreator keyboardCreator) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
-        this.validationService = validationService;
-        this.remindScheduler = remindScheduler;
+        this.keyboardCreator = keyboardCreator;
     }
 
     @Override
     public Response handle(String[] splitCommand, long userId) {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
-            userStateCache.setState(userId, DELETE_STEP_1);
+            userStateCache.setState(userId, State.DELETE_STEP_1);
 
-            return new Response(ENTER_PASSWORD_INDEX, DELETE_STEP_1);
+            return new Response(ENTER_PASSWORD_INDEX, keyboardCreator.createEmptyKeyboard());
         }
 
-        int passwordIndex = Integer.parseInt(splitCommand[1]);
+        if (!isValidCommand(splitCommand)) {
+            userStateCache.setState(userId, State.NONE);
+            userStateCache.clearParamsForUser(userId);
+
+            return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
+        }
+
+        int passwordIndex;
+        try {
+            passwordIndex = Integer.parseInt(splitCommand[1]);
+        } catch (NumberFormatException e) {
+            userStateCache.setState(userId, State.IN_LIST);
+
+            return new Response(INDEX_ERROR_MESSAGE, keyboardCreator.createInListKeyboard());
+        }
+
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        if (!validationService.isValidPasswordIndex(userId, passwordIndex)){
-            userStateCache.setState(userId, NONE);
-            return new Response(String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex), NONE);
+        if (!passwordService.isValidPasswordIndex(passwordIndex, userId)) {
+            userStateCache.setState(userId, State.IN_LIST);
+
+            return new Response(
+                    String.format(PASSWORD_NOT_FOUND_MESSAGE, passwordIndex),
+                    keyboardCreator.createInListKeyboard()
+            );
         }
 
         // Пользователь получает список начиная с 1
@@ -57,6 +88,19 @@ public class DeleteHandler implements CommandHandler {
         userStateCache.setState(userId, NONE);
         userStateCache.clearParamsForUser(userId);
 
-        return new Response(String.format(PASSWORD_DELETED_MESSAGE, description), NONE);
+        return new Response(
+                String.format(PASSWORD_DELETED_MESSAGE, description),
+                keyboardCreator.createMainKeyboard()
+        );
+    }
+
+    /**
+     * Валидирует команду
+     *
+     * @param splitCommand команда, разделённая по пробелам
+     * @return true, если команда валидна
+     */
+    private boolean isValidCommand(String[] splitCommand) {
+        return (splitCommand.length - COMMAND_WITHOUT_PARAMS_LENGTH) == PARAMS_COUNT;
     }
 }

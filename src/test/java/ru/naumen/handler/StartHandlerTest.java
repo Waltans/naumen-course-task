@@ -8,25 +8,30 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.service.UserService;
 
-import static ru.naumen.model.State.NONE;
-
 /**
- * Класс модульных тестов для StartHelpHandler
+ * Класс модульных тестов для StartHandler
  */
-class StartHelpHandlerTest {
+class StartHandlerTest {
 
     @Mock
     private UserService userService;
 
     @Mock
+    private KeyboardCreator keyboardCreator;
+
+    @Mock
     private UserStateCache userStateCache;
 
     @InjectMocks
-    private StartHelpHandler startHelpHandler;
+    private StartHandler startHandler;
 
+    /**
+     * Перед каждым тестом инициализирует моки
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -53,16 +58,14 @@ class StartHelpHandlerTest {
                  - /help - Справка.
                 """;
 
-        Mockito.doNothing().when(userService).createUserIfUserNotExists(12345L);
-        Response response = startHelpHandler.handle(command, 12345L);
+        Response response = startHandler.handle(command, 12345L);
 
         Assertions.assertEquals(expectedResult, response.message());
-        Assertions.assertEquals(NONE, response.botState());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 
     /**
-     * Тест команды /help
+     * Тест невалидной команды
      */
     @Test
     void testHelpCommand() {
@@ -81,11 +84,11 @@ class StartHelpHandlerTest {
                  - /remind [passwordID] [days] - для того чтобы поставить напоминание через сколько обновить пароль
                  - /help - Справка.
                 """;
+    void testStart_InvalidCommand() {
+        String[] command = {"/start", "1", "3", "1"};
 
-        Response response = startHelpHandler.handle(command, 12345L);
+        Response response = startHandler.handle(command, 12345L);
 
-        Assertions.assertEquals(expectedResult, response.message());
-        Assertions.assertEquals(NONE, response.botState());
-        Mockito.verify(userStateCache).clearParamsForUser(12345L);
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 }

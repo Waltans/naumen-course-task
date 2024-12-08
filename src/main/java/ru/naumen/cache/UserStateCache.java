@@ -1,4 +1,4 @@
-package ru.naumen.bot;
+package ru.naumen.cache;
 
 import org.springframework.stereotype.Component;
 import ru.naumen.model.State;
@@ -52,7 +52,7 @@ public class UserStateCache {
             return totalUserParams.get(userId);
         } else {
             totalUserParams.put(userId, new ArrayList<>());
-            return new ArrayList<>();
+            return List.of();
         }
     }
 

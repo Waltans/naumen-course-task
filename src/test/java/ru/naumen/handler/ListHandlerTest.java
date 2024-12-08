@@ -8,15 +8,13 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
+import ru.naumen.cache.UserStateCache;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 
 import java.util.List;
-
-import static ru.naumen.model.State.IN_LIST;
-import static ru.naumen.model.State.NONE;
 
 /**
  * Класс модульных тестов для ListHandler
@@ -32,10 +30,15 @@ class ListHandlerTest {
     @Mock
     private UserStateCache userStateCache;
 
+    @Mock
+    private KeyboardCreator keyboardCreator;
+
     @InjectMocks
     private ListHandler listHandler;
 
-
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -52,7 +55,6 @@ class ListHandlerTest {
         Response response = listHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Нет ни одного пароля. Справка: /help", response.message());
-        Assertions.assertEquals(NONE, response.botState());
     }
 
     /**
@@ -74,6 +76,17 @@ class ListHandlerTest {
                 String.format("\n%s) Сайт: %s, Пароль: %s", 2, "d2", "dpass2");
 
         Assertions.assertEquals(expectedMessage, response.message());
-        Assertions.assertEquals(IN_LIST, response.botState());
+    }
+
+    /**
+     * Тест невалидной команды
+     */
+    @Test
+    void testList_InvalidCommand() {
+        String[] command = {"/list", "1", "3", "1"};
+
+        Response response = listHandler.handle(command, 12345L);
+
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 }
