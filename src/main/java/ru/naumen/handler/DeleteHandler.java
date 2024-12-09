@@ -1,6 +1,7 @@
 package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
+import ru.naumen.bot.RemindScheduler;
 import ru.naumen.bot.Response;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.keyboard.KeyboardCreator;
@@ -13,6 +14,7 @@ import java.util.List;
 import static ru.naumen.bot.constants.Errors.*;
 import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_INDEX;
+import static ru.naumen.model.State.NONE;
 
 /**
  * Хэндлер удаления пароля
@@ -27,6 +29,7 @@ public class DeleteHandler implements CommandHandler {
      * Сообщение об удалении пароля
      */
     private static final String PASSWORD_DELETED_MESSAGE = "Удалён пароль для сайта %s";
+    private final RemindScheduler remindScheduler;
 
     /**
      * Количество параметров команды
@@ -35,10 +38,11 @@ public class DeleteHandler implements CommandHandler {
 
     public DeleteHandler(PasswordService passwordService,
                          UserStateCache userStateCache,
-                         KeyboardCreator keyboardCreator) {
+                         KeyboardCreator keyboardCreator, RemindScheduler remindScheduler) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
         this.keyboardCreator = keyboardCreator;
+        this.remindScheduler = remindScheduler;
     }
 
     @Override
@@ -50,7 +54,7 @@ public class DeleteHandler implements CommandHandler {
         }
 
         if (!isValidCommand(splitCommand)) {
-            userStateCache.setState(userId, State.NONE);
+            userStateCache.setState(userId, NONE);
             userStateCache.clearParamsForUser(userId);
 
             return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
@@ -82,7 +86,8 @@ public class DeleteHandler implements CommandHandler {
         String uuid = userPasswords.get(passwordIndexInSystem).getUuid();
         String description = userPasswords.get(passwordIndexInSystem).getDescription();
         passwordService.deletePassword(uuid);
-        userStateCache.setState(userId, State.NONE);
+        remindScheduler.cancelRemindIfScheduled(uuid);
+        userStateCache.setState(userId, NONE);
         userStateCache.clearParamsForUser(userId);
 
         return new Response(

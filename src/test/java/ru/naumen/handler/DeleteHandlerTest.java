@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import ru.naumen.bot.RemindScheduler;
 import ru.naumen.bot.Response;
 import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
@@ -31,6 +32,9 @@ class DeleteHandlerTest {
 
     @Mock
     private KeyboardCreator keyboardCreator;
+
+    @Mock
+    private RemindScheduler remindScheduler;
 
     @InjectMocks
     private DeleteHandler deleteHandler;

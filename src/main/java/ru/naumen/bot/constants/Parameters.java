@@ -10,6 +10,7 @@ public class Parameters {
     public static final String COMPLEXITY_HARD = "Сложный";
     public static final String BY_DATE = "Дате";
     public static final String BY_DESCRIPTION = "Описанию";
+    public static final String CLEAR_ALL_PARAM = "ALL";
 
     /**
      * Приватный конструктор, чтобы нельзя было создавать объекты

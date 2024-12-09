@@ -3,6 +3,7 @@ package ru.naumen.handler;
 import org.springframework.stereotype.Component;
 import ru.naumen.bot.Response;
 import ru.naumen.bot.command.Command;
+import ru.naumen.bot.constants.Schedules;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
@@ -11,10 +12,11 @@ import ru.naumen.service.PasswordService;
 import java.util.List;
 import java.util.Map;
 
-import static ru.naumen.bot.constants.Errors.INDEX_ERROR_MESSAGE;
-import static ru.naumen.bot.constants.Errors.PASSWORD_NOT_FOUND_MESSAGE;
+import static ru.naumen.bot.constants.Errors.*;
+import static ru.naumen.bot.constants.Parameters.CLEAR_ALL_PARAM;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_DESCRIPTION;
 import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_LENGTH;
+import static ru.naumen.model.State.*;
 
 /**
  * Хэндлер сообщений, не являющихся командой
@@ -33,6 +35,17 @@ public class NonCommandHandler {
      * Ответ с ошибкой
      */
     private static final String FAILURE = "Что-то пошло не так :( ";
+    private static final String ENTER_AGREEMENT =
+            "Найдено %d %s, вы точно хотите удалить все пароли, описание которых начинается на %s";
+
+    private static final String ENTER_CLEAR_PASSWORD =
+            "Начало слова с которого вы хотите удалить пароли(ALL - если удалить все)";
+
+    private static final String ENTER_AGREEMENT_ALL = "Найдено %d %s, вы точно хотите удалить все пароли";
+
+    private static final String ENTER_REMIND_DAYS = "Через сколько дней напомнить о смене пароля?";
+    private static final String DONT_AGREE = "Пароли не будут очищены";
+
 
     /**
      * Хэндлеры команд
@@ -103,10 +116,10 @@ public class NonCommandHandler {
         userStateCache.setState(userId, nextState);
 
         if (currentState.equals(State.SAVE_STEP_2)) {
-            String[] splitCommand = {Command.SAVE.getCommand(), userStateCache.getUserParams(userId).get(0), description};
+            userStateCache.addParam(userId, description);
+            userStateCache.setState(userId, nextState);
 
-            CommandHandler handler = commandHandlers.get(Command.SAVE.getCommand());
-            return handler.handle(splitCommand, userId);
+            return new Response(Schedules.ENTER_REMIND_DAYS_ON_SAVE, keyboardCreator.createAgreementKeyboard());
         } else if (currentState.equals(State.EDIT_STEP_4)) {
             String[] splitCommand = {Command.EDIT.getCommand(),
                     userStateCache.getUserParams(userId).get(0),
@@ -157,7 +170,11 @@ public class NonCommandHandler {
             return new Response(INDEX_ERROR_MESSAGE, keyboardCreator.createInListKeyboard());
         }
 
-        if (currentState.equals(State.EDIT_STEP_1)) {
+        if (currentState.equals(REMIND_STEP_1)) {
+            userStateCache.setState(userId, REMIND_STEP_2);
+
+            return new Response(ENTER_REMIND_DAYS, keyboardCreator.createEmptyKeyboard());
+        } else if (currentState.equals(State.EDIT_STEP_1)) {
             userStateCache.setState(userId, State.EDIT_STEP_2);
 
             return new Response(ENTER_PASSWORD_LENGTH, keyboardCreator.createEmptyKeyboard());
@@ -170,6 +187,77 @@ public class NonCommandHandler {
 
         return new Response(ENTER_PASSWORD_LENGTH, keyboardCreator.createEmptyKeyboard());
     }
+
+    /**
+     * Получение дней до напоминания
+     *
+     * @param daysToRemind - число дней до напоминания
+     * @param userId       - ID пользователя
+     * @param nextState    - следующее состояние
+     * @return ответ и состояние пользователя
+     */
+    public Response getRemindDays(String daysToRemind, long userId, State nextState) {
+        State currentState = userStateCache.getUserState(userId);
+        if (daysToRemind.equals("0") &&
+                currentState.equals(SAVE_STEP_4)) {
+            userStateCache.setState(userId, nextState);
+            String[] splitCommand = new String[]{
+                    Command.SAVE.getCommand(),
+                    userStateCache.getUserParams(userId).get(0),
+                    userStateCache.getUserParams(userId).get(1)
+            };
+
+            return commandHandlers.get(Command.SAVE.getCommand()).handle(splitCommand, userId);
+        }
+
+        if (!isValidDays(Integer.parseInt(daysToRemind))) {
+            userStateCache.setState(userId, currentState);
+            return new Response(DAYS_ERROR_MESSAGE, keyboardCreator.createEmptyKeyboard());
+        }
+
+        userStateCache.setState(userId, nextState);
+        userStateCache.addParam(userId, daysToRemind);
+        if (currentState.equals(SAVE_STEP_4)) {
+            String[] splitCommand = new String[]{
+                    Command.SAVE.getCommand(),
+                    userStateCache.getUserParams(userId).get(0),
+                    userStateCache.getUserParams(userId).get(1),
+                    daysToRemind};
+
+            return commandHandlers.get(Command.SAVE.getCommand()).handle(splitCommand, userId);
+        }
+        String[] splitCommand = new String[]{
+                Command.REMIND.getCommand(),
+                userStateCache.getUserParams(userId).get(0), daysToRemind};
+
+        return commandHandlers.get(Command.REMIND.getCommand()).handle(splitCommand, userId);
+    }
+
+    /**
+     * Метод для получения кодового слова
+     *
+     * @param codeWord - кодовое слово
+     * @param userId   - ID пользователя
+     * @return - сообщение и состояние пользователя
+     */
+    public Response getCodeWord(String codeWord, long userId) {
+        State currentState = userStateCache.getUserState(userId);
+        if (currentState.equals(CODE_PHRASE_1)) {
+            return commandHandlers.get(Command.ADD_CODE.getCommand())
+                    .handle(new String[]{Command.ADD_CODE.getCommand(), codeWord}, userId);
+        }
+
+        if (currentState.equals(CLEAR_1)) {
+            userStateCache.addParam(userId, codeWord);
+            userStateCache.setState(userId, CLEAR_2);
+
+            return new Response(ENTER_CLEAR_PASSWORD, keyboardCreator.createEmptyKeyboard());
+        }
+
+        userStateCache.clearParamsForUser(userId);
+        return new Response(FAILURE, keyboardCreator.createMainKeyboard());
+    }
+
 
     /**
      * Получение типа сортировки из команды
@@ -205,5 +293,94 @@ public class NonCommandHandler {
 
         userStateCache.clearParamsForUser(userId);
         return new Response(FAILURE, keyboardCreator.createMainKeyboard());
+    }
+
+    /**
+     * Получить слово для очистки паролей
+     *
+     * @param phrase - слово, которое является началом описаний паролей и мы хотим удалить
+     * @param userId - ID пользователя
+     * @return - результат очистки паролей
+     */
+    public Response getPhraseForClear(String phrase, long userId) {
+        State currentState = userStateCache.getUserState(userId);
+        if (currentState.equals(CLEAR_2)) {
+            userStateCache.setState(userId, CLEAR_3);
+            userStateCache.addParam(userId, phrase);
+            int userPasswordsSize = passwordService.findCountPasswordsStartedFrom(userId, phrase);
+            String matchForm = getMatchForm(userPasswordsSize);
+            if (phrase.equalsIgnoreCase(CLEAR_ALL_PARAM)) {
+                userPasswordsSize = passwordService.findAllPasswordUser(userId).size();
+                matchForm = getMatchForm(userPasswordsSize);
+                return new Response(
+                        String.format(ENTER_AGREEMENT_ALL, userPasswordsSize, matchForm),
+                        keyboardCreator.createAgreementKeyboard());
+            }
+
+            return new Response(
+                    String.format(ENTER_AGREEMENT, userPasswordsSize, matchForm, phrase),
+                    keyboardCreator.createAgreementKeyboard());
+        }
+
+        userStateCache.clearParamsForUser(userId);
+        return new Response(FAILURE, keyboardCreator.createMainKeyboard());
+    }
+
+    /**
+     * Метод получения согласия на отчистку паролей
+     *
+     * @param agreement - согласие
+     * @param userId    - ID пользователя
+     * @return Ответ об отчистке
+     */
+    public Response getAgreement(String agreement, long userId) {
+        State currentState = userStateCache.getUserState(userId);
+
+        if (currentState.equals(CLEAR_3) && agreement.equalsIgnoreCase("да")) {
+            List<String> userParams = userStateCache.getUserParams(userId);
+            return commandHandlers.get(Command.CLEAR.getCommand())
+                    .handle(new String[]{Command.CLEAR.getCommand(),
+                            userParams.get(0), userParams.get(1)
+                    }, userId);
+        } else if (currentState.equals(SAVE_STEP_3) && agreement.equalsIgnoreCase("да")) {
+            List<String> userParams = userStateCache.getUserParams(userId);
+            return commandHandlers.get(Command.SAVE.getCommand())
+                    .handle(new String[]{Command.SAVE.getCommand(), userParams.get(0), userParams.get(1), "30"}, userId);
+        } else {
+            if (currentState.equals(SAVE_STEP_3)) {
+                userStateCache.setState(userId, SAVE_STEP_4);
+                return new Response(
+                        Schedules.ENTER_REMIND_DAYS_ON_SAVE_NOT_AGREE,
+                        keyboardCreator.createEmptyKeyboard());
+            }
+            userStateCache.clearParamsForUser(userId);
+            userStateCache.setState(userId, NONE);
+
+            return new Response(DONT_AGREE, keyboardCreator.createMainKeyboard());
+        }
+    }
+
+    /**
+     * Получить форму слова "пароля"
+     *
+     * @param countDeletedPassword - количество паролей для удаления
+     * @return - форму слова "пароль"
+     */
+    private String getMatchForm(int countDeletedPassword) {
+        int preLastDigit = countDeletedPassword % 100 / 10;
+        String passwordForm = "совпадение";
+        if (preLastDigit == 1) {
+            return passwordForm;
+        }
+
+        return switch (countDeletedPassword % 10) {
+            case 1 -> "совпадение";
+            case 2, 3, 4 -> "совпадения";
+            default -> "совпадений";
+        };
+    }
+
+    private boolean isValidDays(int daysToRemind) {
+        return daysToRemind >= 3 && daysToRemind <= 90;
     }
 }

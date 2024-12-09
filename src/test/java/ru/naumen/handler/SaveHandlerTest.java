@@ -7,13 +7,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import ru.naumen.bot.RemindScheduler;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,11 +29,15 @@ class SaveHandlerTest {
     @Mock
     private UserStateCache userStateCache;
 
-    @InjectMocks
-    private SaveHandler saveHandler;
+    @Mock
+    private RemindScheduler remindScheduler;
 
     @Mock
     private KeyboardCreator keyboardCreator;
+
+    @InjectMocks
+    private SaveHandler saveHandler;
+
 
     /**
      * Инициализирует моки перед каждым тестом
@@ -86,11 +92,33 @@ class SaveHandlerTest {
     }
 
     /**
+     * Тест сохранения пароля с напоминанием
+     */
+    @Test
+    void testSavePassword_WithRemind() throws UserNotFoundException {
+        String[] command = {"/save", "pass", "desc", "3"};
+        Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(new ArrayList<>());
+        Mockito.when(passwordService.createUserPassword(Mockito.eq("pass"), Mockito.eq("desc"), Mockito.eq(12345L))).thenReturn("uuid");
+
+        Response response = saveHandler.handle(command, 12345L);
+
+        Mockito.verify(passwordService).createUserPassword(Mockito.eq("pass"), Mockito.eq("desc"), Mockito.eq(12345L));
+        Mockito.verify(remindScheduler)
+                .scheduleRemind("Напоминание: обновите пароль для desc",
+                        12345L,
+                        "uuid",
+                        259200000L);
+        Assertions.assertEquals("Пароль успешно сохранён", response.message());
+        Mockito.verify(userStateCache).clearParamsForUser(12345L);
+    }
+
+
+    /**
      * Тест невалидной команды
      */
     @Test
     void testSavePassword_InvalidCommand() {
-        String[] command = {"/save", "1", "3", "1"};
+        String[] command = {"/save", "1", "3", "1", "1"};
 
         Response response = saveHandler.handle(command, 12345L);
 

@@ -87,7 +87,10 @@ public class EditHandler implements CommandHandler {
 
         List<UserPassword> userPasswords = passwordService.getUserPasswords(userId);
 
-        String uuid = userPasswords.get(passwordIndex - 1).getUuid();
+        // Пользователь получает список начиная с 1
+        int passwordIndexInSystem = passwordIndex - 1;
+
+        String uuid = userPasswords.get(passwordIndexInSystem).getUuid();
         try {
             int length = Integer.parseInt(splitCommand[2]);
             String complexity = splitCommand[3];

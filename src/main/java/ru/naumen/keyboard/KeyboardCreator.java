@@ -101,6 +101,23 @@ public class KeyboardCreator {
     }
 
     /**
+     * Клавиатура да/нет
+     * Кнопки:
+     * да - выполнить действие
+     * нет - отменить действие
+     */
+    public Keyboard createAgreementKeyboard() {
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow keyboardRowFirst = new KeyboardRow();
+        keyboardRowFirst.add(new KeyboardButton("Да"));
+        keyboardRowFirst.add(new KeyboardButton("Нет"));
+
+        keyboardRows.add(keyboardRowFirst);
+        return new Keyboard(keyboardRows);
+    }
+
+    /**
      * Создает пустую клавиатуру
      *
      * @return - клавиатуру
