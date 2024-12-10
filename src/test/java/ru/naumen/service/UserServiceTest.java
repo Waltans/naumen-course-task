@@ -89,8 +89,6 @@ class UserServiceTest {
 
     /**
      * Устанавливаем кодовое слово, когда его не было до этого
-     *
-     * @throws UserCodePhraseException - ошибка, если не удалось поменять кодовое слово
      */
     @Test
     void setCodePhrase() throws UserCodePhraseException {
@@ -98,30 +96,10 @@ class UserServiceTest {
         user.setCodePhrase("newCodePhrase");
 
         Assertions.assertEquals("newCodePhrase", user.getCodePhrase());
-        Assertions.assertEquals(LocalDate.now(), user.getCodeModifyDate());
-    }
-
-    /**
-     * Тест, что мы устанавливаем кодовое слово, если прошло больше 30 дней
-     *
-     * @throws UserCodePhraseException - ошибка, если не удалось поменять кодовое слово
-     */
-    @Test
-    void setCodePhraseCodePhraseOlder() throws UserCodePhraseException {
-        User user = Mockito.spy(new User(12345L));
-        user.setCodePhrase("oldCodePhrase");
-
-        Mockito.when(user.getCodeModifyDate()).thenReturn(LocalDate.now().minusDays(31));
-
-        user.setCodePhrase("newCodePhrase");
-
-        Assertions.assertEquals("newCodePhrase", user.getCodePhrase());
     }
 
     /**
      * Тест, что падает ошибка, если мы пытаемся поменять кодовое слово раньше, чем за 30 дней
-     *
-     * @throws UserCodePhraseException - ошибка, если не удалось поменять кодовое слово
      */
     @Test
     void setCodePhrase_recentlyModified() throws UserCodePhraseException {

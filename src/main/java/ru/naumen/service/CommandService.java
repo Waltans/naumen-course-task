@@ -66,7 +66,7 @@ public class CommandService {
      *
      * @param message текст команды
      * @param userId  ID пользователя
-     * @return ответ на команду и состояние пользователя
+     * @return ответ на команду
      */
     @Transactional
     public Response performCommand(String message, long userId) {

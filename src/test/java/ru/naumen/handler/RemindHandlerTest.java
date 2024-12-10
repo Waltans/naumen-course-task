@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import ru.naumen.bot.RemindScheduler;
+import ru.naumen.remind.RemindScheduler;
 import ru.naumen.bot.Response;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.keyboard.KeyboardCreator;
@@ -57,8 +57,10 @@ class RemindHandlerTest {
         Response response = remindHandler.handle(command, 12345L);
 
         Assertions.assertEquals("Напоминание для пароля desc установлено", response.message());
-        Mockito.verify(remindScheduler).scheduleRemind("Напоминание: обновите пароль для desc",
-                12345L, "uuid", 259_200_000L);
+
+        Response remindResponse = new Response("Напоминание: обновите пароль для desc",
+                keyboardCreator.createMainKeyboard());
+        Mockito.verify(remindScheduler).scheduleRemind(12345L, "uuid", 259_200_000L, remindResponse);
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }
 

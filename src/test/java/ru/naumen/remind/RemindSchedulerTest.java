@@ -1,10 +1,12 @@
-package ru.naumen.bot;
+package ru.naumen.remind;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.context.ApplicationEventPublisher;
+import ru.naumen.bot.Response;
+import ru.naumen.keyboard.KeyboardCreator;
 
 /**
  * Класс модульных тестов для RemindScheduler
@@ -13,6 +15,9 @@ class RemindSchedulerTest {
 
     @Mock
     private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private KeyboardCreator keyboardCreator;
 
     @InjectMocks
     private RemindScheduler remindScheduler;
@@ -28,7 +33,9 @@ class RemindSchedulerTest {
     @Test
     void testScheduleRemind() throws InterruptedException {
         ArgumentCaptor<ReminderEvent> eventCaptor = ArgumentCaptor.forClass(ReminderEvent.class);
-        remindScheduler.scheduleRemind("test", 12345L, "uuid", 500);
+        Response remindResponse = new Response("test",
+                keyboardCreator.createMainKeyboard());
+        remindScheduler.scheduleRemind(12345L, "uuid", 500, remindResponse);
 
         Mockito.verify(eventPublisher, Mockito.never()).publishEvent(eventCaptor.capture());
         Thread.sleep(500 + 20);
@@ -36,7 +43,7 @@ class RemindSchedulerTest {
         Mockito.verify(eventPublisher, Mockito.times(1)).publishEvent(eventCaptor.capture());
 
         ReminderEvent capturedEvent = eventCaptor.getValue();
-        Assertions.assertEquals("test", capturedEvent.getMessage());
+        Assertions.assertEquals("test", capturedEvent.getResponse().message());
     }
 
     /**
@@ -46,19 +53,24 @@ class RemindSchedulerTest {
     void testScheduleRemindMoreThanOne() throws InterruptedException {
         ArgumentCaptor<ReminderEvent> eventCaptor = ArgumentCaptor.forClass(ReminderEvent.class);
 
-        remindScheduler.scheduleRemind("first", 12345L, "uuid", 500);
-        remindScheduler.scheduleRemind("second", 12345L, "uuid1", 1500);
+        Response remindResponse1 = new Response("first",
+                keyboardCreator.createMainKeyboard());
+        Response remindResponse2 = new Response("second",
+                keyboardCreator.createMainKeyboard());
+
+        remindScheduler.scheduleRemind(12345L, "uuid", 500, remindResponse1);
+        remindScheduler.scheduleRemind(12345L, "uuid1", 1500, remindResponse2);
 
         Mockito.verify(eventPublisher, Mockito.never()).publishEvent(eventCaptor.capture());
         Thread.sleep(500 + 20);
         Mockito.verify(eventPublisher, Mockito.times(1)).publishEvent(eventCaptor.capture());
         ReminderEvent capturedEvent1 = eventCaptor.getValue();
-        Assertions.assertEquals("first", capturedEvent1.getMessage());
+        Assertions.assertEquals("first", capturedEvent1.getResponse().message());
 
         Thread.sleep(1000 + 20);
         Mockito.verify(eventPublisher, Mockito.times(2)).publishEvent(eventCaptor.capture());
         ReminderEvent capturedEvent2 = eventCaptor.getValue();
-        Assertions.assertEquals("second", capturedEvent2.getMessage());
+        Assertions.assertEquals("second", capturedEvent2.getResponse().message());
     }
 
     /**
@@ -66,7 +78,9 @@ class RemindSchedulerTest {
      */
     @Test
     void testCancelRemind() throws InterruptedException {
-        remindScheduler.scheduleRemind("test", 12345L, "uuid", 500);
+        Response remindResponse = new Response("test",
+                keyboardCreator.createMainKeyboard());
+        remindScheduler.scheduleRemind( 12345L, "uuid", 500, remindResponse);
 
         remindScheduler.cancelRemindIfScheduled("uuid");
 
@@ -81,7 +95,9 @@ class RemindSchedulerTest {
      */
     @Test
     void testCancelRemindAfterExecution() throws InterruptedException {
-        remindScheduler.scheduleRemind("test", 12345L, "uuid", 500);
+        Response remindResponse = new Response("test",
+                keyboardCreator.createMainKeyboard());
+        remindScheduler.scheduleRemind( 12345L, "uuid", 500, remindResponse);
 
         Thread.sleep(500 + 20);
         ArgumentCaptor<ReminderEvent> eventCaptor = ArgumentCaptor.forClass(ReminderEvent.class);

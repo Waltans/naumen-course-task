@@ -20,6 +20,7 @@ import static ru.naumen.bot.constants.Requests.ENTER_PASSWORD_LENGTH;
 public class GenerateHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
+    private final KeyboardCreator keyboardCreator;
 
     /**
      * Сообщение о генерации пароля
@@ -30,7 +31,6 @@ public class GenerateHandler implements CommandHandler {
      * Количество параметров команды
      */
     private static final int PARAMS_COUNT = 2;
-    private final KeyboardCreator keyboardCreator;
 
     public GenerateHandler(PasswordService passwordService,
                            UserStateCache userStateCache,
@@ -88,5 +88,4 @@ public class GenerateHandler implements CommandHandler {
     private boolean isValidCommand(String[] splitCommand) {
         return (splitCommand.length - COMMAND_WITHOUT_PARAMS_LENGTH) == PARAMS_COUNT;
     }
-
 }

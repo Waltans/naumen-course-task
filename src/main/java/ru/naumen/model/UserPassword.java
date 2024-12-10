@@ -74,10 +74,6 @@ public class UserPassword {
         return password;
     }
 
-    public LocalDate getLastModifyDate() {
-        return lastModifyDate;
-    }
-
     public void setDescription(String description) {
         this.description = description;
     }

@@ -16,7 +16,7 @@ public class Errors {
     public static final String INDEX_ERROR_MESSAGE = "Индекс должен быть числом";
     public static final String DAYS_ERROR_MESSAGE = "Напоминание можно установить на срок от 3 до 90 дней";
     public static final String USER_NOT_FOUND = "Пользователь не найден";
-    public static final String ENCRYPT_ERROR = "Ошибка шифрования пароля";
+    public static final String ENCRYPT_ERROR = "Ошибка шифрования";
 
 
     /**

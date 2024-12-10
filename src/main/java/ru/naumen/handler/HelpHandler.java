@@ -19,8 +19,7 @@ public class HelpHandler implements CommandHandler {
     private final UserStateCache userStateCache;
     private final KeyboardCreator keyboardCreator;
 
-    public HelpHandler(UserStateCache userStateCache,
-                       KeyboardCreator keyboardCreator) {
+    public HelpHandler(UserStateCache userStateCache, KeyboardCreator keyboardCreator) {
         this.userStateCache = userStateCache;
         this.keyboardCreator = keyboardCreator;
     }

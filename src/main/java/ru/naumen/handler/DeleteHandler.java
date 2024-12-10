@@ -1,7 +1,7 @@
 package ru.naumen.handler;
 
 import org.springframework.stereotype.Component;
-import ru.naumen.bot.RemindScheduler;
+import ru.naumen.remind.RemindScheduler;
 import ru.naumen.bot.Response;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.keyboard.KeyboardCreator;
@@ -24,12 +24,12 @@ public class DeleteHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
     private final KeyboardCreator keyboardCreator;
+    private final RemindScheduler remindScheduler;
 
     /**
      * Сообщение об удалении пароля
      */
     private static final String PASSWORD_DELETED_MESSAGE = "Удалён пароль для сайта %s";
-    private final RemindScheduler remindScheduler;
 
     /**
      * Количество параметров команды
@@ -38,7 +38,8 @@ public class DeleteHandler implements CommandHandler {
 
     public DeleteHandler(PasswordService passwordService,
                          UserStateCache userStateCache,
-                         KeyboardCreator keyboardCreator, RemindScheduler remindScheduler) {
+                         KeyboardCreator keyboardCreator,
+                         RemindScheduler remindScheduler) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
         this.keyboardCreator = keyboardCreator;

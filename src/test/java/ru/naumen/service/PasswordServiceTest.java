@@ -290,4 +290,44 @@ class PasswordServiceTest {
                 passwordService.generatePassword(length, complexity));
         Assertions.assertEquals("Password length should be between 8 and 128", e.getMessage());
     }
+
+    /**
+     * Тест подсчёта паролей, которые начинаются с заданной строки
+     */
+    @Test
+    void testFindCountPasswordsStartedFrom() {
+        long userId = 12345L;
+        String phrase = "test";
+        List<UserPassword> passwords = List.of(new UserPassword(), new UserPassword());
+
+        Mockito.when(userPasswordRepository.findAllByUserIdAndDescriptionStartingWithIgnoreCase(userId, phrase))
+                .thenReturn(passwords);
+
+        int result = passwordService.findCountPasswordsStartedFrom(userId, phrase);
+
+        Assertions.assertEquals(2, result);
+        Mockito.verify(userPasswordRepository, Mockito.times(1))
+                .findAllByUserIdAndDescriptionStartingWithIgnoreCase(userId, phrase);
+    }
+
+    /**
+     * Тест удаления паролей, которые начинаются с заданной строки
+     */
+    @Test
+    void testDeletePasswordByStartWord() {
+        long userId = 12345L;
+        String phrase = "delete";
+        List<UserPassword> mockPasswords = List.of(new UserPassword(), new UserPassword(), new UserPassword());
+
+        Mockito.when(userPasswordRepository.findAllByUserIdAndDescriptionStartingWithIgnoreCase(userId, phrase))
+                .thenReturn(mockPasswords);
+
+        int deletedCount = passwordService.deletePasswordByStartWord(userId, phrase);
+
+        Assertions.assertEquals(3, deletedCount);
+        Mockito.verify(userPasswordRepository, Mockito.times(1))
+                .findAllByUserIdAndDescriptionStartingWithIgnoreCase(userId, phrase);
+        Mockito.verify(userPasswordRepository, Mockito.times(1))
+                .deleteAll(mockPasswords);
+    }
 }

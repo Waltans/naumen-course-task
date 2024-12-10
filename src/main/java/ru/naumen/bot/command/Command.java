@@ -44,11 +44,21 @@ public enum Command {
      */
     SORT("/sort", "Сортировать"),
 
+    /**
+     * Команда установки напоминания
+     */
     REMIND("/remind", "Напомнить"),
 
+    /**
+     * Команда установки кодового слова
+     */
     ADD_CODE("/code", "Добавить кодовое слово"),
 
+    /**
+     * Команда очистки паролей
+     */
     CLEAR("/clear", "Очистить пароли"),
+
     /**
      * Команда поиска паролей
      */
@@ -82,8 +92,8 @@ public enum Command {
     /**
      * Конструктор для команды, ее подписи на клавиатуре
      *
-     * @param command          Текст команды
-     * @param keyboardLabel    Описание команды
+     * @param command       Текст команды
+     * @param keyboardLabel Описание команды
      */
     Command(String command, String keyboardLabel) {
         this.command = command;

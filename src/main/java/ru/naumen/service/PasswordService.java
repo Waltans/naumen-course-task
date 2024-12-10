@@ -149,6 +149,11 @@ public class PasswordService {
         return password;
     }
 
+    /**
+     * Ищет все пароли пользователя
+     *
+     * @param userId id пользователя
+     */
     public List<UserPassword> findAllPasswordUser(long userId) {
         return userPasswordRepository.findByUserId(userId);
     }
