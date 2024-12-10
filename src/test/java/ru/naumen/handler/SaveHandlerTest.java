@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import ru.naumen.bot.RemindScheduler;
+import ru.naumen.remind.RemindScheduler;
 import ru.naumen.bot.Response;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.UserNotFoundException;
@@ -102,12 +102,14 @@ class SaveHandlerTest {
 
         Response response = saveHandler.handle(command, 12345L);
 
+        Response remindResponse = new Response("Напоминание: обновите пароль для desc",
+                keyboardCreator.createMainKeyboard());
+
         Mockito.verify(passwordService).createUserPassword(Mockito.eq("pass"), Mockito.eq("desc"), Mockito.eq(12345L));
         Mockito.verify(remindScheduler)
-                .scheduleRemind("Напоминание: обновите пароль для desc",
-                        12345L,
+                .scheduleRemind(12345L,
                         "uuid",
-                        259200000L);
+                        259_200_000L, remindResponse);
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
         Mockito.verify(userStateCache).clearParamsForUser(12345L);
     }

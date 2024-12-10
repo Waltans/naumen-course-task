@@ -11,15 +11,10 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-import ru.naumen.model.State;
+import ru.naumen.remind.ReminderEvent;
 import ru.naumen.service.CommandService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Телеграм бот
@@ -51,6 +46,15 @@ class TelegramBot extends TelegramLongPollingBot {
             log.error("Error initializing Bot", e);
             System.exit(1);
         }
+    }
+
+    /**
+     * Отправляет сообщение с напоминанием при публикации события
+     * @param event событие
+     */
+    @EventListener
+    public void onReminderEvent(ReminderEvent event) {
+        sendMessageToChat(event.getResponse(), event.getUserId());
     }
 
     /**

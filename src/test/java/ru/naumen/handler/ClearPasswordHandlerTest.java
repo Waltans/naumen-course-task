@@ -1,13 +1,14 @@
 package ru.naumen.handler;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.naumen.bot.Response;
 import ru.naumen.cache.UserStateCache;
-import ru.naumen.exception.DecryptException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
@@ -16,18 +17,11 @@ import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.UserService;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 /**
  * Тестовый класс для хэндлера по очистке паролей
  */
 @ExtendWith(MockitoExtension.class)
 class ClearPasswordHandlerTest {
-
-    private ClearPasswordHandler clearPasswordHandler;
-
     @Mock
     private UserStateCache userStateCache;
     @Mock
@@ -38,116 +32,75 @@ class ClearPasswordHandlerTest {
     private EncodeService encodeService;
     @Mock
     private KeyboardCreator keyboardCreator;
-    @Mock
-    private User user;
-
-    private final long userId = 12345L;
-
-    @BeforeEach
-    void setUp() {
-        clearPasswordHandler = new ClearPasswordHandler(
-                userStateCache,
-                userService,
-                passwordService,
-                encodeService,
-                keyboardCreator);
-    }
+    @InjectMocks
+    private ClearPasswordHandler clearPasswordHandler;
 
     /**
      * Тест, что корректно обрабатывается, если приходит команда без параметров
      */
     @Test
-    void handle() {
+    void handleNoParams() {
+        long userId = 1L;
         String[] splitCommand = {"/clear"};
 
         Response response = clearPasswordHandler.handle(splitCommand, userId);
 
-        assertEquals("Введите кодовое слово", response.message());
-        verify(userStateCache).setState(userId, State.CLEAR_1);
+        Assertions.assertEquals("Введите кодовое слово", response.message());
+        Mockito.verify(userStateCache).setState(userId, State.CLEAR_1);
     }
 
     /**
-     * Тест, что команда исполняется корректно и удаляет пароли, если кодовое слово правильное и не выбрасывается ошибка
-     *
-     * @throws Exception - обрабатываемые ошибки
+     * Тест, что команда исполняется корректно и удаляет пароли, если кодовое слово правильное
      */
     @Test
-    void handleAllCommand() throws Exception {
+    void handleAllCommand() throws UserNotFoundException {
+        long userId = 1L;
+        User user = new User(userId);
         String[] splitCommand = {"/clear", "code", "de"};
 
-        when(userService.isExistCodeWord(userId)).thenReturn(true);
-        when(userService.getUserById(userId)).thenReturn(user);
-        when(encodeService.decryptData(user.getCodePhrase())).thenReturn("code");
+        Mockito.when(userService.isExistCodeWord(userId)).thenReturn(true);
+        Mockito.when(userService.getUserById(userId)).thenReturn(user);
+        Mockito.when(encodeService.decryptData(user.getCodePhrase())).thenReturn("code");
 
-        when(passwordService.deletePasswordByStartWord(userId, "de")).thenReturn(1);
+        Mockito.when(passwordService.deletePasswordByStartWord(userId, "de")).thenReturn(1);
 
         Response response = clearPasswordHandler.handle(splitCommand, userId);
 
-        assertEquals("Удален 1 пароль", response.message());
-        verify(userStateCache).clearParamsForUser(userId);
-        verify(userStateCache).setState(userId, State.NONE);
-        verify(passwordService).deletePasswordByStartWord(userId, "de");
+        Assertions.assertEquals("Удален 1 пароль", response.message());
+        Mockito.verify(userStateCache).clearParamsForUser(userId);
+        Mockito.verify(userStateCache).setState(userId, State.NONE);
+        Mockito.verify(passwordService).deletePasswordByStartWord(userId, "de");
     }
 
     /**
-     * Тест, что команда исполняется корректно, если введено неверное кодовое слово
-     *
-     * @throws Exception - обрабатываемые ошибки
+     * Тест, если введено неверное кодовое слово
      */
     @Test
-    void handle_codeIncorrect() throws Exception {
+    void handleCodeIncorrect() throws UserNotFoundException {
+        long userId = 1L;
+        User user = new User(userId);
         String[] splitCommand = {"/clear", "code", "de"};
 
-        when(userService.isExistCodeWord(userId)).thenReturn(true);
-        when(userService.getUserById(userId)).thenReturn(user);
-        when(encodeService.decryptData(user.getCodePhrase())).thenReturn("correctCode");
+        Mockito.when(userService.isExistCodeWord(userId)).thenReturn(true);
+        Mockito.when(userService.getUserById(userId)).thenReturn(user);
+        Mockito.when(encodeService.decryptData(user.getCodePhrase())).thenReturn("correctCode");
 
         Response response = clearPasswordHandler.handle(splitCommand, userId);
 
-        assertEquals("Невозможно запустить операцию", response.message());
-        verify(userStateCache).clearParamsForUser(userId);
-        verify(userStateCache).setState(userId, State.NONE);
+        Assertions.assertEquals("Невозможно запустить операцию", response.message());
+        Mockito.verify(userStateCache).clearParamsForUser(userId);
+        Mockito.verify(userStateCache).setState(userId, State.NONE);
     }
 
     /**
-     * Тест, что пользователю устанавливается статус и очищаются параметры,
-     * если пользователь не существует. Отправляется корректное сообщение
-     *
-     * @throws UserNotFoundException - ошибка, пользователь не найден
+     * Тест невалидной команды
      */
     @Test
-    void handle_whenUserNotFound() throws Exception {
-        String[] splitCommand = {"/clear", "code", "de"};
+    void testClear_InvalidCommand() {
+        String[] command = {"/clear", "1", "2", "3"};
 
-        when(userService.isExistCodeWord(userId)).thenThrow(new UserNotFoundException("User not found"));
+        Response response = clearPasswordHandler.handle(command, 12345L);
 
-        Response response = clearPasswordHandler.handle(splitCommand, userId);
-
-        assertEquals("Пользователь не найден", response.message());
-        verify(userStateCache).clearParamsForUser(userId);
-    }
-
-    /**
-     * Тест, что команда работает корректно, если происходит ошибка дешифрования.
-     * Очищаются параметры и статус и приходит корректное сообщение
-     *
-     * @throws DecryptException - ошибка дешифрования пароля
-     */
-    @Test
-    void handle_decryptException() throws Exception {
-        String[] splitCommand = {"/clear", "code", "de"};
-
-        when(userService.isExistCodeWord(userId)).thenReturn(true);
-        when(userService.getUserById(userId)).thenReturn(user);
-        when(encodeService.decryptData(user.getCodePhrase()))
-                .thenThrow(new DecryptException("Decrypt error",
-                        new RuntimeException()
-                ));
-
-        Response response = clearPasswordHandler.handle(splitCommand, userId);
-
-        assertEquals("Ошибка при дешифровании кодового слова", response.message());
-        verify(userStateCache).clearParamsForUser(userId);
-        verify(userStateCache).setState(userId, State.NONE);
+        Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 }

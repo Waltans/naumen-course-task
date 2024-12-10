@@ -33,37 +33,9 @@ public class User {
     private String codePhrase = null;
 
     /**
-     * День смены кодового слова
+     * Дата последней смены кодового слова
      */
-    private LocalDate codeModifyDate;
-
-    public void setCodeModifyDate() {
-        this.codeModifyDate = LocalDate.now();
-    }
-
-    public LocalDate getCodeModifyDate() {
-        return codeModifyDate;
-    }
-
-    public String getCodePhrase() {
-        return codePhrase;
-    }
-
-    /**
-     * Устанавливает кодовое слово, если оно ещё не было установлено или если прошло 30 дней с момента установки
-     *
-     * @param codePhrase - кодовое слово
-     * @throws UserCodePhraseException - ошибка, в случае, если невозможно поменять кодовое слово
-     */
-    public void setCodePhrase(String codePhrase) throws UserCodePhraseException {
-        if (getCodePhrase() == null ||
-                getCodeModifyDate().isBefore(LocalDate.now().minusDays(30))) {
-            setCodeModifyDate();
-            this.codePhrase = codePhrase;
-        } else {
-            throw new UserCodePhraseException("Невозможно сменить кодовое слово");
-        }
-    }
+    private LocalDate codeLastModifyDate;
 
     public User(long id, List<UserPassword> userPasswords) {
         this.id = id;
@@ -78,16 +50,32 @@ public class User {
         this.id = id;
     }
 
-    public List<UserPassword> getPasswords() {
-        return userPasswords;
-    }
-
     public long getId() {
         return id;
     }
 
     public void setId(long telegramId) {
         this.id = telegramId;
+    }
+
+    public String getCodePhrase() {
+        return codePhrase;
+    }
+
+    /**
+     * Устанавливает кодовое слово, если оно ещё не было установлено или если прошло 30 дней с момента установки
+     *
+     * @param codePhrase - кодовое слово
+     * @throws UserCodePhraseException - ошибка, в случае, если невозможно поменять кодовое слово
+     */
+    public void setCodePhrase(String codePhrase) throws UserCodePhraseException {
+        if (this.codePhrase == null ||
+                this.codeLastModifyDate.isBefore(LocalDate.now().minusDays(30))) {
+            this.codeLastModifyDate = LocalDate.now();
+            this.codePhrase = codePhrase;
+        } else {
+            throw new UserCodePhraseException("Невозможно сменить кодовое слово");
+        }
     }
 
     @Override

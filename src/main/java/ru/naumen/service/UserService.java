@@ -78,7 +78,6 @@ public class UserService {
      *
      * @param userId - ID пользователя
      * @return - true, если есть кодовое слово, false - если его нет
-     * @throws UserNotFoundException - ошибка, если пользователь не найден
      */
     public boolean isExistCodeWord(Long userId) throws UserNotFoundException {
         User user = getUserById(userId);

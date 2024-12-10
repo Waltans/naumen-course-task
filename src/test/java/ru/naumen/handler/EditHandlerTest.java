@@ -52,7 +52,7 @@ class EditHandlerTest {
     @Test
     void testUpdatePassword_WithCorrectParamsAndDescription() throws PasswordNotFoundException, PasswordLengthException, ComplexityFormatException {
         String[] command = {"/edit", "1", "12", "3", "newd"};
-        UserPassword password = new UserPassword("uuid", "d", "pass", null, LocalDate.of(2010, 1, 1));
+        UserPassword password = new UserPassword("uuid", "d", "pass", null, null);
         List<UserPassword> userPasswords = List.of(password);
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
@@ -73,8 +73,7 @@ class EditHandlerTest {
     @Test
     void testUpdatePassword_WithCorrectParamsWithoutDescription() throws PasswordNotFoundException, PasswordLengthException, ComplexityFormatException {
         String[] command = {"/edit", "1", "12", "3"};
-        UserPassword password = new UserPassword("uuid", "d", "pass", null,
-                LocalDate.of(2010, 1, 1));
+        UserPassword password = new UserPassword("uuid", "d", "pass", null, null);
         List<UserPassword> userPasswords = List.of(password);
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);

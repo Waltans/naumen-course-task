@@ -1,6 +1,7 @@
-package ru.naumen.bot;
+package ru.naumen.remind;
 
 import org.springframework.context.ApplicationEvent;
+import ru.naumen.bot.Response;
 
 /**
  * Событие отправки напоминания
@@ -13,21 +14,21 @@ public class ReminderEvent extends ApplicationEvent {
     private final String userId;
 
     /**
-     * Сообщение с напоминанием
+     * Ответ с напоминанием
      */
-    private final String message;
+    private final Response response;
 
-    public ReminderEvent(Object source, String userId, String message) {
+    public ReminderEvent(Object source, String userId, Response response) {
         super(source);
         this.userId = userId;
-        this.message = message;
+        this.response = response;
     }
 
     public String getUserId() {
         return userId;
     }
 
-    public String getMessage() {
-        return message;
+    public Response getResponse() {
+        return response;
     }
 }

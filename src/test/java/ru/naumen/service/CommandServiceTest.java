@@ -74,16 +74,18 @@ class CommandServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        Map<String, CommandHandler> commandHandlers = Map.of(
-                "/generate", generateHandler,
-                "/list", listHandler,
-                "/edit", editHandler,
-                "/del", deleteHandler,
-                "/save", saveHandler,
-                "/sort", sortHandler,
-                "/find", findHandler,
-                "/help", helpHandler,
-                "/remind", remindHandler
+        Map<String, CommandHandler> commandHandlers = Map.ofEntries(
+                Map.entry("/generate", generateHandler),
+                Map.entry("/list", listHandler),
+                Map.entry("/edit", editHandler),
+                Map.entry("/del", deleteHandler),
+                Map.entry("/save", saveHandler),
+                Map.entry("/sort", sortHandler),
+                Map.entry("/find", findHandler),
+                Map.entry("/help", helpHandler),
+                Map.entry("/remind", remindHandler),
+                Map.entry("/code", addCodePhraseHandler),
+                Map.entry("/clear", clearPasswordHandler)
         );
 
         commandService = new CommandService(
@@ -94,6 +96,9 @@ class CommandServiceTest {
         );
     }
 
+    /**
+     * Тест команды /generate
+     */
     @Test
     void testPerformCommandGenerate() {
         Mockito.when(generateHandler.handle(Mockito.eq(new String[]{"/generate", "12", "3"}), Mockito.eq(12345L)))
@@ -103,6 +108,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Сгенерирован пароль: generatedPassword", response.message());
     }
 
+    /**
+     * Тест команды /generate при недостаточной длине
+     */
     @Test
     void testPerformCommandGenerateLowLength() {
         Mockito.when(generateHandler.handle(Mockito.eq(new String[]{"/generate", "4", "3"}), Mockito.eq(12345L)))
@@ -112,6 +120,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
     }
 
+    /**
+     * Тест команды /generate при высокой длине
+     */
     @Test
     void testPerformCommandGenerateHighLength() {
         Mockito.when(generateHandler.handle(Mockito.eq(new String[]{"/generate", "129", "3"}), Mockito.eq(12345L)))
@@ -121,6 +132,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
     }
 
+    /**
+     * Тест команды /generate при некорректной сложности
+     */
     @Test
     void testPerformCommandGenerateInvalidComplexity() {
         String expectedResponse = "Сложность должна быть от 1 до 3, где:\n" +
@@ -134,6 +148,9 @@ class CommandServiceTest {
         Assertions.assertEquals(expectedResponse, response.message());
     }
 
+    /**
+     * Тест команды /save с описанием
+     */
     @Test
     void testPerformCommandSaveWithDescription() {
         Mockito.when(saveHandler.handle(Mockito.eq(new String[]{"/save", "pass", "desc"}), Mockito.eq(12345L)))
@@ -143,6 +160,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
     }
 
+    /**
+     * Тест команды /save с напоминанием
+     */
     @Test
     void testPerformCommandSaveWithRemind() {
         Mockito.when(saveHandler.handle(Mockito.eq(new String[]{"/save", "pass", "desc", "3"}), Mockito.eq(12345L)))
@@ -152,6 +172,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
     }
 
+    /**
+     * Тест команды /save без описания
+     */
     @Test
     void testPerformCommandSaveWithoutDescription() {
         Mockito.when(saveHandler.handle(Mockito.eq(new String[]{"/save", "pass"}), Mockito.eq(12345L)))
@@ -161,6 +184,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
     }
 
+    /**
+     * Тест команды /list
+     */
     @Test
     void testPerformCommandList() {
         User user = new User(12345L);
@@ -180,6 +206,9 @@ class CommandServiceTest {
         Assertions.assertEquals(expectedMessage, response.message());
     }
 
+    /**
+     * Тест команды /del
+     */
     @Test
     void testPerformCommandDelete() {
         Mockito.when(deleteHandler.handle(Mockito.eq(new String[]{"/del", "1"}), Mockito.eq(12345L)))
@@ -189,8 +218,11 @@ class CommandServiceTest {
         Assertions.assertEquals("Удалён пароль для сайта site", response.message());
     }
 
+    /**
+     * Тест команды /delete с некрректным индексом
+     */
     @Test
-    void testPerformCommandDeleteInvalidId() {
+    void testPerformCommandDeleteInvalidIndex() {
         Mockito.when(deleteHandler.handle(Mockito.eq(new String[]{"/del", "2"}), Mockito.eq(12345L)))
                 .thenReturn(new Response("Не найден пароль с id 2", new Keyboard(List.of())));
 
@@ -198,8 +230,11 @@ class CommandServiceTest {
         Assertions.assertEquals("Не найден пароль с id 2", response.message());
     }
 
+    /**
+     * Тест команды /delete с отрицательным индексом
+     */
     @Test
-    void testPerformCommandDeleteMinusId() {
+    void testPerformCommandDeleteMinusIndex() {
         Mockito.when(deleteHandler.handle(Mockito.eq(new String[]{"/del", "-2"}), Mockito.eq(12345L)))
                 .thenReturn(new Response("Не найден пароль с id -2", new Keyboard(List.of())));
 
@@ -207,6 +242,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Не найден пароль с id -2", response.message());
     }
 
+    /**
+     * Тест команды /remind
+     */
     @Test
     void testPerformCommandRemind() {
         Mockito.when(remindHandler.handle(Mockito.eq(new String[]{"/remind", "1", "10"}), Mockito.eq(12345L)))
@@ -216,8 +254,11 @@ class CommandServiceTest {
         Assertions.assertEquals("Установлено напоминание", response.message());
     }
 
+    /**
+     * Тест команды /remind с отрицательным индексом
+     */
     @Test
-    void testPerformCommandRemindMinusId() {
+    void testPerformCommandRemindMinusIndex() {
         Mockito.when(remindHandler.handle(Mockito.eq(new String[]{"/remind", "2", "10"}), Mockito.eq(12345L)))
                 .thenReturn(new Response("Не найден пароль с id 2", new Keyboard(List.of())));
 
@@ -225,6 +266,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Не найден пароль с id 2", response.message());
     }
 
+    /**
+     * Тест команды /remind с невалидным кол-вом дней
+     */
     @Test
     void testPerformCommandRemindInvalidDays() {
         Mockito.when(remindHandler.handle(Mockito.eq(new String[]{"/remind", "1", "1"}), Mockito.eq(12345L)))
@@ -234,6 +278,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Напоминание можно установить на срок от 3 до 90 дней", response.message());
     }
 
+    /**
+     * Тест команды /edit
+     */
     @Test
     void testPerformCommandEditValid() {
         Mockito.when(editHandler.handle(Mockito.eq(new String[]{"/edit", "1", "12", "2", "updDesc"}), Mockito.eq(12345L)))
@@ -243,6 +290,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Обновлён пароль для updDesc: newPass", response.message());
     }
 
+    /**
+     * Тест команды /edit без описания
+     */
     @Test
     void testPerformCommandEditValidWithoutDescription() {
         Mockito.when(editHandler.handle(Mockito.eq(new String[]{"/edit", "1", "12", "2"}), Mockito.eq(12345L)))
@@ -252,6 +302,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Обновлён пароль для site: newPass", response.message());
     }
 
+    /**
+     * Тест команды /edit при невалидной длине
+     */
     @Test
     void testPerformCommandEditInvalidLength() {
         Mockito.when(editHandler.handle(Mockito.eq(new String[]{"/edit", "1", "129", "2"}), Mockito.eq(12345L)))
@@ -261,6 +314,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", response.message());
     }
 
+    /**
+     * Тест команды /edit при невалидной сложности
+     */
     @Test
     void testPerformCommandEditInvalidComplexity() {
         String expectedResponse = "Сложность должна быть от 1 до 3, где:\n" +
@@ -275,6 +331,9 @@ class CommandServiceTest {
         Assertions.assertEquals(expectedResponse, response.message());
     }
 
+    /**
+     * Тест команды /edit при не найденном пароле
+     */
     @Test
     void testPerformCommandEditPasswordNotFound() {
         Mockito.when(editHandler.handle(Mockito.eq(new String[]{"/edit", "2", "10", "2"}), Mockito.eq(12345L)))
@@ -284,12 +343,18 @@ class CommandServiceTest {
         Assertions.assertEquals("Не найден пароль с id 2", response.message());
     }
 
+    /**
+     * Тест команды /edit при невалидном кол-ве параметров
+     */
     @Test
     void testPerformCommandEditInvalidCommand() {
         Response response = commandService.performCommand("/edit 2 10 2 15 14", 12345L);
         Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 
+    /**
+     * Тест команды /help
+     */
     @Test
     void testPerformCommandHelp() {
         String expectedResponse = "Здравствуйте. Я бот, который поможет Вам генерировать и управлять паролями.\n\n" +
@@ -308,12 +373,46 @@ class CommandServiceTest {
         Assertions.assertEquals(expectedResponse, response.message());
     }
 
+    /**
+     * Тест команды /code
+     */
+    @Test
+    void testPerformCommandCode() {
+        String expectedResponse = "Кодовое слово успешно установлено";
+
+        Mockito.when(addCodePhraseHandler.handle(Mockito.eq(new String[]{"/code", "code"}), Mockito.eq(12345L)))
+                .thenReturn(new Response(expectedResponse, new Keyboard(List.of())));
+
+        Response response = commandService.performCommand("/code code", 12345L);
+        Assertions.assertEquals(expectedResponse, response.message());
+    }
+
+    /**
+     * Тест команды /clear
+     */
+    @Test
+    void testPerformCommandClear() {
+        String expectedResponse = "Удалён 1 пароль";
+
+        Mockito.when(clearPasswordHandler.handle(Mockito.eq(new String[]{"/clear", "code", "start"}), Mockito.eq(12345L)))
+                .thenReturn(new Response(expectedResponse, new Keyboard(List.of())));
+
+        Response response = commandService.performCommand("/clear code start", 12345L);
+        Assertions.assertEquals(expectedResponse, response.message());
+    }
+
+    /**
+     * Тест команды некорректной
+     */
     @Test
     void testPerformCommandInvalidCommand() {
         Response response = commandService.performCommand("/invalid 123", 12345L);
         Assertions.assertEquals("Введена некорректная команда! Справка: /help", response.message());
     }
 
+    /**
+     * Тест команды /generate с клавиатуры
+     */
     @Test
     void testPerformCommandGenerateKeyboard() {
         Mockito.when(generateHandler.handle(Mockito.eq(new String[]{"Генерировать"}), Mockito.eq(12345L)))
@@ -335,6 +434,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Сгенерирован пароль:", thirdStep.message());
     }
 
+    /**
+     * Тест команды /generate с клавиатуры при некорректной длине
+     */
     @Test
     void testPerformCommandGenerateKeyboard_lengthUnCorrect() {
         Mockito.when(generateHandler.handle(Mockito.eq(new String[]{"Генерировать"}), Mockito.eq(12345L)))
@@ -350,6 +452,9 @@ class CommandServiceTest {
         Assertions.assertEquals("Длина пароля должна быть от 8 до 128 символов!", secondStep.message());
     }
 
+    /**
+     * Тест команды /generate с клавиатуры при некорректной сложности
+     */
     @Test
     void testPerformCommandGenerateKeyboard_ComplexityUnCorrect() {
         String expectedMessage = """
@@ -377,6 +482,9 @@ class CommandServiceTest {
         Assertions.assertEquals(expectedMessage, thirdStep.message());
     }
 
+    /**
+     * Тест команды /save с клавиатуры
+     */
     @Test
     void testPerformCommandSaveKeyboard() {
         Mockito.when(saveHandler.handle(Mockito.eq(new String[]{"Сохранить"}), Mockito.eq(12345L)))
@@ -413,7 +521,7 @@ class CommandServiceTest {
     }
 
     /**
-     * Тест, когда изменение должно проходить успешно
+     * Тест команды /edit с клавиатуры
      */
     @Test
     void testPerformCommandEditKeyboard() {
@@ -464,7 +572,7 @@ class CommandServiceTest {
     }
 
     /**
-     * Тест, когда удаление должно проходить успешно
+     * Тест команды /del с клавиатуры
      */
     @Test
     void testPerformCommandDeleteKeyboard() {
@@ -488,7 +596,7 @@ class CommandServiceTest {
     }
 
     /**
-     * Тест команды сортировки
+     * Тест команды /sort с клавиатуры
      */
     @Test
     void testPerformCommandSortKeyboard() {
@@ -512,7 +620,7 @@ class CommandServiceTest {
     }
 
     /**
-     * Тест команды поиска
+     * Тест команды /find с клавиатуры
      */
     @Test
     void testPerformCommandFindKeyboard() {
@@ -536,7 +644,7 @@ class CommandServiceTest {
     }
 
     /**
-     * Тест команды установки напоминания
+     * Тест команды /remind с клавиатуры
      */
     @Test
     void testPerformCommandRemindKeyboard() {

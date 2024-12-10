@@ -16,6 +16,9 @@ import ru.naumen.service.EncodeService;
 import ru.naumen.service.PasswordService;
 import ru.naumen.service.UserService;
 
+import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
+import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
+import static ru.naumen.bot.constants.Requests.ENTER_CODE_PHRASE;
 import static ru.naumen.model.State.NONE;
 
 /**
@@ -29,12 +32,33 @@ public class ClearPasswordHandler implements CommandHandler {
     private final UserService userService;
     private final PasswordService passwordService;
     private final EncodeService encodeService;
-    private static final String ADD_CODE_PHRASE = "Введите кодовое слово";
-    private static final String CANT_RUN_OPERATION = "Невозможно запустить операцию";
-    private static final String NO_CODEWORD = "У вас не установлено кодовое слово";
-    private static final String DECRYPT_ERROR = "Ошибка при дешифровании кодового слова";
     private final KeyboardCreator keyboardCreator;
-    public ClearPasswordHandler(UserStateCache userStateCache, UserService userService, PasswordService passwordService, EncodeService encodeService, KeyboardCreator keyboardCreator) {
+
+    /**
+     * Сообщение, когда невозможно удалить пароли
+     */
+    private static final String CANT_RUN_OPERATION = "Невозможно запустить операцию";
+
+    /**
+     * Сообщение, когда нет кодового слова
+     */
+    private static final String NO_CODE_WORD = "У вас не установлено кодовое слово";
+
+    /**
+     * Сообщение, когда произошла ошибка дешифорвания кодового слова
+     */
+    private static final String DECRYPT_ERROR = "Ошибка при дешифровании кодового слова";
+
+    /**
+     * Количество параметров команды
+     */
+    private static final int PARAMS_COUNT = 2;
+
+    public ClearPasswordHandler(UserStateCache userStateCache,
+                                UserService userService,
+                                PasswordService passwordService,
+                                EncodeService encodeService,
+                                KeyboardCreator keyboardCreator) {
         this.userStateCache = userStateCache;
         this.userService = userService;
         this.passwordService = passwordService;
@@ -47,7 +71,14 @@ public class ClearPasswordHandler implements CommandHandler {
         if (splitCommand.length == Parameters.COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.CLEAR_1);
 
-            return new Response(ADD_CODE_PHRASE, keyboardCreator.createEmptyKeyboard());
+            return new Response(ENTER_CODE_PHRASE, keyboardCreator.createEmptyKeyboard());
+        }
+
+        if (!isValidCommand(splitCommand)) {
+            userStateCache.setState(userId, State.NONE);
+            userStateCache.clearParamsForUser(userId);
+
+            return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
         }
 
         try {
@@ -80,11 +111,11 @@ public class ClearPasswordHandler implements CommandHandler {
                 userStateCache.setState(userId, NONE);
                 userStateCache.clearParamsForUser(userId);
 
-                return new Response(NO_CODEWORD, keyboardCreator.createMainKeyboard());
+                return new Response(NO_CODE_WORD, keyboardCreator.createMainKeyboard());
             }
         } catch (UserNotFoundException e) {
             userStateCache.clearParamsForUser(userId);
-            log.error("Пользователь не найден");
+            log.error("Пользователь не найден", e);
 
             return new Response(Errors.USER_NOT_FOUND, keyboardCreator.createMainKeyboard());
         } catch (DecryptException e) {
@@ -97,19 +128,17 @@ public class ClearPasswordHandler implements CommandHandler {
     }
 
     /**
-     * Получить форму слова "пароля"
+     * Определяет форму слова "пароль" в зависимости от количества.
      *
-     * @param countDeletedPassword - количество паролей для удаления
-     * @return - форму слова "пароль"
+     * @param count - количество паролей
+     * @return форма слова "пароль"
      */
-    private String getPasswordForm(int countDeletedPassword) {
-        int preLastDigit = countDeletedPassword % 100 / 10;
-        String passwordForm = "пароль";
-        if (preLastDigit == 1) {
-            return passwordForm;
+    private String getPasswordForm(int count) {
+        if (count % 100 / 10 == 1) {
+            return "паролей";
         }
 
-        return switch (countDeletedPassword % 10) {
+        return switch (count % 10) {
             case 1 -> "пароль";
             case 2, 3, 4 -> "пароля";
             default -> "паролей";
@@ -117,21 +146,26 @@ public class ClearPasswordHandler implements CommandHandler {
     }
 
     /**
-     * Получить форму слова "Удалить"
+     * Определяет форму слова "Удалить" в зависимости от количества.
      *
-     * @param countDeletedPassword - количество паролей для удаления
-     * @return - форма слова "удалить"
+     * @param count - количество удаленных паролей
+     * @return форма слова "удалить"
      */
-    private String getDeleteForm(int countDeletedPassword) {
-        int preLastDigit = countDeletedPassword % 100 / 10;
-        String passwordForm = "Удален";
-        if (preLastDigit == 1) {
-            return passwordForm;
+    private String getDeleteForm(int count) {
+        if (count % 100 / 10 == 1) {
+            return "Удалено";
         }
 
-        return switch (countDeletedPassword % 10) {
-            case 1 -> "Удален";
-            default -> "Удалено";
-        };
+        return count % 10 == 1 ? "Удален" : "Удалено";
+    }
+
+    /**
+     * Валидирует команду
+     *
+     * @param splitCommand команда, разделённая по пробелам
+     * @return true, если команда валидна
+     */
+    private boolean isValidCommand(String[] splitCommand) {
+        return (splitCommand.length - COMMAND_WITHOUT_PARAMS_LENGTH) == PARAMS_COUNT;
     }
 }

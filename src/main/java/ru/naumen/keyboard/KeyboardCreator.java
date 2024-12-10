@@ -60,6 +60,7 @@ public class KeyboardCreator {
      * EDIT - начать процедуру изменения пароля
      * SORT - отсортировать пароли
      * FIND - поиск паролей по описанию
+     * REMIND - установка напоминания
      */
     public Keyboard createInListKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
@@ -72,6 +73,7 @@ public class KeyboardCreator {
         KeyboardRow keyboardRowSecond = new KeyboardRow();
         keyboardRowSecond.add(new KeyboardButton(Command.SORT.getKeyboardLabel()));
         keyboardRowSecond.add(new KeyboardButton(Command.FIND.getKeyboardLabel()));
+        keyboardRowSecond.add(new KeyboardButton(Command.REMIND.getKeyboardLabel()));
 
         keyboardRows.add(keyboardRowFirst);
         keyboardRows.add(keyboardRowSecond);

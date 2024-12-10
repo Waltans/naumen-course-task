@@ -65,15 +65,15 @@ class NonCommandHandlerTest {
         Mockito.when(userStateCache.getUserState(Mockito.anyLong())).thenReturn(State.NONE);
         Mockito.when(userStateCache.getUserParams(Mockito.anyLong())).thenReturn(List.of());
 
-        Map<String, CommandHandler> commandHandlers = Map.of(
-                "/edit", editHandler,
-                "/del", deleteHandler,
-                "/save", saveHandler,
-                "/sort", sortHandler,
-                "/find", findHandler,
-                "/remind", remindHandler,
-                "/clear", clearPasswordHandler,
-                "/code", addCodePhraseHandler
+        Map<String, CommandHandler> commandHandlers = Map.ofEntries(
+                Map.entry("/edit", editHandler),
+                Map.entry("/del", deleteHandler),
+                Map.entry("/save", saveHandler),
+                Map.entry("/sort", sortHandler),
+                Map.entry("/find", findHandler),
+                Map.entry("/remind", remindHandler),
+                Map.entry("/code", addCodePhraseHandler),
+                Map.entry("/clear", clearPasswordHandler)
         );
 
         nonCommandHandler = new NonCommandHandler(
@@ -275,21 +275,21 @@ class NonCommandHandlerTest {
     void getPhraseForClear() {
         long userId = 12345L;
         String phrase = "testPhrase";
-        List<String> userParams = List.of("/clear code");
+        List<String> userParams = List.of("code");
 
         Mockito.when(userStateCache.getUserState(userId)).thenReturn(CLEAR_2);
         Mockito.when(userStateCache.getUserParams(userId)).thenReturn(userParams);
 
         Response actualResponse = nonCommandHandler.getPhraseForClear(phrase, userId);
 
-        Assertions.assertEquals("Найдено 0 совпадений, вы точно хотите удалить все пароли, описание которых начинается на testPhrase", actualResponse.message());
+        Assertions.assertEquals("Найдено 0 совпадений, вы точно хотите удалить все пароли, описание которых начинается на testPhrase?", actualResponse.message());
     }
 
     /**
      * Тест, что команда работает корректно, если пользователь соглашается на отчистку паролей
      */
     @Test
-    void clear_success() {
+    void testClearSuccess() {
         long userId = 12345L;
         String phrase = "code";
         List<String> userParams = List.of(phrase, "qwe");
@@ -307,14 +307,13 @@ class NonCommandHandlerTest {
         Assertions.assertEquals("Success", response.message());
     }
 
-
     /**
      * Тест, что команда работает корректно, если пользователь отказывается от отчистки паролей
      */
     @Test
-    void clear_failure() {
+    void testClearReject() {
         long userId = 12345L;
-        List<String> userParams = List.of("/clear", "code");
+        List<String> userParams = List.of("code");
 
         Mockito.when(userStateCache.getUserState(userId)).thenReturn(CLEAR_3);
         Mockito.when(userStateCache.getUserParams(userId)).thenReturn(userParams);
@@ -324,10 +323,10 @@ class NonCommandHandlerTest {
     }
 
     /**
-     * Тест, что при неверном состоянии будет правильный ответ
+     * Тест, что при неверном состоянии будет соответствующий ответ
      */
     @Test
-    void getPhraseForClear_failure() {
+    void testGetPhraseForClear_failure() {
         long userId = 12345L;
         String phrase = "somethingWrong";
 
@@ -343,7 +342,7 @@ class NonCommandHandlerTest {
      * Тест, что метод выполняется корректно при состоянии CODE_PHRASE_1
      */
     @Test
-    void getCodeWord() {
+    void testGetCodeWord() {
         long userId = 12345L;
         String codeWord = "newCode";
 
@@ -391,5 +390,40 @@ class NonCommandHandlerTest {
 
         Assertions.assertEquals("Что-то пошло не так :( ", actualResponse.message());
         Mockito.verify(userStateCache).clearParamsForUser(userId);
+    }
+
+    /**
+     * Тест, что сохранение работает корректно,
+     * если пользователь соглашается с установкой стандартного числа дней до напоминания
+     */
+    @Test
+    void testSaveAcceptRemind() {
+        long userId = 12345L;
+        List<String> userParams = List.of("pass", "desc");
+        Keyboard keyboard = keyboardCreator.createMainKeyboard();
+
+        Mockito.when(userStateCache.getUserState(userId)).thenReturn(SAVE_STEP_3);
+        Mockito.when(userStateCache.getUserParams(userId)).thenReturn(userParams);
+        Mockito.when(saveHandler.handle(new String[]{"/save", "pass", "desc", "30"}, userId))
+                .thenReturn(new Response("Пароль успешно сохранён", keyboard));
+
+        Response response = nonCommandHandler.getAgreement("да", userId);
+        Assertions.assertEquals("Пароль успешно сохранён", response.message());
+    }
+
+    /**
+     * Тест, что сохранение работает корректно,
+     * если пользователь отказывается от установки стандартного числа дней до напоминания
+     */
+    @Test
+    void testSaveRejectRemind() {
+        long userId = 12345L;
+        List<String> userParams = List.of("pass", "desc");
+
+        Mockito.when(userStateCache.getUserState(userId)).thenReturn(SAVE_STEP_3);
+        Mockito.when(userStateCache.getUserParams(userId)).thenReturn(userParams);
+
+        Response response = nonCommandHandler.getAgreement("нет", userId);
+        Assertions.assertEquals("Через сколько дней напомнить о смене пароля? (0 - не ставить напоминание)", response.message());
     }
 }

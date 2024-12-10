@@ -20,6 +20,7 @@ public class Information {
             """;
 
     public static final String PASSWORD_LIST_FORMAT = "%d) Сайт: %s, Пароль: %s";
+    public static final String REMIND_MESSAGE_PASSWORD = "Напоминание: обновите пароль для %s";
 
     /**
      * Приватный конструктор, чтобы нельзя было создавать объекты

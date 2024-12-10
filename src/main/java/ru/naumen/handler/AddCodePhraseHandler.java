@@ -3,9 +3,8 @@ package ru.naumen.handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ru.naumen.bot.RemindScheduler;
+import ru.naumen.remind.RemindScheduler;
 import ru.naumen.bot.Response;
-import ru.naumen.bot.constants.Errors;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.UserCodePhraseException;
@@ -14,9 +13,9 @@ import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.service.UserService;
 
-import static ru.naumen.bot.constants.Errors.USER_NOT_FOUND;
-import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
-import static ru.naumen.bot.constants.Schedules.MILLIS_IN_A_DAY;
+import static ru.naumen.bot.constants.Errors.*;
+import static ru.naumen.bot.constants.Parameters.*;
+import static ru.naumen.bot.constants.Requests.ENTER_CODE_PHRASE;
 
 
 /**
@@ -28,16 +27,46 @@ public class AddCodePhraseHandler implements CommandHandler {
     private final Logger log = LoggerFactory.getLogger(AddCodePhraseHandler.class);
     private final UserStateCache userStateCache;
     private final UserService userService;
-    private final RemindScheduler scheduler;
-    private static final String ADD_CODE_PHRASE = "Введите кодовое слово";
-    private static final String CODE_ADDED_SUCCESS = "Кодовое слово успешно установлено";
-    private static final String NO_CODEWORD = "Для пользователя уже задано кодовое слово";
-    private static final String REMIND_USER_MESSAGE = "Вам необходимо заменить кодовое слово";
+    private final RemindScheduler remindScheduler;
     private final KeyboardCreator keyboardCreator;
-    public AddCodePhraseHandler(UserStateCache userStateCache, UserService userService, RemindScheduler scheduler, KeyboardCreator keyboardCreator) {
+
+    /**
+     * Сообщение об установке кодового слова
+     */
+    private static final String CODE_ADDED_SUCCESS = "Кодовое слово успешно установлено";
+
+    /**
+     * Сообщение о том, что уже задано кодовое слово
+     */
+    private static final String NO_CODEWORD = "Для пользователя уже задано кодовое слово";
+
+    /**
+     * Сообщение о том, что нужно заменить кодовое слово
+     */
+    private static final String CHANGE_CODE_MESSAGE = "Вам необходимо заменить кодовое слово";
+
+    /**
+     * Формат Id для напоминания о смене кодового слова
+     */
+    private static final String CODE_REMINDER_ID_FORMAT = "code-%s";
+
+    /**
+     * Количество дней до напоминания о смене кодового слова
+     */
+    private static final int DAYS_TO_REMIND_CODE = 30;
+
+    /**
+     * Количество параметров команды
+     */
+    private static final int PARAMS_COUNT = 1;
+
+    public AddCodePhraseHandler(UserStateCache userStateCache,
+                                UserService userService,
+                                RemindScheduler remindScheduler,
+                                KeyboardCreator keyboardCreator) {
         this.userStateCache = userStateCache;
         this.userService = userService;
-        this.scheduler = scheduler;
+        this.remindScheduler = remindScheduler;
         this.keyboardCreator = keyboardCreator;
     }
 
@@ -46,7 +75,14 @@ public class AddCodePhraseHandler implements CommandHandler {
         if (splitCommand.length == COMMAND_WITHOUT_PARAMS_LENGTH) {
             userStateCache.setState(userId, State.CODE_PHRASE_1);
 
-            return new Response(ADD_CODE_PHRASE, keyboardCreator.createEmptyKeyboard());
+            return new Response(ENTER_CODE_PHRASE, keyboardCreator.createEmptyKeyboard());
+        }
+
+        if (!isValidCommand(splitCommand)) {
+            userStateCache.setState(userId, State.NONE);
+            userStateCache.clearParamsForUser(userId);
+
+            return new Response(INCORRECT_COMMAND_RESPONSE, keyboardCreator.createMainKeyboard());
         }
 
         try {
@@ -66,13 +102,28 @@ public class AddCodePhraseHandler implements CommandHandler {
             userStateCache.setState(userId, State.NONE);
             log.error("Encrypt exception", e);
 
-            return new Response(Errors.ENCRYPT_ERROR, keyboardCreator.createMainKeyboard());
+            return new Response(ENCRYPT_ERROR, keyboardCreator.createMainKeyboard());
         }
-        scheduler.scheduleRemind(REMIND_USER_MESSAGE,
-                userId, String.format("code-%s", userId), MILLIS_IN_A_DAY * 30);
+
+        long millisToRemind = DAYS_TO_REMIND_CODE * MILLIS_IN_A_DAY;
+        String codeReminderId = String.format(CODE_REMINDER_ID_FORMAT, userId);
+
+        Response remindResponse = new Response(CHANGE_CODE_MESSAGE, keyboardCreator.createMainKeyboard());
+        remindScheduler.scheduleRemind(userId, codeReminderId, millisToRemind, remindResponse);
+
         userStateCache.setState(userId, State.NONE);
         userStateCache.clearParamsForUser(userId);
 
         return new Response(CODE_ADDED_SUCCESS, keyboardCreator.createMainKeyboard());
+    }
+
+    /**
+     * Валидирует команду
+     *
+     * @param splitCommand команда, разделённая по пробелам
+     * @return true, если команда валидна
+     */
+    private boolean isValidCommand(String[] splitCommand) {
+        return (splitCommand.length - COMMAND_WITHOUT_PARAMS_LENGTH) == PARAMS_COUNT;
     }
 }
