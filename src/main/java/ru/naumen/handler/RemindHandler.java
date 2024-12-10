@@ -102,6 +102,7 @@ public class RemindHandler implements CommandHandler {
 
     /**
      * Проверяет валидность количества дней до напоминания
+     *
      * @param daysToRemind дни до напоминания
      * @return true, если количество дней валидно
      */

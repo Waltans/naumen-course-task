@@ -92,8 +92,8 @@ public enum Command {
     /**
      * Конструктор для команды, ее подписи на клавиатуре
      *
-     * @param command          Текст команды
-     * @param keyboardLabel    Описание команды
+     * @param command       Текст команды
+     * @param keyboardLabel Описание команды
      */
     Command(String command, String keyboardLabel) {
         this.command = command;

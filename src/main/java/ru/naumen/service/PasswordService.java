@@ -151,6 +151,7 @@ public class PasswordService {
 
     /**
      * Ищет все пароли пользователя
+     *
      * @param userId id пользователя
      */
     public List<UserPassword> findAllPasswordUser(long userId) {

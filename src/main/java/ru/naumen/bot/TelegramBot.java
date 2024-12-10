@@ -50,6 +50,7 @@ class TelegramBot extends TelegramLongPollingBot {
 
     /**
      * Отправляет сообщение с напоминанием при публикации события
+     *
      * @param event событие
      */
     @EventListener
