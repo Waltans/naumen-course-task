@@ -400,12 +400,11 @@ class NonCommandHandlerTest {
     void testSaveAcceptRemind() {
         long userId = 12345L;
         List<String> userParams = List.of("pass", "desc");
-        Keyboard keyboard = keyboardCreator.createMainKeyboard();
 
         Mockito.when(userStateCache.getUserState(userId)).thenReturn(SAVE_STEP_3);
         Mockito.when(userStateCache.getUserParams(userId)).thenReturn(userParams);
         Mockito.when(saveHandler.handle(new String[]{"/save", "pass", "desc", "30"}, userId))
-                .thenReturn(new Response("Пароль успешно сохранён", keyboard));
+                .thenReturn(new Response("Пароль успешно сохранён", new Keyboard(List.of())));
 
         Response response = nonCommandHandler.getAgreement("да", userId);
         Assertions.assertEquals("Пароль успешно сохранён", response.message());
