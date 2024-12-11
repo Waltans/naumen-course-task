@@ -9,8 +9,6 @@ import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.repository.UserRepository;
 
-import java.time.LocalDate;
-
 /**
  * Класс модульных тестов для UserService
  */

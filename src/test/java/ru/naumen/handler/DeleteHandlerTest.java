@@ -7,16 +7,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import ru.naumen.remind.RemindScheduler;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
+import ru.naumen.remind.RemindScheduler;
 import ru.naumen.service.PasswordService;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
