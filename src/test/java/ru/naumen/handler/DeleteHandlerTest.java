@@ -1,10 +1,12 @@
 package ru.naumen.handler;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.keyboard.KeyboardCreator;
@@ -37,13 +39,13 @@ class DeleteHandlerTest {
     private DeleteHandler deleteHandler;
 
 
-//    /**
-//     * Инициализирует моки перед каждым тестом
-//     */
-//    @BeforeEach
-//    void setUp() {
-//        MockitoAnnotations.openMocks(this);
-//    }
+    /**
+     * Инициализирует моки перед каждым тестом
+     */
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     /**
      * Тест удаления пароля с корректным индексом
