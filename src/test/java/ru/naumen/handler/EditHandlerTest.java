@@ -8,16 +8,15 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.ComplexityFormatException;
 import ru.naumen.exception.PasswordLengthException;
 import ru.naumen.exception.PasswordNotFoundException;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.model.UserPassword;
 import ru.naumen.service.PasswordService;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -52,7 +51,7 @@ class EditHandlerTest {
     @Test
     void testUpdatePassword_WithCorrectParamsAndDescription() throws PasswordNotFoundException, PasswordLengthException, ComplexityFormatException {
         String[] command = {"/edit", "1", "12", "3", "newd"};
-        UserPassword password = new UserPassword("uuid", "d", "pass", null, LocalDate.of(2010, 1, 1));
+        UserPassword password = new UserPassword("uuid", "d", "pass", null, null);
         List<UserPassword> userPasswords = List.of(password);
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
@@ -73,8 +72,7 @@ class EditHandlerTest {
     @Test
     void testUpdatePassword_WithCorrectParamsWithoutDescription() throws PasswordNotFoundException, PasswordLengthException, ComplexityFormatException {
         String[] command = {"/edit", "1", "12", "3"};
-        UserPassword password = new UserPassword("uuid", "d", "pass", null,
-                LocalDate.of(2010, 1, 1));
+        UserPassword password = new UserPassword("uuid", "d", "pass", null, null);
         List<UserPassword> userPasswords = List.of(password);
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);

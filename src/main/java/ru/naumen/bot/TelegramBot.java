@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+import ru.naumen.remind.ReminderEvent;
 import ru.naumen.service.CommandService;
 
 /**
@@ -45,6 +46,16 @@ class TelegramBot extends TelegramLongPollingBot {
             log.error("Error initializing Bot", e);
             System.exit(1);
         }
+    }
+
+    /**
+     * Отправляет сообщение с напоминанием при публикации события
+     *
+     * @param event событие
+     */
+    @EventListener
+    public void onReminderEvent(ReminderEvent event) {
+        sendMessageToChat(event.getResponse(), event.getUserId());
     }
 
     /**

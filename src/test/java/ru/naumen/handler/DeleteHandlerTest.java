@@ -8,14 +8,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.cache.UserStateCache;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.model.User;
 import ru.naumen.model.UserPassword;
+import ru.naumen.remind.RemindScheduler;
 import ru.naumen.service.PasswordService;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -31,6 +31,9 @@ class DeleteHandlerTest {
 
     @Mock
     private KeyboardCreator keyboardCreator;
+
+    @Mock
+    private RemindScheduler remindScheduler;
 
     @InjectMocks
     private DeleteHandler deleteHandler;
@@ -52,8 +55,8 @@ class DeleteHandlerTest {
         String[] command = {"/del", "2"};
         User user = new User(12345L, List.of());
         List<UserPassword> userPasswords = List.of(
-                new UserPassword("uuid", "desc", "pass", user, LocalDate.now()),
-                new UserPassword("uuid2", "desc", "pass", user, LocalDate.now()));
+                new UserPassword("uuid", "desc", "pass", user, null),
+                new UserPassword("uuid2", "desc", "pass", user, null));
 
         Mockito.when(passwordService.getUserPasswords(12345L)).thenReturn(userPasswords);
         Mockito.when(passwordService.isValidPasswordIndex(2, 12345L)).thenReturn(true);

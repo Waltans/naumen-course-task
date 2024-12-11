@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import ru.naumen.exception.UserCodePhraseException;
 import ru.naumen.exception.UserNotFoundException;
 import ru.naumen.model.User;
 import ru.naumen.repository.UserRepository;
@@ -82,5 +83,32 @@ class UserServiceTest {
 
         Assertions.assertEquals(String.format("Пользователь с id %s не найден", id), exception.getMessage());
         Mockito.verify(userRepository, Mockito.times(1)).findById(id);
+    }
+
+    /**
+     * Устанавливаем кодовое слово, когда его не было до этого
+     */
+    @Test
+    void setCodePhrase() throws UserCodePhraseException {
+        User user = new User(12345L);
+        user.setCodePhrase("newCodePhrase");
+
+        Assertions.assertEquals("newCodePhrase", user.getCodePhrase());
+    }
+
+    /**
+     * Тест, что падает ошибка, если мы пытаемся поменять кодовое слово раньше, чем за 30 дней
+     */
+    @Test
+    void setCodePhrase_recentlyModified() throws UserCodePhraseException {
+        User user = new User(12345L);
+        user.setCodePhrase("initialCodePhrase");
+
+        UserCodePhraseException exception = Assertions.assertThrows(UserCodePhraseException.class, () -> {
+            user.setCodePhrase("newCodePhrase");
+        });
+
+        Assertions.assertEquals("Невозможно сменить кодовое слово", exception.getMessage());
+        Assertions.assertEquals("initialCodePhrase", user.getCodePhrase());
     }
 }

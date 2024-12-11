@@ -51,8 +51,9 @@ public class PasswordService {
      * @param password    пароль
      * @param description описание пароля
      * @param userId      ID пользователя
+     * @return uuid сгенерированного пароля
      */
-    public void createUserPassword(String password, String description, long userId)
+    public String createUserPassword(String password, String description, long userId)
             throws UserNotFoundException, EncryptException {
         String encodedPassword = encodeService.encryptData(password);
         User user = userService.getUserById(userId);
@@ -60,6 +61,7 @@ public class PasswordService {
 
         userPasswordRepository.save(userPassword);
         log.info("Создан новый пароль {}", userPassword.getUuid());
+        return userPassword.getUuid();
     }
 
     /**
@@ -145,6 +147,27 @@ public class PasswordService {
             throw new PasswordNotFoundException("Пароль не найден!");
         }
         return password;
+    }
+
+    /**
+     * Ищет все пароли пользователя
+     *
+     * @param userId id пользователя
+     */
+    public List<UserPassword> findAllPasswordUser(long userId) {
+        return userPasswordRepository.findByUserId(userId);
+    }
+
+    /**
+     * Удаляет все пароли пользователя и возвращает количество удаленных
+     *
+     * @param userId - ID пользователя
+     * @return - количество удаленных паролей
+     */
+    public int deleteAllUserPassword(long userId) {
+        List<UserPassword> passwords = findAllPasswordUser(userId);
+        userPasswordRepository.deleteAll(passwords);
+        return passwords.size();
     }
 
     /**
@@ -259,5 +282,33 @@ public class PasswordService {
                 || complexity.equals(COMPLEXITY_EASY)
                 || complexity.equals(COMPLEXITY_MEDIUM)
                 || complexity.equals(COMPLEXITY_HARD);
+    }
+
+    /**
+     * Получить все пароли которые начинаются с phrase
+     *
+     * @param userId - ID пользователя
+     * @param phrase - фраза, с которой начинается описание паролей
+     * @return - количество паролей, которые начинаются с phrase
+     */
+    public int findCountPasswordsStartedFrom(Long userId, String phrase) {
+        return userPasswordRepository
+                .findAllByUserIdAndDescriptionStartingWithIgnoreCase(userId, phrase)
+                .size();
+    }
+
+    /**
+     * Удаляем пароли пользователя начинающиеся с phrase
+     *
+     * @param userId - ID пользователя
+     * @param phrase - слово для удаления
+     * @return количество удаленных паролей
+     */
+    public int deletePasswordByStartWord(long userId, String phrase) {
+        List<UserPassword> passwords = userPasswordRepository
+                .findAllByUserIdAndDescriptionStartingWithIgnoreCase(userId, phrase);
+
+        userPasswordRepository.deleteAll(passwords);
+        return passwords.size();
     }
 }

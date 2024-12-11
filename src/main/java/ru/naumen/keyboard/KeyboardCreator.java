@@ -60,6 +60,7 @@ public class KeyboardCreator {
      * EDIT - начать процедуру изменения пароля
      * SORT - отсортировать пароли
      * FIND - поиск паролей по описанию
+     * REMIND - установка напоминания
      */
     public Keyboard createInListKeyboard() {
         List<KeyboardRow> keyboardRows = new ArrayList<>();
@@ -72,6 +73,7 @@ public class KeyboardCreator {
         KeyboardRow keyboardRowSecond = new KeyboardRow();
         keyboardRowSecond.add(new KeyboardButton(Command.SORT.getKeyboardLabel()));
         keyboardRowSecond.add(new KeyboardButton(Command.FIND.getKeyboardLabel()));
+        keyboardRowSecond.add(new KeyboardButton(Command.REMIND.getKeyboardLabel()));
 
         keyboardRows.add(keyboardRowFirst);
         keyboardRows.add(keyboardRowSecond);
@@ -95,6 +97,23 @@ public class KeyboardCreator {
         keyboardRowFirst.add(new KeyboardButton(Command.SAVE.getKeyboardLabel()));
         keyboardRowFirst.add(new KeyboardButton(Command.LIST.getKeyboardLabel()));
         keyboardRowFirst.add(new KeyboardButton(Command.HELP.getKeyboardLabel()));
+
+        keyboardRows.add(keyboardRowFirst);
+        return new Keyboard(keyboardRows);
+    }
+
+    /**
+     * Клавиатура да/нет
+     * Кнопки:
+     * да - выполнить действие
+     * нет - отменить действие
+     */
+    public Keyboard createAgreementKeyboard() {
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow keyboardRowFirst = new KeyboardRow();
+        keyboardRowFirst.add(new KeyboardButton("Да"));
+        keyboardRowFirst.add(new KeyboardButton("Нет"));
 
         keyboardRows.add(keyboardRowFirst);
         return new Keyboard(keyboardRows);

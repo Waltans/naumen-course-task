@@ -3,18 +3,22 @@ package ru.naumen.handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import ru.naumen.remind.RemindScheduler;
 import ru.naumen.bot.Response;
-import ru.naumen.keyboard.KeyboardCreator;
+import ru.naumen.bot.constants.Errors;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.EncryptException;
 import ru.naumen.exception.UserNotFoundException;
+import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
 import ru.naumen.service.PasswordService;
 
 import java.util.List;
 
+import static ru.naumen.bot.constants.Errors.ENCRYPT_ERROR;
 import static ru.naumen.bot.constants.Errors.INCORRECT_COMMAND_RESPONSE;
-import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
+import static ru.naumen.bot.constants.Information.REMIND_MESSAGE_PASSWORD;
+import static ru.naumen.bot.constants.Parameters.*;
 
 /**
  * Хэндлер сохранения пароля
@@ -23,6 +27,8 @@ import static ru.naumen.bot.constants.Parameters.COMMAND_WITHOUT_PARAMS_LENGTH;
 public class SaveHandler implements CommandHandler {
     private final PasswordService passwordService;
     private final UserStateCache userStateCache;
+    private final RemindScheduler remindScheduler;
+    private final KeyboardCreator keyboardCreator;
     private final Logger log = LoggerFactory.getLogger(SaveHandler.class);
 
     /**
@@ -41,26 +47,27 @@ public class SaveHandler implements CommandHandler {
     private static final int SAVE_COMMAND_LENGTH_NO_DESCRIPTION = 2;
 
     /**
+     * Длина команды сохранения, если есть напоминание
+     */
+    private static final int SAVE_COMMAND_LENGTH_WITH_REMIND = 4;
+
+    /**
      * Сообщение, когда пользователь не создан
      */
     private static final String USER_NOT_FOUND = "Пользователь не найден";
 
     /**
-     * Сообщение, когда не удалось зашифровать пароль
-     */
-    private static final String ENCRYPT_ERROR = "Ошибка шифрования пароля";
-
-    /**
      * Возможные количества параметров команды
      */
-    private final List<Integer> params = List.of(1, 2);
-    private final KeyboardCreator keyboardCreator;
+    private final List<Integer> params = List.of(1, 2, 3);
 
     public SaveHandler(PasswordService passwordService,
                        UserStateCache userStateCache,
-                       KeyboardCreator keyboardCreator) {
+                       KeyboardCreator keyboardCreator,
+                       RemindScheduler remindScheduler) {
         this.passwordService = passwordService;
         this.userStateCache = userStateCache;
+        this.remindScheduler = remindScheduler;
         this.keyboardCreator = keyboardCreator;
     }
 
@@ -83,6 +90,21 @@ public class SaveHandler implements CommandHandler {
             String password = splitCommand[1];
             if (splitCommand.length == SAVE_COMMAND_LENGTH_NO_DESCRIPTION) {
                 passwordService.createUserPassword(password, "Неизвестно", userId);
+            } else if (splitCommand.length == SAVE_COMMAND_LENGTH_WITH_REMIND) {
+                String description = splitCommand[2];
+                int daysToRemind = Integer.parseInt(splitCommand[3]);
+
+                if (!isValidDays(daysToRemind)) {
+                    return new Response(Errors.DAYS_ERROR_MESSAGE, keyboardCreator.createEmptyKeyboard());
+                }
+
+                long millisToRemind = daysToRemind * MILLIS_IN_A_DAY;
+                String passwordUuid = passwordService.createUserPassword(password, description, userId);
+
+                Response remindResponse = new Response(String.format(REMIND_MESSAGE_PASSWORD, description),
+                        keyboardCreator.createMainKeyboard());
+                remindScheduler.scheduleRemind(userId, passwordUuid, millisToRemind, remindResponse);
+
             } else {
                 String description = splitCommand[2];
                 passwordService.createUserPassword(password, description, userId);
@@ -102,6 +124,17 @@ public class SaveHandler implements CommandHandler {
 
             return new Response(ENCRYPT_ERROR, keyboardCreator.createMainKeyboard());
         }
+    }
+
+    /**
+     * Проверяет валидность количества дней до напоминания
+     *
+     * @param daysToRemind дни до напоминания
+     * @return true, если количество дней валидно
+     */
+    private boolean isValidDays(int daysToRemind) {
+        return daysToRemind >= MINIMUM_DAYS_TO_REMIND
+                && daysToRemind <= MAXIMUM_DAYS_TO_REMIND;
     }
 
     /**
