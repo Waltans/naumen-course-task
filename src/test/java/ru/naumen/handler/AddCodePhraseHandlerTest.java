@@ -7,12 +7,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.naumen.remind.RemindScheduler;
 import ru.naumen.bot.Response;
 import ru.naumen.cache.UserStateCache;
 import ru.naumen.exception.UserCodePhraseException;
 import ru.naumen.keyboard.KeyboardCreator;
 import ru.naumen.model.State;
+import ru.naumen.remind.RemindScheduler;
 import ru.naumen.service.UserService;
 
 /**

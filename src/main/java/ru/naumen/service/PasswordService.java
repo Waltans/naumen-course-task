@@ -158,6 +158,12 @@ public class PasswordService {
         return userPasswordRepository.findByUserId(userId);
     }
 
+    /**
+     * Удаляет все пароли пользователя и возвращает количество удаленных
+     *
+     * @param userId - ID пользователя
+     * @return - количество удаленных паролей
+     */
     public int deleteAllUserPassword(long userId) {
         List<UserPassword> passwords = findAllPasswordUser(userId);
         userPasswordRepository.deleteAll(passwords);

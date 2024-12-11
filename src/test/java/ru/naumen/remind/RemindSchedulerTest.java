@@ -80,7 +80,7 @@ class RemindSchedulerTest {
     void testCancelRemind() throws InterruptedException {
         Response remindResponse = new Response("test",
                 keyboardCreator.createMainKeyboard());
-        remindScheduler.scheduleRemind( 12345L, "uuid", 500, remindResponse);
+        remindScheduler.scheduleRemind(12345L, "uuid", 500, remindResponse);
 
         remindScheduler.cancelRemindIfScheduled("uuid");
 
@@ -97,7 +97,7 @@ class RemindSchedulerTest {
     void testCancelRemindAfterExecution() throws InterruptedException {
         Response remindResponse = new Response("test",
                 keyboardCreator.createMainKeyboard());
-        remindScheduler.scheduleRemind( 12345L, "uuid", 500, remindResponse);
+        remindScheduler.scheduleRemind(12345L, "uuid", 500, remindResponse);
 
         Thread.sleep(500 + 20);
         ArgumentCaptor<ReminderEvent> eventCaptor = ArgumentCaptor.forClass(ReminderEvent.class);
