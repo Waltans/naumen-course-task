@@ -273,7 +273,7 @@ class PasswordServiceTest {
         int length = 10;
         String complexity = "4";
 
-        Exception e =  Assertions.assertThrows(ComplexityFormatException.class, () ->
+        Exception e = Assertions.assertThrows(ComplexityFormatException.class, () ->
                 passwordService.generatePassword(length, complexity));
         Assertions.assertEquals("Complexity should be between 1 and 3", e.getMessage());
     }
@@ -286,7 +286,7 @@ class PasswordServiceTest {
         int length = 7;
         String complexity = "3";
 
-        Exception e =  Assertions.assertThrows(PasswordLengthException.class, () ->
+        Exception e = Assertions.assertThrows(PasswordLengthException.class, () ->
                 passwordService.generatePassword(length, complexity));
         Assertions.assertEquals("Password length should be between 8 and 128", e.getMessage());
     }
